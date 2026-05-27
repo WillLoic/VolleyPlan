@@ -1,0 +1,39 @@
+# Python / Flask
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+.env
+instance/
+.pytest_cache/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# Android
+*.keystore
+*.jks
+*.properties
+local.properties
+
+# iOS
+.generated/
+DerivedData/
+Pods/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database locale (SQLite)
+*.db
