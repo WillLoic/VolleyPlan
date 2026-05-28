@@ -57,16 +57,16 @@ def create_app():
     from .controllers.invitation        import invitation_bp
     from .controllers.notifications        import notification_bp
 
-    app.register_blueprint(auth_bp,     url_prefix="/auth")
-    app.register_blueprint(joueur_bp,   url_prefix="/joueurs")
-    app.register_blueprint(planning_bp, url_prefix="/plannings")
-    app.register_blueprint(seance_bp,   url_prefix="/seances")
-    app.register_blueprint(bilan_bp,    url_prefix="/bilan")
-    app.register_blueprint(pdf_bp,      url_prefix="/pdf")
-    app.register_blueprint(invitation_bp,      url_prefix="/invitations")
-    app.register_blueprint(notification_bp,      url_prefix="/notifications")
+    app.register_blueprint(auth_bp,     url_prefix="/api/auth")
+    app.register_blueprint(joueur_bp,   url_prefix="/api/joueurs")
+    app.register_blueprint(planning_bp, url_prefix="/api/plannings")
+    app.register_blueprint(seance_bp,   url_prefix="/api/seances")
+    app.register_blueprint(bilan_bp,    url_prefix="/api/bilan")
+    app.register_blueprint(pdf_bp,      url_prefix="/api/pdf")
+    app.register_blueprint(invitation_bp,      url_prefix="/api/invitations")
+    app.register_blueprint(notification_bp,      url_prefix="/api/notifications")
 
-    @app.route("/health")
+    @app.route("/api/health")
     def health():
         return {"status": "ok", "app": "VolleyPlan API"}
 
