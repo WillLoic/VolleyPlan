@@ -57,7 +57,7 @@ def create_app():
     from .controllers.invitation        import invitation_bp
     from .controllers.notifications        import notification_bp
 
-    app.register_blueprint(auth_bp,     url_prefix="/auth")
+    app.register_blueprint(auth_bp,     url_prefix="/api/auth")
     app.register_blueprint(joueur_bp,   url_prefix="/api/joueurs")
     app.register_blueprint(planning_bp, url_prefix="/api/plannings")
     app.register_blueprint(seance_bp,   url_prefix="/api/seances")
