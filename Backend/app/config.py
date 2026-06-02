@@ -7,6 +7,14 @@ class Config:
     # Base de données Supabase (PostgreSQL)
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost/volleyplan_db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Dans config.py
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,      # teste la connexion avant chaque requête
+        "pool_recycle": 300,        # recycle les connexions toutes les 5 min
+        "pool_timeout": 20,
+        "pool_size": 5,
+        "max_overflow": 2,
+    }
 
     # JWT
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
