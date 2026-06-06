@@ -20,13 +20,13 @@ class AuthService:
         #return "nouveau coach enregistre", None
 
     @staticmethod
-    def login(telephone, password):
-        coach = Coach.query.filter_by(telephone=telephone).first()
+    def login(email, password):
+        coach = Coach.query.filter_by(email=email).first()
         if not coach or not coach.check_password(password):
-            return None, "Numéro ou mot de passe incorrect"
+            return None, "Email ou mot de passe incorrect"
         
         from .invitation import InvitationService
-        InvitationService.claim_collaborations(coach.id, coach.telephone) # On peut adapter selon si on utilise email ou tel
+        InvitationService.claim_collaborations(coach.id, coach.email) # On peut adapter selon si on utilise email ou tel
         
         token = create_access_token(identity=str(coach.id))
         return {"token":token,"coach":coach.to_dict(), "msg":"Vous etes enregistr"}, None

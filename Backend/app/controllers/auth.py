@@ -25,10 +25,10 @@ def register():
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    if not data.get("telephone") or not data.get("password"):
-        return jsonify({"error": "Téléphone et mot de passe requis."}), 400
+    if not data.get("email") or not data.get("password"):
+        return jsonify({"error": "Email et mot de passe requis."}), 400
 
-    result, error = AuthService.login(data["telephone"], data["password"])
+    result, error = AuthService.login(data["email"], data["password"])
     if error:
         return jsonify({"error": error}), 401
     return jsonify(result), 200
