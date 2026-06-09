@@ -6,3 +6,5 @@ from .exercices import Exercice
 from .invitation import Invitation
 from .planning_collaborator import PlanningCollaborator
 from .notification import Notification
+from .feedbacks import Feedbacks
+from .analytics_event import AnalyticsEvent

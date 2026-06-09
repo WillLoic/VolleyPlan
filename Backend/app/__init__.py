@@ -17,7 +17,7 @@ jwt     = JWTManager()
 mail    = Mail()
 
 def create_app():
-    from .models import coach,exercices,joueurs,planning,seances,invitation,planning_collaborator,notification
+    from .models import coach,exercices,joueurs,planning,seances,invitation,planning_collaborator,notification,feedbacks
     app = Flask(__name__)
     env = os.getenv("FLASK_ENV", "development")
     app.config.from_object(config[env])
@@ -46,6 +46,8 @@ def create_app():
     invitation.app_context(app)
     planning_collaborator.app_context(app)
     notification.app_context(app)
+    feedbacks.app_context(app)
+
 
     # Enregistrement des blueprints
     from .controllers.auth       import auth_bp
@@ -56,6 +58,9 @@ def create_app():
     from .controllers.pdf        import pdf_bp
     from .controllers.invitation        import invitation_bp
     from .controllers.notifications        import notification_bp
+    from .controllers.feedbacks        import feedbacks_bp
+    from .controllers.coach            import coach_bp
+    from .controllers.analytics        import analytics_bp
 
     app.register_blueprint(auth_bp,     url_prefix="/api/auth")
     app.register_blueprint(joueur_bp,   url_prefix="/api/joueurs")
@@ -65,6 +70,9 @@ def create_app():
     app.register_blueprint(pdf_bp,      url_prefix="/api/pdf")
     app.register_blueprint(invitation_bp,      url_prefix="/api/invitations")
     app.register_blueprint(notification_bp,      url_prefix="/api/notifications")
+    app.register_blueprint(feedbacks_bp,      url_prefix="/api/feedbacks")
+    app.register_blueprint(coach_bp,          url_prefix="/api/coach")
+    app.register_blueprint(analytics_bp,      url_prefix="/api/admin")
 
     @app.route("/api/health")
     def health():

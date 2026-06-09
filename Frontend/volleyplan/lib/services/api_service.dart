@@ -37,7 +37,8 @@ class ApiService {
     final res = await http.get(
       Uri.parse('${AppConstants.baseUrl}$path'),
       headers: await _headers(),
-    );
+    ).timeout(const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Le serveur met du temps a repondre reessayez plutard'));
     return _parse(res);
   }
 
@@ -46,7 +47,8 @@ class ApiService {
       Uri.parse('${AppConstants.baseUrl}$path'),
       headers: await _headers(auth: auth),
       body: jsonEncode(body),
-    );
+    ).timeout(const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Le serveur met du temps a repondre reessayez plutard'));
     return _parse(res);
   }
 
@@ -63,7 +65,8 @@ class ApiService {
     final res = await http.delete(
       Uri.parse('${AppConstants.baseUrl}$path'),
       headers: await _headers(),
-    );
+    ).timeout(const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Le serveur met du temps a repondre reessayez plutard'));
     return _parse(res);
   }
 
@@ -72,7 +75,8 @@ class ApiService {
     final res = await http.get(
       Uri.parse('${AppConstants.baseUrl}$path'),
       headers: await _headers(),
-    );
+    ).timeout(const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Le serveur met du temps a repondre reessayez plutard'));
     if (res.statusCode != 200) throw Exception('Erreur téléchargement PDF');
     return res.bodyBytes;
   }

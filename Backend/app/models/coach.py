@@ -12,6 +12,7 @@ class Coach(db.Model):
     nom_equipe    = db.Column(db.String(100), nullable=False)
     email         = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    role          = db.Column(db.String(20), default="user", nullable=False)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
@@ -31,6 +32,7 @@ class Coach(db.Model):
             "telephone":  self.telephone,
             "nom_equipe": self.nom_equipe,
             "email":      self.email,
+            "role":       self.role,
             "created_at": self.created_at.isoformat(),
         }
     

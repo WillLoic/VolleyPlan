@@ -7,20 +7,29 @@ import 'joueur_service.dart';
 import 'planning_service.dart';
 import 'invitation_service.dart';
 import 'notification_service.dart';
+import 'feedback_service.dart';
 import 'api_service.dart';
 import '../models/notification.dart';
+import 'analytics_service.dart';
 
 class AppState extends ChangeNotifier {
   Coach? coach;
   List<Joueur> joueurs = [];
   List<Planning> plannings = [];
   List<VpNotification> notifications = [];
+  String? _token;
   bool loading = false;
   Map<String, dynamic>? globalBilan;
   bool isInitialized = false; // Pour savoir si le démarrage est terminé
   String? error;
 
+  // Données Admin
+  Map<String, dynamic>? adminSummary;
+  List<dynamic> adminCoaches = [];
+  List<dynamic> adminFeedbacks = [];
+
   bool get isLoggedIn => coach != null;
+  String? get token => _token;
 
   void _setLoading(bool v) {
     loading = v;
@@ -47,6 +56,7 @@ class AppState extends ChangeNotifier {
     }
 
     try {
+      _token = token;
       coach = await AuthService.getMe();
       // On charge tout en parallèle
       await Future.wait([loadJoueurs(), loadPlannings(), loadNotifications()]);
@@ -55,6 +65,7 @@ class AppState extends ChangeNotifier {
       return true;
     } catch (_) {
       await ApiService.clearToken();
+      _token = null;
       coach = null;
       joueurs = [];
       plannings = [];
@@ -77,14 +88,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String telephone, String password) async {
+  Future<void> login(String email, String password) async {
     _setLoading(true);
     _setError(null);
     try {
-      final res =
-          await AuthService.login(telephone: telephone, password: password);
+      final res = await AuthService.login(email: email, password: password);
       if (res['coach'] != null) {
+        _token = res['token'];
         coach = Coach.fromJson(res['coach']);
+        AnalyticsService.trackEvent('login', token: _token);
         await loadJoueurs();
         await loadPlannings();
       } else {
@@ -110,7 +122,9 @@ class AppState extends ChangeNotifier {
           nomEquipe: equipe,
           password: pwd);
       if (res['coach'] != null) {
+        _token = res['token'];
         coach = Coach.fromJson(res['coach']);
+        AnalyticsService.trackEvent('register', token: _token);
         await loadJoueurs();
         await loadPlannings();
       } else {
@@ -127,6 +141,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> logout() async {
     await AuthService.logout();
+    _token = null;
     coach = null;
     joueurs = [];
     plannings = [];
@@ -141,6 +156,8 @@ class AppState extends ChangeNotifier {
     try {
       // On utilise directement ApiService si AuthService n'est pas encore prêt
       await ApiService.post('/auth/forgot-password', {'email': email});
+      AnalyticsService.trackEvent('password_reset_requested',
+          data: {'email': email});
     } catch (e) {
       _setError(e.toString().replaceAll('Exception: ', ''));
       rethrow;
@@ -176,6 +193,25 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile(String nom, String tel, String equipe) async {
+    _setLoading(true);
+    try {
+      final res = await ApiService.put('/coach/me', {
+        'nom': nom,
+        'telephone': tel,
+        'nom_equipe': equipe,
+      });
+      coach = Coach.fromJson(res);
+      AnalyticsService.trackEvent('profile_updated', token: _token);
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // ── Joueurs ──────────────────────────────────────────────────────
   Future<void> loadJoueurs({bool includeInactifs = false}) async {
     _setLoading(true);
@@ -194,6 +230,8 @@ class AppState extends ChangeNotifier {
   Future<void> addJoueur(String nom, {String? poste}) async {
     final j = await JoueurService.addJoueur(nom, poste: poste);
     joueurs.add(j);
+    AnalyticsService.trackEvent('player_added',
+        data: {'poste': poste}, token: _token);
     notifyListeners();
   }
 
@@ -206,6 +244,8 @@ class AppState extends ChangeNotifier {
 
   Future<void> removeJoueur(int id) async {
     await JoueurService.deleteJoueur(id);
+    AnalyticsService.trackEvent('player_removed',
+        data: {'player_id': id}, token: _token);
     joueurs.removeWhere((j) => j.id == id);
     notifyListeners();
   }
@@ -246,6 +286,13 @@ class AppState extends ChangeNotifier {
   Future<Planning> createPlanning(Map<String, dynamic> data) async {
     final p = await PlanningService.createPlanning(data);
     plannings.insert(0, p);
+    AnalyticsService.trackEvent('planning_created',
+        data: {
+          'mode': p.mode,
+          'nb_seances': p.nbSeances,
+          'titre': p.titre,
+        },
+        token: _token);
     notifyListeners();
     return p;
   }
@@ -257,12 +304,16 @@ class AppState extends ChangeNotifier {
         : await PlanningService.updatePlanning(id, data);
     final idx = plannings.indexWhere((x) => x.id == id);
     if (idx >= 0) plannings[idx] = p;
+    AnalyticsService.trackEvent('planning_updated',
+        data: {'planning_id': id}, token: _token);
     notifyListeners();
     return p;
   }
 
   Future<void> deletePlanning(int id) async {
     await PlanningService.deletePlanning(id);
+    AnalyticsService.trackEvent('planning_deleted',
+        data: {'planning_id': id}, token: _token);
     plannings.removeWhere((p) => p.id == id);
     notifyListeners();
   }
@@ -272,6 +323,8 @@ class AppState extends ChangeNotifier {
     _setLoading(true);
     try {
       await InvitationService.sendInvitation(planningId, email);
+      AnalyticsService.trackEvent('invitation_sent',
+          data: {'planning_id': planningId}, token: _token);
       // On rafraîchit le planning pour voir l'invitation dans la liste "Staff"
       await loadPlanning(planningId);
     } catch (e) {
@@ -300,6 +353,7 @@ class AppState extends ChangeNotifier {
     _setLoading(true);
     try {
       await InvitationService.acceptInvitation(token, coachId: coach?.id);
+      AnalyticsService.trackEvent('invitation_accepted', token: _token);
       if (isLoggedIn) await loadPlannings();
     } catch (e) {
       _setError(e.toString());
@@ -307,5 +361,74 @@ class AppState extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  // ── Feedbacks ───────────────────────────────────────────────────
+  Future<void> sendFeedback(String commentaire) async {
+    _setLoading(true);
+    try {
+      await FeedbackService.sendFeedback(commentaire);
+      AnalyticsService.trackEvent('feedback_sent', token: _token);
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // ── Admin ──────────────────────────────────────────────────────
+  Future<void> loadAdminData() async {
+    _setLoading(true);
+    try {
+      final results = await Future.wait([
+        ApiService.get('/admin/stats/summary'),
+        ApiService.get('/admin/coaches'),
+        ApiService.get('/admin/feedbacks'),
+      ]);
+      adminSummary = results[0];
+      adminCoaches = results[1]['data'] ?? [];
+      adminFeedbacks = results[2]['data'] ?? [];
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> searchAdminCoaches(String query) async {
+    _setLoading(true);
+    try {
+      final res = await ApiService.get('/admin/coaches?q=$query');
+      adminCoaches = res['data'] ?? [];
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> searchAdminFeedbacks(String query) async {
+    _setLoading(true);
+    try {
+      final res = await ApiService.get('/admin/feedbacks?q=$query');
+      adminFeedbacks = res['data'] ?? [];
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> updateFeedbackStatus(int id, String status) async {
+    try {
+      await ApiService.put('/admin/feedbacks/$id', {'status': status});
+      await loadAdminData(); // Rafraîchir tout
+    } catch (_) {}
+  }
+
+  Future<void> deleteFeedback(int id) async {
+    try {
+      await ApiService.delete('/admin/feedbacks/$id');
+      adminFeedbacks.removeWhere((f) => f['id'] == id);
+      notifyListeners();
+    } catch (_) {}
   }
 }

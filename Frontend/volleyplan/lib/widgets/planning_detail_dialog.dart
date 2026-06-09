@@ -12,6 +12,7 @@ import '../widgets/domaine_chip.dart';
 import '../services/pdf_service.dart';
 import '../services/planning_service.dart';
 import '../widgets/invite_collaborator_dialog.dart';
+import '../services/analytics_service.dart';
 
 class PlanningDetailDialog extends StatefulWidget {
   final int planningId;
@@ -114,15 +115,20 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
     }
 
     final appState = context.watch<AppState>();
-    // Si on a un token, on est forcément collaborateur, même si on est loggué avec le même compte
     final isOwner =
         widget.token == null && _planning!.isOwner(appState.coach?.id);
+
+    // Détection de la largeur disponible pour savoir si on doit empiler verticalement
+    final isNarrow = MediaQuery.of(context).size.width < 750;
 
     return Dialog(
       backgroundColor: AppColors.offWhite,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1000, maxHeight: 800),
+        constraints: BoxConstraints(
+            maxWidth: 1000,
+            maxHeight:
+                isNarrow ? MediaQuery.of(context).size.height * 0.85 : 800),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -151,29 +157,44 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: SingleChildScrollView(
-                          child: _buildPlanningOverview(_planning!)),
-                    ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      flex: 2,
-                      child: Column(children: [
-                        Expanded(
+                child: isNarrow
+                    ? SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildPlanningOverview(_planning!),
+                            const Divider(height: 32),
+                            _buildBilanSection(_bilan!),
+                            if (isOwner) ...[
+                              const Divider(height: 32),
+                              _buildStaffSection(isOwner, appState),
+                            ],
+                          ],
+                        ),
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
                             child: SingleChildScrollView(
-                                child: _buildBilanSection(_bilan!))),
-                        if (isOwner) ...[
-                          const Divider(height: 32),
-                          _buildStaffSection(isOwner, appState),
+                                child: _buildPlanningOverview(_planning!)),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 2,
+                            child: Column(children: [
+                              Expanded(
+                                  child: SingleChildScrollView(
+                                      child: _buildBilanSection(_bilan!))),
+                              if (isOwner) ...[
+                                const Divider(height: 32),
+                                _buildStaffSection(isOwner, appState),
+                              ],
+                            ]),
+                          ),
                         ],
-                      ]),
-                    ),
-                  ],
-                ),
+                      ),
               ),
               const SizedBox(height: 24),
               _buildActionButtons(context, isOwner, widget.token),
@@ -476,9 +497,14 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('$label :',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, color: AppColors.charcoal)),
+          // L'Expanded empêche le texte de pousser et de faire déborder la Row
+          Expanded(
+            child: Text('$label :',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, color: AppColors.charcoal),
+                overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 8),
           Text(value, style: const TextStyle(color: AppColors.gray)),
         ],
       ),
@@ -487,8 +513,12 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
 
   Widget _buildActionButtons(
       BuildContext context, bool isOwner, String? token) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    final appState = context.read<AppState>();
+    // Remplacement du Row par un Wrap pour la responsivité des boutons
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      alignment: WrapAlignment.end,
       children: [
         if (isOwner)
           VpButton(
@@ -498,6 +528,13 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
             onPressed: () async {
               try {
                 await PdfService.downloadPlanningPdf(widget.planningId);
+                AnalyticsService.trackEvent('pdf_exported',
+                    data: {
+                      'planning_id': widget.planningId,
+                      'is_owner': isOwner,
+                    },
+                    token: appState.token);
+
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('PDF généré et téléchargé !')),
@@ -514,7 +551,6 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
               }
             },
           ),
-        const SizedBox(width: 12),
         VpButton(
           label: 'Modifier',
           icon: Icons.edit,
@@ -523,14 +559,11 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                 ? '/planning/${widget.planningId}?token=$token'
                 : '/planning/${widget.planningId}';
 
-            // On ferme d'abord la pop-up proprement
             Navigator.of(context).pop();
-            // Puis on navigue en utilisant le router lié au context racine
             context.push(route);
           },
         ),
         if (isOwner) ...[
-          const SizedBox(width: 12),
           VpButton(
             label: 'Supprimer',
             icon: Icons.delete,
@@ -542,3 +575,10 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
     );
   }
 }
+
+
+
+
+
+
+//on regle la responsivite de la popo up de l'apercu du planning

@@ -21,11 +21,11 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> login({
-    required String telephone,
+    required String email,
     required String password,
   }) async {
     final res = await ApiService.post('/auth/login', {
-      'telephone': telephone,
+      'email': email,
       'password': password,
     }, auth: false);
     await ApiService.saveToken(res['token']);

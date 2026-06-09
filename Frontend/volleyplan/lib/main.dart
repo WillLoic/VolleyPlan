@@ -10,12 +10,18 @@ import 'screen/invitation_screen.dart';
 import 'screen/collaborator_dashboard.dart';
 import 'utils/constants.dart';
 import 'screen/auth/reset_password_screen.dart';
+import 'screen/landing_screen.dart';
+import 'services/analytics_service.dart';
+import 'screen/private_screen.dart'; // Importe ta page de confidentialité
+import 'screen/terms_screen.dart'; // Importe ta page de conditions
 
 void main() {
   // On s'assure que les bindings Flutter sont prêts
   WidgetsFlutterBinding.ensureInitialized();
 
   final appState = AppState();
+  // Initialisation de la session d'analytics
+  AnalyticsService.initSession();
   // On lance la tentative de reconnexion automatique en arrière-plan
   appState.tryAutoLogin();
 
@@ -50,8 +56,7 @@ class VolleyPlanApp extends StatelessWidget {
 
   // On transforme le router en fonction pour qu'il puisse écouter AppState
   static GoRouter _router(AppState appState) => GoRouter(
-        initialLocation:
-            '/home', // On tente d'aller sur home, le redirect gérera la sécurité
+        initialLocation: '/',
         refreshListenable:
             appState, // Le router se rafraîchit quand l'état change
         redirect: (context, state) {
@@ -65,20 +70,38 @@ class VolleyPlanApp extends StatelessWidget {
           // Tant qu'on n'a pas fini de vérifier le token, on ne redirige pas
           if (initializing) return null;
 
-          // Si pas connecté, on autorise uniquement les pages d'auth, d'invitation, de collaboration et de planning
+          // Si pas connecté, on autorise la landing, les pages d'auth, d'invitation, de collaboration et de planning
           if (!loggedIn &&
               !isAuthPage &&
+              loc != '/' &&
               !loc.startsWith('/invite') &&
               !loc.startsWith('/collaborations') &&
               !loc.startsWith('/reset-password') &&
-              !loc.startsWith('/planning')) return '/login';
+              !loc.startsWith('/planning') &&
+              loc != '/privacy' && // Autoriser la page de confidentialité
+              loc != '/terms') // Autoriser la page des conditions d'utilisation
+          {
+            return '/login';
+          }
 
-          // Si connecté et sur une page d'auth -> vers home
-          if (loggedIn && isAuthPage) return '/home';
+          // Si connecté et sur la landing ou page d'auth -> vers home
+          if (loggedIn && (isAuthPage || loc == '/')) return '/home';
 
           return null;
         },
         routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const LandingScreen(),
+          ),
+          GoRoute(
+            path: '/privacy',
+            builder: (context, state) => const PrivacyScreen(),
+          ),
+          GoRoute(
+            path: '/terms',
+            builder: (context, state) => const TermsScreen(),
+          ),
           GoRoute(
             path: '/login',
             builder: (context, state) => const LoginScreen(),
@@ -94,7 +117,6 @@ class VolleyPlanApp extends StatelessWidget {
               return ResetPasswordScreen(token: token);
             },
           ),
-
           GoRoute(
             path: '/home',
             builder: (context, state) => const HomeScreen(),

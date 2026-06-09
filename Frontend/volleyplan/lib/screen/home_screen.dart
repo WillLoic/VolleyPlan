@@ -1,3 +1,5 @@
+//-----------
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +8,9 @@ import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 import '../widgets/planning_detail_dialog.dart';
 import '../models/planning.dart';
+import '../models/coach.dart';
+//import 'dart:convert';
+//import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,22 +37,42 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final isWide = MediaQuery.of(context).size.width > 800;
+    final isAdmin = state.coach?.role == 'admin';
 
-    final pages = [_DashboardTab(), _PlanningsTab(), _JoueursTab(), _GlobalBilanTab()];
+    final pages = [
+      _DashboardTab(),
+      _PlanningsTab(),
+      _JoueursTab(),
+      _GlobalBilanTab(),
+      _ProfileTab(),
+      if (isAdmin) _AdminTab(),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
-      body: Row(
+      body: Stack(
         children: [
-          // Sidebar (desktop)
-          if (isWide)
-            _Sidebar(
-                selected: _navIndex,
-                onSelect: (i) => setState(() => _navIndex = i),
-                coach: state.coach),
+          Row(
+            children: [
+              // Sidebar (desktop)
+              if (isWide)
+                _Sidebar(
+                    selected: _navIndex,
+                    onSelect: (i) => setState(() => _navIndex = i),
+                    coach: state.coach),
 
-          // Main content
-          Expanded(child: pages[_navIndex]),
+              // Main content
+              Expanded(child: pages[_navIndex]),
+            ],
+          ),
+          // Feedback Button (Transparent & Persistent)
+          Positioned(
+            bottom: 15,
+            left: isWide
+                ? 235
+                : 15, // Ajusté pour ne pas chevaucher la sidebar ou le bord
+            child: const _FeedbackButton(),
+          ),
         ],
       ),
       // Bottom nav (mobile)
@@ -58,27 +83,36 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: (i) => setState(() => _navIndex = i),
               selectedItemColor: AppColors.red,
               unselectedItemColor: AppColors.gray,
-              items: const [
-                BottomNavigationBarItem(
+              items: [
+                const BottomNavigationBarItem(
                     icon: Icon(Icons.home_rounded), label: 'Accueil'),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                     icon: Icon(Icons.calendar_month_rounded),
                     label: 'Plannings'),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                     icon: Icon(Icons.people_rounded), label: 'Joueurs'),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                     icon: Icon(Icons.analytics_rounded), label: 'Bilan'),
+                const BottomNavigationBarItem(
+                    icon: Icon(Icons.person_rounded), label: 'Profil'),
+                if (isAdmin)
+                  const BottomNavigationBarItem(
+                      icon: Icon(Icons.admin_panel_settings_rounded),
+                      label: 'Admin'),
               ],
             ),
     );
   }
 }
 
+
+//on rend la barre lateral responsive
+
 // ── Sidebar desktop ───────────────────────────────────────────────
 class _Sidebar extends StatelessWidget {
   final int selected;
   final void Function(int) onSelect;
-  final coach;
+  final Coach? coach;
 
   const _Sidebar({required this.selected, required this.onSelect, this.coach});
 
@@ -89,117 +123,612 @@ class _Sidebar extends StatelessWidget {
       (Icons.calendar_month_rounded, 'Plannings'),
       (Icons.people_rounded, 'Joueurs'),
       (Icons.analytics_rounded, 'Bilan Global'),
+      (Icons.person_rounded, 'Profil'),
+      if (coach?.role == 'admin')
+        (Icons.admin_panel_settings_rounded, 'Dashboard Admin'),
     ];
 
     return Container(
       width: 220,
       color: AppColors.charcoal,
+      // Le CustomScrollView remplace la Column pour rendre le tout scrollable si l'écran est trop petit
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                // Logo
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                            colors: [AppColors.red, AppColors.yellow]),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                          child: Text('🏐', style: TextStyle(fontSize: 20))),
+                    ),
+                    const SizedBox(width: 10),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('VolleyPlan',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14)),
+                        Text('COACH EDITION',
+                            style: TextStyle(
+                                color: AppColors.yellow,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1)),
+                      ],
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 32),
+
+                // Nav items
+                ...items.asMap().entries.map((e) {
+                  final idx = e.key;
+                  final (icon, label) = e.value;
+                  final isSelected = selected == idx;
+                  return InkWell(
+                    onTap: () => onSelect(idx),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 13),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.red.withOpacity(0.15)
+                            : Colors.transparent,
+                        border: Border(
+                            left: BorderSide(
+                                color: isSelected
+                                    ? AppColors.red
+                                    : Colors.transparent,
+                                width: 3)),
+                      ),
+                      child: Row(children: [
+                        Icon(icon,
+                            color:
+                                isSelected ? AppColors.yellow : AppColors.gray,
+                            size: 20),
+                        const SizedBox(width: 12),
+                        Text(label,
+                            style: TextStyle(
+                                color: isSelected
+                                    ? AppColors.yellow
+                                    : AppColors.gray,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14)),
+                      ]),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          // Ce widget pousse le footer vers le bas, mais s'adapte s'il n'y a plus de place verticale
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: coach != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(coach!.nom,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13)),
+                          Text(coach!.nomEquipe,
+                              style: const TextStyle(
+                                  color: AppColors.gray, fontSize: 11)),
+                          const SizedBox(height: 10),
+                          TextButton.icon(
+                            onPressed: () {
+                              context.read<AppState>().logout();
+                              context.go('/login');
+                            },
+                            icon: const Icon(Icons.logout,
+                                size: 14, color: AppColors.gray),
+                            label: const Text('Déconnexion',
+                                style: TextStyle(
+                                    color: AppColors.gray, fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Admin Tab ─────────────────────────────────────────────────────
+class _AdminTab extends StatefulWidget {
+  @override
+  State<_AdminTab> createState() => _AdminTabState();
+}
+
+class _AdminTabState extends State<_AdminTab> {
+  final _coachSearchCtrl = TextEditingController();
+  final _feedbackSearchCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadAdminData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _coachSearchCtrl.dispose();
+    _feedbackSearchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    if (state.loading && state.adminSummary == null)
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.red));
+
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: AppColors.offWhite,
+        appBar: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: const Text('Administration',
+              style: TextStyle(
+                  fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          bottom: const TabBar(
+            labelColor: AppColors.red,
+            unselectedLabelColor: AppColors.gray,
+            indicatorColor: AppColors.red,
+            tabs: [
+              Tab(text: 'Stats'),
+              Tab(text: 'Coachs'),
+              Tab(text: 'Feedbacks'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildStatsView(state),
+            _buildCoachesView(state),
+            _buildFeedbacksView(state),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsView(AppState state) {
+    final kpis = state.adminSummary?['kpis'];
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          // Logo
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [AppColors.red, AppColors.yellow]),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                    child: Text('🏐', style: TextStyle(fontSize: 20))),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('VolleyPlan',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14)),
-                  Text('COACH EDITION',
-                      style: TextStyle(
-                          color: AppColors.yellow,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1)),
-                ],
-              ),
-            ]),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: [
+              _adminKpi('Coachs inscrits', '${kpis?['total_coaches']}', Colors.blue),
+              _adminKpi('utilisateurs actifs quotidien/utilisateurs actifs mensuel', '${kpis?['dau']} / ${kpis?['mau']}',
+                  Colors.blueAccent),
+              _adminKpi(
+                  'Plannings total', '${kpis?['total_plannings']}', AppColors.red),
+              _adminKpi(
+                  'Nombre de seance moyen par planning', '${kpis?['avg_seances']}', AppColors.red),
+              _adminKpi(
+                  'Nombre d\'exercice moyen par planning', '${kpis?['avg_exercises']}', AppColors.red),
+              _adminKpi('nombre de PDF Exporter', '${kpis?['pdf_exports']}', Colors.green),
+              _adminKpi('Nombre total de Joueurs', '${kpis?['total_joueurs']}',
+                  const Color(0xFF06D6A0)),
+              _adminKpi('Nombre de joueurs moyen par coach', '${kpis?['avg_players_per_coach']}',
+                  const Color(0xFF06D6A0)),
+              _adminKpi('Nombre de manipulation sur les joueurs', '${kpis?['player_activity']}',
+                  const Color(0xFF06D6A0)),
+              _adminKpi('Nombre total d\'invitations envoyes', '${kpis?['invites_sent']}',
+                  const Color(0xFF8338EC)),
+              _adminKpi('Pourcentage d\'invitation acceptees', '${kpis?['acceptance_rate']}%',
+                  const Color(0xFF8338EC)),
+              _adminKpi('Nombre de collaboration moyen par planning', '${kpis?['avg_collaborators']}',
+                  const Color(0xFF8338EC)),
+              _adminKpi('Nombre de requette de Mots de passe oublies', '${kpis?['password_resets']}',
+                  Colors.orange),
+              _adminKpi(
+                  'Nombre total de Feedbacks', '${kpis?['total_feedbacks']}', AppColors.yellow),
+            ],
           ),
           const SizedBox(height: 32),
-
-          // Nav items
-          ...items.asMap().entries.map((e) {
-            final idx = e.key;
-            final (icon, label) = e.value;
-            final isSelected = selected == idx;
-            return InkWell(
-              onTap: () => onSelect(idx),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.red.withOpacity(0.15)
-                      : Colors.transparent,
-                  border: Border(
-                      left: BorderSide(
-                          color:
-                              isSelected ? AppColors.red : Colors.transparent,
-                          width: 3)),
-                ),
-                child: Row(children: [
-                  Icon(icon,
-                      color: isSelected ? AppColors.yellow : AppColors.gray,
-                      size: 20),
-                  const SizedBox(width: 12),
-                  Text(label,
-                      style: TextStyle(
-                          color: isSelected ? AppColors.yellow : AppColors.gray,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14)),
-                ]),
-              ),
-            );
-          }),
-
-          const Spacer(),
-          // Coach info + logout
-          if (coach != null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(coach!.nom,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                  Text(coach!.nomEquipe,
-                      style:
-                          const TextStyle(color: AppColors.gray, fontSize: 11)),
-                  const SizedBox(height: 10),
-                  TextButton.icon(
-                    onPressed: () {
-                      context.read<AppState>().logout();
-                      context.go('/login');
-                    },
-                    icon: const Icon(Icons.logout,
-                        size: 14, color: AppColors.gray),
-                    label: const Text('Déconnexion',
-                        style: TextStyle(color: AppColors.gray, fontSize: 12)),
-                  ),
-                ],
-              ),
-            ),
+          const Text('Répartition par mode',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: (state.adminSummary?['plannings_by_mode']
+                      as Map<String, dynamic>)
+                  .entries
+                  .map((e) {
+                return ListTile(
+                  title:
+                      Text(e.key == 'groupe' ? '👥 Groupe' : '🎯 Spécifique'),
+                  trailing: Text('${e.value}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _adminKpi(String label, String value, Color color) {
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border(left: BorderSide(color: color, width: 4)),
+      ),
+      child: Column(
+        children: [
+          Text(value,
+              style: TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.w900, color: color)),
+          Text(label,
+              style: const TextStyle(fontSize: 12, color: AppColors.gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCoachesView(AppState state) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: _coachSearchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Rechercher un coach...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _coachSearchCtrl.clear();
+                    state.loadAdminData();
+                  }),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onSubmitted: (val) => state.searchAdminCoaches(val),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: state.adminCoaches.length,
+            itemBuilder: (context, index) {
+              final coach = state.adminCoaches[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                      backgroundColor: AppColors.grayLight,
+                      child: Icon(Icons.person, color: AppColors.gray)),
+                  title: Text(coach['nom'],
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text("${coach['email']}\n${coach['nom_equipe']}"),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text("${coach['plannings_count']} plannings",
+                          style: const TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.bold)),
+                      if (coach['last_activity'] != null)
+                        Text("Actif: ${_formatDate(coach['last_activity'])}",
+                            style: const TextStyle(
+                                fontSize: 10, color: AppColors.gray)),
+                    ],
+                  ),
+                  isThreeLine: true,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedbacksView(AppState state) {
+    if (state.adminFeedbacks.isEmpty)
+      return const Center(child: Text('Aucun feedback pour le moment.'));
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: _feedbackSearchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Rechercher un feedback...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _feedbackSearchCtrl.clear();
+                    state.loadAdminData();
+                  }),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onSubmitted: (val) => state.searchAdminFeedbacks(val),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: state.adminFeedbacks.length,
+            itemBuilder: (context, index) {
+              final f = state.adminFeedbacks[index];
+              final isProcessed = f['status'] == 'processed';
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.grayLight),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(f['coach_name'] ?? 'Inconnu',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.red)),
+                        Text(_formatDate(f['created_at']),
+                            style: const TextStyle(
+                                fontSize: 11, color: AppColors.gray)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(f['content'] ?? "N/A",
+                        style: const TextStyle(fontSize: 14, height: 1.4)),
+                    const SizedBox(height: 8),
+                    Text(f['coach_email'] ?? "N/A",
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.gray,
+                            fontStyle: FontStyle.italic)),
+                    const Divider(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (!isProcessed)
+                          TextButton.icon(
+                            onPressed: () => state.updateFeedbackStatus(
+                                f['id'], 'processed'),
+                            icon: const Icon(Icons.check_circle_outline,
+                                size: 18),
+                            label: const Text('Marquer comme traité',
+                                style: TextStyle(fontSize: 12)),
+                          )
+                        else
+                          const Row(children: [
+                            Icon(Icons.check_circle,
+                                color: Colors.green, size: 18),
+                            SizedBox(width: 4),
+                            Text('Traité',
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12)),
+                          ]),
+                        const SizedBox(width: 16),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: AppColors.red, size: 20),
+                          onPressed: () => state.deleteFeedback(f['id']),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(dynamic iso) {
+    if (iso == null) return "--/--/----";
+    try {
+      final date = DateTime.parse(iso.toString());
+      return "${date.day}/${date.month}/${date.year}";
+    } catch (e) {
+      return iso.toString();
+    }
+  }
+}
+
+//-----------------PROFIL---------------------
+class _ProfileTab extends StatefulWidget {
+  @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> {
+  final _emailCtrl = TextEditingController();
+  final _nomCtrl = TextEditingController();
+  final _telCtrl = TextEditingController();
+  final _equipeCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final coach = context.read<AppState>().coach;
+    if (coach != null) {
+      _emailCtrl.text = coach.email;
+      _nomCtrl.text = coach.nom;
+      _telCtrl.text = coach.telephone;
+      _equipeCtrl.text = coach.nomEquipe;
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _nomCtrl.dispose();
+    _telCtrl.dispose();
+    _equipeCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Mon Profil',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal)),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.05), blurRadius: 10)
+                ]),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _emailCtrl,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Email (non modifiable)',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    filled: true,
+                    fillColor: AppColors.grayXLight,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _nomCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Nom Complet',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _telCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Téléphone',
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _equipeCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Nom de l\'équipe',
+                    prefixIcon: const Icon(Icons.group_outlined),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                VpButton(
+                  label: 'Sauvegarder les modifications',
+                  loading: state.loading,
+                  onPressed: () async {
+                    try {
+                      await state.updateProfile(
+                          _nomCtrl.text, _telCtrl.text, _equipeCtrl.text);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Profil mis à jour !')));
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Erreur: $e'),
+                            backgroundColor: AppColors.red));
+                      }
+                    }
+                  },
+                ),
+                const SizedBox(height: 24),
+                const Divider(color: AppColors.grayLight),
+                const SizedBox(height: 24),
+                VpButton(
+                  label: 'Déconnexion',
+                  variant: VpButtonVariant.danger,
+                  icon: Icons.logout,
+                  onPressed: () {
+                    context.read<AppState>().logout();
+                    context.go('/login');
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -429,6 +958,93 @@ void _showPlanningDetailDialog(BuildContext context, int planningId) {
   );
 }
 
+class _FeedbackButton extends StatelessWidget {
+  const _FeedbackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      // On augmente l'opacité pour qu'il soit plus visible
+      opacity: 0.6,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showFeedbackDialog(context),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(
+                12), // On augmente le padding pour agrandir le bouton
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.gray, width: 1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.message_outlined,
+                size: 24,
+                color: AppColors.gray), // On augmente la taille de l'icône
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void _showFeedbackDialog(BuildContext context) {
+  final ctrl = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Une suggestion ?',
+          style: TextStyle(
+              fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Votre avis nous aide à améliorer VolleyPlan.",
+              style: TextStyle(fontSize: 13, color: AppColors.gray)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: ctrl,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: 'Ex: "J\'aimerais pouvoir trier les joueurs par poste"',
+              filled: true,
+              fillColor: AppColors.grayXLight,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Plus tard')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.red,
+            foregroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          onPressed: () async {
+            if (ctrl.text.trim().isEmpty) return;
+            await context.read<AppState>().sendFeedback(ctrl.text.trim());
+            if (context.mounted) {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Merci pour votre retour !')),
+              );
+            }
+          },
+          child: const Text('Envoyer'),
+        ),
+      ],
+    ),
+  );
+}
+
 // ── Joueurs Tab ───────────────────────────────────────────────────
 class _JoueursTab extends StatefulWidget {
   @override
@@ -438,10 +1054,13 @@ class _JoueursTab extends StatefulWidget {
 class _JoueursTabState extends State<_JoueursTab> {
   final _nomCtrl = TextEditingController();
   String? _posteSelected;
+//on rend l'ajoute de joueur responsive
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    // Détection de la largeur de la fenêtre pour éviter l'overflow horizontal sur mobile
+    final isNarrow = MediaQuery.of(context).size.width < 650;
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -475,45 +1094,99 @@ class _JoueursTabState extends State<_JoueursTab> {
                           fontWeight: FontWeight.w700,
                           color: AppColors.charcoal)),
                   const SizedBox(height: 12),
-                  Row(children: [
-                    Expanded(
-                        child: TextField(
-                      controller: _nomCtrl,
-                      decoration: InputDecoration(
-                        hintText: 'Nom du joueur',
-                        filled: true,
-                        fillColor: AppColors.grayXLight,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
+
+                  // SI L'ÉCRAN EST ÉTROIT : On empile les champs verticalement (Column)
+                  if (isNarrow)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _nomCtrl,
+                          decoration: InputDecoration(
+                            hintText: 'Nom du joueur',
+                            filled: true,
+                            fillColor: AppColors.grayXLight,
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          value: _posteSelected,
+                          hint: const Text('Poste'),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: AppColors.grayXLight,
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                          ),
+                          items: AppConstants.postes
+                              .map((p) => DropdownMenuItem(
+                                  value: p,
+                                  child: Text(p,
+                                      style: const TextStyle(fontSize: 13))))
+                              .toList(),
+                          onChanged: (v) => setState(() => _posteSelected = v),
+                        ),
+                        const SizedBox(height: 16),
+                        VpButton(
+                            label: 'Ajouter le joueur',
+                            onPressed: () async {
+                              if (_nomCtrl.text.isEmpty) return;
+                              await state.addJoueur(_nomCtrl.text.trim(),
+                                  poste: _posteSelected);
+                              _nomCtrl.clear();
+                              setState(() => _posteSelected = null);
+                            }),
+                      ],
+                    )
+                  // SI L'ÉCRAN EST RESTE LARGE : On garde la disposition en ligne (Row)
+                  else
+                    Row(children: [
+                      Expanded(
+                          child: TextField(
+                        controller: _nomCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'Nom du joueur',
+                          filled: true,
+                          fillColor: AppColors.grayXLight,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                        ),
+                      )),
+                      const SizedBox(width: 10),
+                      DropdownButton<String>(
+                        value: _posteSelected,
+                        hint: const Text('Poste'),
+                        items: AppConstants.postes
+                            .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p,
+                                    style: const TextStyle(fontSize: 13))))
+                            .toList(),
+                        onChanged: (v) => setState(() => _posteSelected = v),
                       ),
-                    )),
-                    const SizedBox(width: 10),
-                    DropdownButton<String>(
-                      value: _posteSelected,
-                      hint: const Text('Poste'),
-                      items: AppConstants.postes
-                          .map((p) => DropdownMenuItem(
-                              value: p,
-                              child: Text(p,
-                                  style: const TextStyle(fontSize: 13))))
-                          .toList(),
-                      onChanged: (v) => setState(() => _posteSelected = v),
-                    ),
-                    const SizedBox(width: 10),
-                    VpButton(
-                        label: 'Ajouter',
-                        small: true,
-                        onPressed: () async {
-                          if (_nomCtrl.text.isEmpty) return;
-                          await state.addJoueur(_nomCtrl.text.trim(),
-                              poste: _posteSelected);
-                          _nomCtrl.clear();
-                          setState(() => _posteSelected = null);
-                        }),
-                  ]),
+                      const SizedBox(width: 10),
+                      VpButton(
+                          label: 'Ajouter',
+                          small: true,
+                          onPressed: () async {
+                            if (_nomCtrl.text.isEmpty) return;
+                            await state.addJoueur(_nomCtrl.text.trim(),
+                                poste: _posteSelected);
+                            _nomCtrl.clear();
+                            setState(() => _posteSelected = null);
+                          }),
+                    ]),
                 ],
               ),
             ),
@@ -766,7 +1439,7 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final bilan = state.globalBilan;
-    
+
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       body: SingleChildScrollView(
@@ -784,19 +1457,28 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
                 style: TextStyle(color: AppColors.gray, fontSize: 14)),
             const SizedBox(height: 32),
             if (state.loading && bilan == null)
-              const Center(child: CircularProgressIndicator(color: AppColors.red))
+              const Center(
+                  child: CircularProgressIndicator(color: AppColors.red))
             else if (bilan == null)
               const Center(child: Text('Aucune donnée disponible.'))
             else ...[
               // KPIs Globaux
               Wrap(spacing: 16, runSpacing: 16, children: [
-                _statCard('Plannings total', '${bilan['nb_plannings']}', Icons.collections_bookmark_rounded),
-                _statCard('Séances total', '${bilan['nb_seances']}', Icons.event_available_rounded),
-                _statCard('Volume total', AppConstants.fmtMinutes(bilan['total_minutes']), Icons.timer_rounded),
-                _statCard('Moyenne/séance', AppConstants.fmtMinutes(bilan['avg_seance_minutes']), Icons.av_timer_rounded),
+                _statCard('Plannings total', '${bilan['nb_plannings']}',
+                    Icons.collections_bookmark_rounded),
+                _statCard('Séances total', '${bilan['nb_seances']}',
+                    Icons.event_available_rounded),
+                _statCard(
+                    'Volume total',
+                    AppConstants.fmtMinutes(bilan['total_minutes']),
+                    Icons.timer_rounded),
+                _statCard(
+                    'Moyenne/séance',
+                    AppConstants.fmtMinutes(bilan['avg_seance_minutes']),
+                    Icons.av_timer_rounded),
               ]),
               const SizedBox(height: 40),
-              
+
               // Répartition
               const Text('Répartition globale par domaine',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
@@ -818,9 +1500,13 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(d['label'], style: const TextStyle(fontWeight: FontWeight.w600)),
-                              Text('${d['pct']}% (${AppConstants.fmtMinutes(d['minutes'])})', 
-                                   style: const TextStyle(color: AppColors.gray, fontSize: 12)),
+                              Text(d['label'],
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                  '${d['pct']}% (${AppConstants.fmtMinutes(d['minutes'])})',
+                                  style: const TextStyle(
+                                      color: AppColors.gray, fontSize: 12)),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -838,25 +1524,28 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Recommandations
               const Text('Analyses & Conseils',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
-              ... (bilan['recommandations'] as List).map((rec) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.red.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.red.withOpacity(0.1)),
-                ),
-                child: Row(children: [
-                  const Icon(Icons.insights_rounded, color: AppColors.red, size: 18),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(rec, style: const TextStyle(fontSize: 13))),
-                ]),
-              )),
+              ...(bilan['recommandations'] as List).map((rec) => Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.red.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.red.withOpacity(0.1)),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.insights_rounded,
+                          color: AppColors.red, size: 18),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child:
+                              Text(rec, style: const TextStyle(fontSize: 13))),
+                    ]),
+                  )),
             ],
           ],
         ),
@@ -871,13 +1560,17 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)
+        ],
       ),
       child: Column(children: [
         Icon(icon, color: AppColors.red, size: 24),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+        Text(value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+        Text(label,
+            style: const TextStyle(fontSize: 11, color: AppColors.gray)),
       ]),
     );
   }

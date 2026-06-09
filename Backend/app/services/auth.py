@@ -15,8 +15,7 @@ class AuthService:
         db.session.add(coach)
         db.session.commit()
         token = create_access_token(identity=str(coach.id))
-        #return {"token":token,"msg":"Vous etes enregistre et connecte"}, None
-        return {"token":token,"coach":coach.to_dict(), "msg":"Vous etes enregiste"}, None
+        return {"token": token, "coach": coach.to_dict(), "msg": "Compte créé avec succès"}, None
         #return "nouveau coach enregistre", None
 
     @staticmethod
@@ -29,7 +28,7 @@ class AuthService:
         InvitationService.claim_collaborations(coach.id, coach.email) # On peut adapter selon si on utilise email ou tel
         
         token = create_access_token(identity=str(coach.id))
-        return {"token":token,"coach":coach.to_dict(), "msg":"Vous etes enregistr"}, None
+        return {"token": token, "coach": coach.to_dict(), "msg": "Connexion réussie"}, None
         #return {"token":token,"msg":"Vous etes connecte"}, None
     
     @staticmethod

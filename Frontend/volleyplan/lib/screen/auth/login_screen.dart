@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: AppColors.charcoal)),
                       const SizedBox(height: 20),
                       _field(
-                          'Numéro de téléphone', _telCtrl, TextInputType.phone),
+                          'Email', _telCtrl, TextInputType.emailAddress),
                       const SizedBox(height: 14),
                       _field('Mot de passe', _pwdCtrl, TextInputType.text,
                           obscure: _obscure,

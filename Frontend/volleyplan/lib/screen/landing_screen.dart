@@ -1,0 +1,2815 @@
+/*import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../utils/constants.dart';
+import '../widgets/vp_button.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LANDING SCREEN
+// ─────────────────────────────────────────────────────────────────────────────
+class LandingScreen extends StatefulWidget {
+  const LandingScreen({super.key});
+
+  @override
+  State<LandingScreen> createState() => _LandingScreenState();
+}
+
+class _LandingScreenState extends State<LandingScreen>
+    with TickerProviderStateMixin {
+  // Controllers d'animation
+  late AnimationController _heroController;
+  late AnimationController _ballController;
+  late AnimationController _floatController;
+  late AnimationController _statsController;
+
+  // Animations Hero (entrée)
+  late Animation<double> _badgeFade;
+  late Animation<Offset> _titleSlide;
+  late Animation<double> _titleFade;
+  late Animation<Offset> _subtitleSlide;
+  late Animation<double> _subtitleFade;
+  late Animation<Offset> _ctaSlide;
+  late Animation<double> _ctaFade;
+
+  // Animation ballon volant
+  late Animation<double> _ballX;
+  late Animation<double> _ballY;
+  late Animation<double> _ballRotation;
+  late Animation<double> _ballScale;
+
+  // Animation floating cards
+  late Animation<double> _float1;
+  late Animation<double> _float2;
+
+  // Animation stats counter
+  late Animation<double> _statsProgress;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _statsVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ── Hero entrance ──────────────────────────────────────────────
+    _heroController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+
+    _badgeFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+          parent: _heroController,
+          curve: const Interval(0.0, 0.25, curve: Curves.easeOut)),
+    );
+    _titleSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(CurvedAnimation(
+            parent: _heroController,
+            curve: const Interval(0.15, 0.5, curve: Curves.easeOutCubic)));
+    _titleFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.15, 0.5, curve: Curves.easeOut)));
+    _subtitleSlide =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+            CurvedAnimation(
+                parent: _heroController,
+                curve: const Interval(0.3, 0.65, curve: Curves.easeOutCubic)));
+    _subtitleFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.3, 0.65, curve: Curves.easeOut)));
+    _ctaSlide =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+            CurvedAnimation(
+                parent: _heroController,
+                curve: const Interval(0.5, 0.85, curve: Curves.easeOutCubic)));
+    _ctaFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.5, 0.85, curve: Curves.easeOut)));
+
+    // ── Ballon volleyball animé ────────────────────────────────────
+    _ballController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    )..repeat();
+
+    _ballX = Tween<double>(begin: -0.15, end: 1.15).animate(CurvedAnimation(
+        parent: _ballController, curve: Curves.easeInOut));
+    _ballY = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.55, end: 0.15)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.15, end: 0.55)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50),
+    ]).animate(_ballController);
+    _ballRotation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
+        CurvedAnimation(parent: _ballController, curve: Curves.linear));
+    _ballScale = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.7, end: 1.1)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 1.1, end: 0.7)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50),
+    ]).animate(_ballController);
+
+    // ── Floating cards ─────────────────────────────────────────────
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _float1 = Tween<double>(begin: -6, end: 6).animate(
+        CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
+    _float2 = Tween<double>(begin: 6, end: -6).animate(
+        CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
+
+    // ── Stats counter ──────────────────────────────────────────────
+    _statsController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _statsProgress = CurvedAnimation(
+        parent: _statsController, curve: Curves.easeOutCubic);
+
+    // Lancer le hero
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _heroController.forward();
+    });
+
+    // Écouter le scroll pour déclencher les stats
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_statsVisible && _scrollController.offset > 400) {
+      setState(() => _statsVisible = true);
+      _statsController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _heroController.dispose();
+    _ballController.dispose();
+    _floatController.dispose();
+    _statsController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.offWhite,
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
+          children: [
+            _buildHeader(context),
+            _buildHero(context),
+            _buildStats(context),
+            _buildFeatures(context),
+            _buildCTA(context),
+            _buildFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── HEADER ────────────────────────────────────────────────────────────────
+  Widget _buildHeader(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 20 : 40, vertical: 18),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(bottom: BorderSide(color: AppColors.grayLight, width: 1)),
+      ),
+      child: Row(
+        children: [
+          _buildLogo(),
+          const Spacer(),
+          if (!isMobile) ...[
+            TextButton(
+              onPressed: () => context.push('/login'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.charcoal),
+              child: const Text('Connexion',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            ),
+            const SizedBox(width: 12),
+          ],
+          VpButton(
+            label: isMobile ? 'Connexion' : 'S\'inscrire',
+            small: true,
+            onPressed: () =>
+                context.push(isMobile ? '/login' : '/register'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Row(children: [
+      Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+              colors: [AppColors.red, AppColors.yellow],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.red.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3))
+          ],
+        ),
+        child: const Center(child: Text('🏐', style: TextStyle(fontSize: 18))),
+      ),
+      const SizedBox(width: 10),
+      const Text('VolleyPlan',
+          style: TextStyle(
+              color: AppColors.charcoal,
+              fontWeight: FontWeight.w900,
+              fontSize: 17,
+              letterSpacing: -0.5)),
+    ]);
+  }
+
+  // ─── HERO ──────────────────────────────────────────────────────────────────
+  Widget _buildHero(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 768;
+
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.white, AppColors.offWhite],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Grille de fond décorative
+          Positioned.fill(child: _buildGridBackground()),
+
+          // Ballon animé
+          _buildAnimatedBall(size),
+
+          // Contenu principal
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 60,
+                vertical: isMobile ? 50 : 80),
+            child: isMobile
+                ? _buildHeroMobile(context)
+                : _buildHeroDesktop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGridBackground() {
+    return CustomPaint(painter: _GridPainter());
+  }
+
+  Widget _buildAnimatedBall(Size size) {
+    return AnimatedBuilder(
+      animation: _ballController,
+      builder: (context, child) {
+        return Positioned(
+          left: _ballX.value * size.width - 30,
+          top: _ballY.value * (size.height * 0.5),
+          child: Transform.rotate(
+            angle: _ballRotation.value,
+            child: Transform.scale(
+              scale: _ballScale.value,
+              child: Opacity(
+                opacity: 0.18,
+                child: Text('🏐',
+                    style: TextStyle(
+                        fontSize: size.width < 768 ? 48 : 72)),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeroDesktop(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Texte gauche
+        Expanded(flex: 5, child: _buildHeroText(context)),
+        const SizedBox(width: 60),
+        // Visuel droit avec floating cards
+        Expanded(flex: 4, child: _buildHeroVisual()),
+      ],
+    );
+  }
+
+  Widget _buildHeroMobile(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeroText(context),
+        const SizedBox(height: 48),
+        Center(child: _buildHeroVisual()),
+      ],
+    );
+  }
+
+  Widget _buildHeroText(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Badge
+        FadeTransition(
+          opacity: _badgeFade,
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.red.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                  color: AppColors.red.withOpacity(0.2), width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                        color: AppColors.red, shape: BoxShape.circle)),
+                const SizedBox(width: 8),
+                const Text('COACH EDITION v1.0',
+                    style: TextStyle(
+                        color: AppColors.red,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5)),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Titre
+        SlideTransition(
+          position: _titleSlide,
+          child: FadeTransition(
+            opacity: _titleFade,
+            child: RichText(
+              text: const TextSpan(
+                style: TextStyle(
+                    fontSize: 52,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.charcoal,
+                    height: 1.05,
+                    letterSpacing: -1.5),
+                children: [
+                  TextSpan(text: 'L\'excellence\ndu coaching\n'),
+                  TextSpan(
+                      text: 'commence ici.',
+                      style: TextStyle(color: AppColors.red)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Sous-titre
+        SlideTransition(
+          position: _subtitleSlide,
+          child: FadeTransition(
+            opacity: _subtitleFade,
+            child: const Text(
+              'Gérez vos joueurs, concevez des plannings précis\net analysez vos performances — tout en un.',
+              style: TextStyle(
+                  fontSize: 17,
+                  color: AppColors.gray,
+                  height: 1.6,
+                  fontWeight: FontWeight.w400),
+            ),
+          ),
+        ),
+        const SizedBox(height: 40),
+
+        // CTA
+        SlideTransition(
+          position: _ctaSlide,
+          child: FadeTransition(
+            opacity: _ctaFade,
+            child: Row(
+              children: [
+                VpButton(
+                  label: 'Démarrer gratuitement',
+                  icon: Icons.arrow_forward_rounded,
+                  onPressed: () => context.push('/register'),
+                ),
+                const SizedBox(width: 16),
+                TextButton.icon(
+                  onPressed: () => context.push('/login'),
+                  icon: const Icon(Icons.login_rounded,
+                      size: 16, color: AppColors.charcoal),
+                  label: const Text('Connexion',
+                      style: TextStyle(
+                          color: AppColors.charcoal,
+                          fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroVisual() {
+    return AnimatedBuilder(
+      animation: _floatController,
+      builder: (context, child) {
+        return SizedBox(
+          height: 420,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Carte principale — planning
+              Positioned(
+                top: 20 + _float1.value,
+                left: 0,
+                right: 40,
+                child: _buildFloatingCard(
+                  title: 'Prépa Championnat',
+                  subtitle: '8 séances · Groupe · Mensuel',
+                  icon: Icons.calendar_month_rounded,
+                  color: AppColors.red,
+                  tags: ['Service', 'Attaque', 'Défense'],
+                ),
+              ),
+
+              // Carte bilan — stat
+              Positioned(
+                top: 160 + _float2.value,
+                right: 0,
+                left: 30,
+                child: _buildBilanCard(),
+              ),
+
+              // Badge joueurs
+              Positioned(
+                bottom: 30 + _float1.value * 0.5,
+                left: 10,
+                child: _buildBadgeCard(
+                    '👥', '12 joueurs', 'Roster actif', AppColors.yellow),
+              ),
+
+              // Badge PDF
+              Positioned(
+                bottom: 60 + _float2.value * 0.5,
+                right: 10,
+                child: _buildBadgeCard(
+                    '📄', 'Export PDF', 'Partageable', AppColors.red),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required List<String> tags,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 8)),
+          BoxShadow(
+              color: color.withOpacity(0.06),
+              blurRadius: 40,
+              spreadRadius: 4),
+        ],
+        border: Border.all(color: AppColors.grayLight, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            color: AppColors.charcoal)),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.gray)),
+                  ]),
+            ),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text('Actif',
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ]),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 6,
+            children: tags
+                .map((t) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.grayXLight,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(t,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.charcoal,
+                              fontWeight: FontWeight.w600)),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBilanCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.charcoal,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.25),
+              blurRadius: 20,
+              offset: const Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(children: [
+            Icon(Icons.analytics_rounded,
+                color: AppColors.yellow, size: 16),
+            SizedBox(width: 8),
+            Text('Bilan mensuel',
+                style: TextStyle(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
+          ]),
+          const SizedBox(height: 14),
+          _buildMiniBar('Service', 0.72, AppColors.red),
+          const SizedBox(height: 6),
+          _buildMiniBar('Attaque', 0.58, AppColors.yellow),
+          const SizedBox(height: 6),
+          _buildMiniBar('Défense', 0.45, const Color(0xFF06D6A0)),
+          const SizedBox(height: 6),
+          _buildMiniBar('Physique', 0.30, const Color(0xFF3A86FF)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniBar(String label, double value, Color color) {
+    return Row(children: [
+      SizedBox(
+        width: 52,
+        child: Text(label,
+            style: const TextStyle(
+                color: AppColors.gray, fontSize: 10, fontWeight: FontWeight.w500)),
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+            value: value,
+            backgroundColor: Colors.white.withOpacity(0.08),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 6,
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      Text('${(value * 100).toInt()}%',
+          style: TextStyle(
+              color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+    ]);
+  }
+
+  Widget _buildBadgeCard(
+      String emoji, String title, String sub, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: color.withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 4)),
+        ],
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(emoji, style: const TextStyle(fontSize: 20)),
+        const SizedBox(width: 10),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  color: AppColors.charcoal)),
+          Text(sub,
+              style: const TextStyle(fontSize: 10, color: AppColors.gray)),
+        ]),
+      ]),
+    );
+  }
+
+  // ─── STATS ─────────────────────────────────────────────────────────────────
+  Widget _buildStats(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final stats = [
+      {'value': 500, 'suffix': '+', 'label': 'Coachs actifs', 'icon': '👨‍💼'},
+      {'value': 3200, 'suffix': '+', 'label': 'Plannings créés', 'icon': '📋'},
+      {'value': 98, 'suffix': '%', 'label': 'Satisfaction', 'icon': '⭐'},
+      {'value': 12, 'suffix': 'k+', 'label': 'Séances planifiées', 'icon': '📅'},
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          vertical: 60, horizontal: isMobile ? 24 : 60),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.charcoal,
+            const Color(0xFF2d2d4e),
+          ],
+        ),
+      ),
+      child: isMobile
+          ? Wrap(
+              spacing: 20,
+              runSpacing: 24,
+              alignment: WrapAlignment.center,
+              children: stats
+                  .map((s) => SizedBox(
+                      width: 140,
+                      child: _buildStatItem(s, isMobile)))
+                  .toList(),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: stats
+                  .map((s) => Expanded(child: _buildStatItem(s, isMobile)))
+                  .toList(),
+            ),
+    );
+  }
+
+  Widget _buildStatItem(Map<String, dynamic> s, bool isMobile) {
+    return AnimatedBuilder(
+      animation: _statsProgress,
+      builder: (context, child) {
+        final val =
+            ((s['value'] as int) * _statsProgress.value).toInt();
+        return Column(children: [
+          Text(s['icon'] as String,
+              style: TextStyle(fontSize: isMobile ? 28 : 36)),
+          const SizedBox(height: 10),
+          Text(
+            '$val${s['suffix']}',
+            style: TextStyle(
+                fontSize: isMobile ? 30 : 42,
+                fontWeight: FontWeight.w900,
+                color: AppColors.yellow,
+                letterSpacing: -1),
+          ),
+          const SizedBox(height: 4),
+          Text(s['label'] as String,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: AppColors.gray,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500)),
+        ]);
+      },
+    );
+  }
+
+  // ─── FEATURES ──────────────────────────────────────────────────────────────
+  Widget _buildFeatures(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final features = [
+      {
+        'icon': Icons.calendar_month_rounded,
+        'color': AppColors.red,
+        'title': 'Plannings Intelligents',
+        'desc':
+            'Créez des cycles d\'entraînement structurés en mode Groupe ou Spécifique par postes. 8 domaines couverts.',
+        'tag': 'Création',
+      },
+      {
+        'icon': Icons.people_alt_rounded,
+        'color': const Color(0xFF3A86FF),
+        'title': 'Gestion d\'Effectif',
+        'desc':
+            'Gérez votre roster, suivez les postes, ajoutez ou retirez des joueurs au fil des transferts de saison.',
+        'tag': 'Joueurs',
+      },
+      {
+        'icon': Icons.analytics_rounded,
+        'color': AppColors.yellow,
+        'title': 'Bilans Automatisés',
+        'desc':
+            'Visualisez la répartition technique de vos séances et recevez des recommandations d\'équilibre.',
+        'tag': 'Analyse',
+      },
+      {
+        'icon': Icons.picture_as_pdf_rounded,
+        'color': const Color(0xFF06D6A0),
+        'title': 'Export PDF WhatsApp',
+        'desc':
+            'Générez un PDF professionnel de votre planning et partagez-le directement avec vos joueurs.',
+        'tag': 'Partage',
+      },
+      {
+        'icon': Icons.group_add_rounded,
+        'color': const Color(0xFF8338EC),
+        'title': 'Collaboration Staff',
+        'desc':
+            'Invitez vos adjoints à consulter ou modifier vos plannings. Travaillez en équipe en temps réel.',
+        'tag': 'Équipe',
+      },
+      {
+        'icon': Icons.fitness_center_rounded,
+        'color': const Color(0xFFEF476F),
+        'title': 'Physique & Technique',
+        'desc':
+            'Gérez les séances de musculation et endurance en plus des aspects techniques volleyball.',
+        'tag': 'Physique',
+      },
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          vertical: 80, horizontal: isMobile ? 24 : 60),
+      color: AppColors.offWhite,
+      child: Column(children: [
+        // Titre section
+        Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.red.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Text('FONCTIONNALITÉS',
+              style: TextStyle(
+                  color: AppColors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2)),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          isMobile
+              ? 'Pensé pour les coachs'
+              : 'Pensé par des coachs, pour des coachs',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: isMobile ? 26 : 36,
+              fontWeight: FontWeight.w900,
+              color: AppColors.charcoal,
+              letterSpacing: -0.8),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Tout ce dont vous avez besoin pour professionnaliser votre coaching.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: 16, color: AppColors.gray, height: 1.5),
+        ),
+        const SizedBox(height: 56),
+
+        // Grille features
+        isMobile
+            ? Column(
+                children: features
+                    .map((f) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildFeatureCard(f),
+                        ))
+                    .toList(),
+              )
+            : _buildFeaturesGrid(features),
+      ]),
+    );
+  }
+
+  Widget _buildFeaturesGrid(List<Map<String, dynamic>> features) {
+    return Column(children: [
+      Row(children: [
+        Expanded(child: _buildFeatureCard(features[0])),
+        const SizedBox(width: 20),
+        Expanded(child: _buildFeatureCard(features[1])),
+        const SizedBox(width: 20),
+        Expanded(child: _buildFeatureCard(features[2])),
+      ]),
+      const SizedBox(height: 20),
+      Row(children: [
+        Expanded(child: _buildFeatureCard(features[3])),
+        const SizedBox(width: 20),
+        Expanded(child: _buildFeatureCard(features[4])),
+        const SizedBox(width: 20),
+        Expanded(child: _buildFeatureCard(features[5])),
+      ]),
+    ]);
+  }
+
+  Widget _buildFeatureCard(Map<String, dynamic> f) {
+    final color = f['color'] as Color;
+    return _HoverCard(
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.grayLight, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(f['icon'] as IconData, color: color, size: 22),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(f['tag'] as String,
+                    style: TextStyle(
+                        color: color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5)),
+              ),
+            ]),
+            const SizedBox(height: 18),
+            Text(f['title'] as String,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: AppColors.charcoal,
+                    letterSpacing: -0.3)),
+            const SizedBox(height: 10),
+            Text(f['desc'] as String,
+                style: const TextStyle(
+                    color: AppColors.gray,
+                    fontSize: 13,
+                    height: 1.55)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── CTA SECTION ───────────────────────────────────────────────────────────
+  Widget _buildCTA(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      margin: EdgeInsets.symmetric(
+          horizontal: isMobile ? 24 : 60, vertical: 60),
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 28 : 60,
+          vertical: isMobile ? 40 : 60),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.charcoal, Color(0xFF2d2d4e)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.3),
+              blurRadius: 40,
+              offset: const Offset(0, 16)),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Déco ballons en fond
+          Positioned(
+              right: isMobile ? -10 : 20,
+              top: -10,
+              child: Opacity(
+                  opacity: 0.07,
+                  child: Text('🏐',
+                      style: TextStyle(
+                          fontSize: isMobile ? 80 : 140)))),
+          Positioned(
+              left: isMobile ? -10 : 20,
+              bottom: -10,
+              child: Opacity(
+                  opacity: 0.05,
+                  child: Text('🏐',
+                      style: TextStyle(
+                          fontSize: isMobile ? 60 : 100)))),
+
+          // Contenu
+          Column(
+            children: [
+              Text(
+                isMobile
+                    ? 'Prêt à structurer\nvotre saison ?'
+                    : 'Prêt à structurer votre saison ?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: isMobile ? 26 : 38,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.white,
+                    height: 1.15,
+                    letterSpacing: -0.8),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Rejoignez les coachs qui font confiance à VolleyPlan\npour structurer leurs entraînements.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: AppColors.gray, fontSize: 15, height: 1.6),
+              ),
+              const SizedBox(height: 36),
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  VpButton(
+                    label: 'Commencer gratuitement',
+                    icon: Icons.rocket_launch_rounded,
+                    onPressed: () => context.push('/register'),
+                  ),
+                  VpButton(
+                    label: 'Se connecter',
+                    variant: VpButtonVariant.ghost,
+                    onPressed: () => context.push('/login'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── FOOTER ────────────────────────────────────────────────────────────────
+  Widget _buildFooter() {
+    final year = DateTime.now().year;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
+      color: AppColors.charcoal,
+      width: double.infinity,
+      child: Column(children: [
+        _buildLogo(),
+        const SizedBox(height: 16),
+        const Text(
+          'Propulsez votre équipe vers les sommets.',
+          style: TextStyle(color: AppColors.gray, fontSize: 14),
+        ),
+        const SizedBox(height: 36),
+        const Divider(color: Colors.white12),
+        const SizedBox(height: 20),
+        LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxWidth < 600) {
+            return Column(children: [
+              Text('© $year VolleyPlan. Tous droits réservés.',
+                  style: const TextStyle(
+                      color: AppColors.gray, fontSize: 12)),
+              const SizedBox(height: 6),
+              const Text('Développé avec passion pour le Volleyball 🏐',
+                  style: TextStyle(
+                      color: AppColors.gray, fontSize: 12)),
+            ]);
+          }
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('© $year VolleyPlan. Tous droits réservés.',
+                    style: const TextStyle(
+                        color: AppColors.gray, fontSize: 12)),
+                const Text(
+                    'Développé avec passion pour le Volleyball 🏐',
+                    style:
+                        TextStyle(color: AppColors.gray, fontSize: 12)),
+              ]);
+        }),
+      ]),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOVER CARD — Effet survol avec élévation
+// ─────────────────────────────────────────────────────────────────────────────
+class _HoverCard extends StatefulWidget {
+  final Widget child;
+  const _HoverCard({required this.child});
+
+  @override
+  State<_HoverCard> createState() => _HoverCardState();
+}
+
+class _HoverCardState extends State<_HoverCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _elevation;
+  late Animation<Offset> _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _elevation = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _translate =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(0, -0.012))
+            .animate(CurvedAnimation(
+                parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _controller.forward(),
+      onExit: (_) => _controller.reverse(),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return SlideTransition(
+            position: _translate,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.charcoal
+                        .withOpacity(0.06 + _elevation.value * 0.1),
+                    blurRadius: 8 + _elevation.value * 20,
+                    offset: Offset(0, 2 + _elevation.value * 8),
+                  ),
+                ],
+              ),
+              child: widget.child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRID PAINTER — Grille de fond décorative
+// ─────────────────────────────────────────────────────────────────────────────
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFD72638).withOpacity(0.04)
+      ..strokeWidth = 1;
+
+    const step = 48.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}*/
+
+
+
+
+
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../utils/constants.dart';
+import '../widgets/vp_button.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LANDING SCREEN COMPLET
+// ─────────────────────────────────────────────────────────────────────────────
+class LandingScreen extends StatefulWidget {
+  const LandingScreen({super.key});
+
+  @override
+  State<LandingScreen> createState() => _LandingScreenState();
+}
+
+class _LandingScreenState extends State<LandingScreen>
+    with TickerProviderStateMixin {
+  // Controllers d'animation d'origine
+  late AnimationController _heroController;
+  late AnimationController _ballController;
+  late AnimationController _floatController;
+  late AnimationController _statsController;
+
+  // Animations Hero
+  late Animation<double> _badgeFade;
+  late Animation<Offset> _titleSlide;
+  late Animation<double> _titleFade;
+  late Animation<Offset> _subtitleSlide;
+  late Animation<double> _subtitleFade;
+  late Animation<Offset> _ctaSlide;
+  late Animation<double> _ctaFade;
+
+  // Animation ballon volant
+  late Animation<double> _ballX;
+  late Animation<double> _ballY;
+  late Animation<double> _ballRotation;
+  late Animation<double> _ballScale;
+
+  // Animation floating cards
+  late Animation<double> _float1;
+  late Animation<double> _float2;
+
+  // Animation stats counter
+  late Animation<double> _statsProgress;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _statsVisible = false;
+  bool _showFloatingMenu = false;
+
+  // Clés globales pour la navigation (Ancres)
+  final GlobalKey _heroKey = GlobalKey();
+  final GlobalKey _aboutKey = GlobalKey();
+  final GlobalKey _howItWorksKey = GlobalKey();
+  final GlobalKey _whyKey = GlobalKey();
+  final GlobalKey _guideKey = GlobalKey();
+  final GlobalKey _testimonialsKey = GlobalKey();
+  final GlobalKey _faqKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ── Hero entrance ──────────────────────────────────────────────
+    _heroController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+
+    _badgeFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+          parent: _heroController,
+          curve: const Interval(0.0, 0.25, curve: Curves.easeOut)),
+    );
+    _titleSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(CurvedAnimation(
+            parent: _heroController,
+            curve: const Interval(0.15, 0.5, curve: Curves.easeOutCubic)));
+    _titleFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.15, 0.5, curve: Curves.easeOut)));
+    _subtitleSlide =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+            CurvedAnimation(
+                parent: _heroController,
+                curve: const Interval(0.3, 0.65, curve: Curves.easeOutCubic)));
+    _subtitleFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.3, 0.65, curve: Curves.easeOut)));
+    _ctaSlide =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+            CurvedAnimation(
+                parent: _heroController,
+                curve: const Interval(0.5, 0.85, curve: Curves.easeOutCubic)));
+    _ctaFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _heroController,
+        curve: const Interval(0.5, 0.85, curve: Curves.easeOut)));
+
+    // ── Ballon volleyball animé ────────────────────────────────────
+    _ballController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    )..repeat();
+
+    _ballX = Tween<double>(begin: -0.15, end: 1.15).animate(CurvedAnimation(
+        parent: _ballController, curve: Curves.easeInOut));
+    _ballY = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.55, end: 0.15)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.15, end: 0.55)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50),
+    ]).animate(_ballController);
+    _ballRotation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
+        CurvedAnimation(parent: _ballController, curve: Curves.linear));
+    _ballScale = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 0.7, end: 1.1)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 1.1, end: 0.7)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50),
+    ]).animate(_ballController);
+
+    // ── Floating cards ─────────────────────────────────────────────
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _float1 = Tween<double>(begin: -6, end: 6).animate(
+        CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
+    _float2 = Tween<double>(begin: 6, end: -6).animate(
+        CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
+
+    // ── Stats counter ──────────────────────────────────────────────
+    _statsController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _statsProgress = CurvedAnimation(
+        parent: _statsController, curve: Curves.easeOutCubic);
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _heroController.forward();
+    });
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    // Gestion du déclenchement des stats
+    if (!_statsVisible && _scrollController.offset > 400) {
+      setState(() => _statsVisible = true);
+      _statsController.forward();
+    }
+
+    // Gestion de l'affichage du menu burger flottant
+    if (_scrollController.offset > 350 && !_showFloatingMenu) {
+      setState(() => _showFloatingMenu = true);
+    } else if (_scrollController.offset <= 350 && _showFloatingMenu) {
+      setState(() => _showFloatingMenu = false);
+    }
+  }
+
+  void _scrollToSection(GlobalKey key) {
+    if (key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
+
+  void _showNavigationSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: ListView(
+            shrinkWrap: true, // Permet au ListView de ne prendre que la place nécessaire
+            physics: const ClampingScrollPhysics(), // Évite les rebonds bizarres en fin de liste
+            children: [
+              const Text('Navigation',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+              const SizedBox(height: 12),
+              _buildSheetItem('Accueil', Icons.home_rounded, _heroKey),
+              _buildSheetItem('À propos', Icons.info_outline_rounded, _aboutKey),
+              _buildSheetItem('Comment ça marche', Icons.alt_route_rounded, _howItWorksKey),
+              _buildSheetItem('Pourquoi nous ?', Icons.gpp_good_rounded, _whyKey),
+              _buildSheetItem('Guide Pratique', Icons.play_circle_outline_rounded, _guideKey),
+              _buildSheetItem('Témoignages', Icons.comment_rounded, _testimonialsKey),
+              _buildSheetItem('FAQ', Icons.help_outline_rounded, _faqKey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetItem(String label, IconData icon, GlobalKey targetKey) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.red),
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.charcoal)),
+      onTap: () {
+        Navigator.pop(context);
+        _scrollToSection(targetKey);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _heroController.dispose();
+    _ballController.dispose();
+    _floatController.dispose();
+    _statsController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.offWhite, //[cite: 1]
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController, //[cite: 1]
+            child: Column(
+              children: [
+                Container(key: _heroKey, child: _buildHeader(context)),
+                _buildHero(context), //[cite: 1]
+                _buildStats(context), //[cite: 1]
+                _AboutSection(key: _aboutKey),
+                _HowItWorksSection(key: _howItWorksKey),
+                _WhyVolleyPlanSection(key: _whyKey),
+                _buildFeatures(context), //[cite: 1]
+                _GuideSection(key: _guideKey),
+                _TestimonialsSection(key: _testimonialsKey),
+                _FAQSection(key: _faqKey),
+                _buildCTA(context), //[cite: 1]
+                _buildFooter(), //[cite: 1]
+              ],
+            ),
+          ),
+          
+          // Menu Flottant en bas à droite (uniquement au scroll)
+          if (_showFloatingMenu)
+            Positioned(
+              bottom: 24,
+              right: 24,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton.small(
+                    heroTag: 'btn_up',
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.charcoal,
+                    elevation: 4,
+                    onPressed: () => _scrollToSection(_heroKey),
+                    child: const Icon(Icons.arrow_upward_rounded),
+                  ),
+                  const SizedBox(height: 12),
+                  FloatingActionButton(
+                    heroTag: 'btn_burger',
+                    backgroundColor: AppColors.red,
+                    foregroundColor: AppColors.white,
+                    elevation: 6,
+                    onPressed: _showNavigationSheet,
+                    child: const Icon(Icons.menu_rounded),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ─── HEADER ────────────────────────────────────────────────────────────────
+  Widget _buildHeader(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 20 : 40, vertical: 18), //[cite: 1]
+      decoration: const BoxDecoration(
+        color: AppColors.white, //[cite: 1]
+        border: Border(bottom: BorderSide(color: AppColors.grayLight, width: 1)), //[cite: 1]
+      ),
+      child: Row(
+        children: [
+          _buildLogo(), //[cite: 1]
+          const Spacer(), //[cite: 1]
+          if (!isMobile) ...[
+            TextButton(
+              onPressed: _showNavigationSheet,
+              style: TextButton.styleFrom(foregroundColor: AppColors.charcoal),
+              child: const Row(
+                children: [
+                  Icon(Icons.menu_rounded, size: 18),
+                  SizedBox(width: 6),
+                  Text('Menu', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            TextButton(
+              onPressed: () => context.push('/login'), //[cite: 1]
+              style: TextButton.styleFrom(foregroundColor: AppColors.charcoal), //[cite: 1]
+              child: const Text('Connexion', //[cite: 1]
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)), //[cite: 1]
+            ),
+            const SizedBox(width: 12), //[cite: 1]
+          ],
+          VpButton(
+            label: isMobile ? 'Menu' : 'S\'inscrire',
+            small: true, //[cite: 1]
+            onPressed: () => isMobile ? _showNavigationSheet() : context.push('/register'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Row(children: [ //[cite: 1]
+      Container(
+        width: 34, //[cite: 1]
+        height: 34, //[cite: 1]
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+              colors: [AppColors.red, AppColors.yellow], //[cite: 1]
+              begin: Alignment.topLeft, //[cite: 1]
+              end: Alignment.bottomRight), //[cite: 1]
+          borderRadius: BorderRadius.circular(9), //[cite: 1]
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.red.withOpacity(0.3), //[cite: 1]
+                blurRadius: 8, //[cite: 1]
+                offset: const Offset(0, 3)) //[cite: 1]
+          ],
+        ),
+        child: const Center(child: Text('🏐', style: TextStyle(fontSize: 18))), //[cite: 1]
+      ),
+      const SizedBox(width: 10), //[cite: 1]
+      const Text('VolleyPlan',
+          style: TextStyle(
+              color: AppColors.charcoal, //[cite: 1]
+              fontWeight: FontWeight.w900, //[cite: 1]
+              fontSize: 17, //[cite: 1]
+              letterSpacing: -0.5)), //[cite: 1]
+    ]);
+  }
+
+  // ─── HERO ──────────────────────────────────────────────────────────────────
+  Widget _buildHero(BuildContext context) {
+    final size = MediaQuery.of(context).size; //[cite: 1]
+    final isMobile = size.width < 768; //[cite: 1]
+
+    return Container(
+      width: double.infinity, //[cite: 1]
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter, //[cite: 1]
+          end: Alignment.bottomCenter, //[cite: 1]
+          colors: [AppColors.white, AppColors.offWhite], //[cite: 1]
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(child: _buildGridBackground()), //[cite: 1]
+          _buildAnimatedBall(size), //[cite: 1]
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 60, //[cite: 1]
+                vertical: isMobile ? 50 : 80), //[cite: 1]
+            child: isMobile
+                ? _buildHeroMobile(context) //[cite: 1]
+                : _buildHeroDesktop(context), //[cite: 1]
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGridBackground() {
+    return CustomPaint(painter: _GridPainter()); //[cite: 1]
+  }
+
+  Widget _buildAnimatedBall(Size size) {
+    return AnimatedBuilder(
+      animation: _ballController, //[cite: 1]
+      builder: (context, child) {
+        return Positioned(
+          left: _ballX.value * size.width - 30, //[cite: 1]
+          top: _ballY.value * (size.height * 0.5), //[cite: 1]
+          child: Transform.rotate(
+            angle: _ballRotation.value, //[cite: 1]
+            child: Transform.scale(
+              scale: _ballScale.value, //[cite: 1]
+              child: Opacity(
+                opacity: 0.18, //[cite: 1]
+                child: Text('🏐',
+                    style: TextStyle(
+                        fontSize: size.width < 768 ? 48 : 72)), //[cite: 1]
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeroDesktop(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center, //[cite: 1]
+      children: [
+        Expanded(flex: 5, child: _buildHeroText(context)), //[cite: 1]
+        const SizedBox(width: 60), //[cite: 1]
+        Expanded(flex: 4, child: _buildHeroVisual()), //[cite: 1]
+      ],
+    );
+  }
+
+  Widget _buildHeroMobile(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+      children: [
+        _buildHeroText(context), //[cite: 1]
+        const SizedBox(height: 48), //[cite: 1]
+        Center(child: _buildHeroVisual()), //[cite: 1]
+      ],
+    );
+  }
+
+  Widget _buildHeroText(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+      children: [
+        FadeTransition(
+          opacity: _badgeFade, //[cite: 1]
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 7), //[cite: 1]
+            decoration: BoxDecoration(
+              color: AppColors.red.withOpacity(0.08), //[cite: 1]
+              borderRadius: BorderRadius.circular(30), //[cite: 1]
+              border: Border.all(
+                  color: AppColors.red.withOpacity(0.2), width: 1), //[cite: 1]
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min, //[cite: 1]
+              children: [
+                Container(
+                    width: 6, //[cite: 1]
+                    height: 6, //[cite: 1]
+                    decoration: const BoxDecoration(
+                        color: AppColors.red, shape: BoxShape.circle)), //[cite: 1]
+                const SizedBox(width: 8), //[cite: 1]
+                const Text('COACH EDITION v1.0',
+                    style: TextStyle(
+                        color: AppColors.red, //[cite: 1]
+                        fontSize: 11, //[cite: 1]
+                        fontWeight: FontWeight.w800, //[cite: 1]
+                        letterSpacing: 1.5)), //[cite: 1]
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24), //[cite: 1]
+
+        SlideTransition(
+          position: _titleSlide, //[cite: 1]
+          child: FadeTransition(
+            opacity: _titleFade, //[cite: 1]
+            child: RichText(
+              text: const TextSpan(
+                style: TextStyle(
+                    fontSize: 52, //[cite: 1]
+                    fontWeight: FontWeight.w900, //[cite: 1]
+                    color: AppColors.charcoal, //[cite: 1]
+                    height: 1.05, //[cite: 1]
+                    letterSpacing: -1.5), //[cite: 1]
+                children: [
+                  TextSpan(text: 'L\'excellence\ndu coaching\n'), //[cite: 1]
+                  TextSpan(
+                      text: 'commence ici.',
+                      style: TextStyle(color: AppColors.red)), //[cite: 1]
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24), //[cite: 1]
+
+        SlideTransition(
+          position: _subtitleSlide, //[cite: 1]
+          child: FadeTransition(
+            opacity: _subtitleFade, //[cite: 1]
+            child: const Text(
+              'Gérez vos joueurs, concevez des plannings précis\net analysez vos performances — tout en un.', //[cite: 1]
+              style: TextStyle(
+                  fontSize: 17, //[cite: 1]
+                  color: AppColors.gray, //[cite: 1]
+                  height: 1.6, //[cite: 1]
+                  fontWeight: FontWeight.w400), //[cite: 1]
+            ),
+          ),
+        ),
+        const SizedBox(height: 40), //[cite: 1]
+
+        SlideTransition(
+          position: _ctaSlide, //[cite: 1]
+          child: FadeTransition(
+            opacity: _ctaFade, //[cite: 1]
+            child: // REMPLACE LE ROW PAR CE WRAP RESPONSIVE
+Wrap(
+  spacing: 16,         // Équivalent du SizedBox(width: 16) entre les boutons
+  runSpacing: 12,      // Espace vertical automatique si le bouton "Connexion" passe en dessous
+  alignment: WrapAlignment.start,
+  crossAxisAlignment: WrapCrossAlignment.center,
+  children: [
+    VpButton(
+      label: 'Démarrer gratuitement',
+      icon: Icons.arrow_forward_rounded,
+      onPressed: () => context.push('/register'),
+    ),
+    TextButton.icon(
+      onPressed: () => context.push('/login'),
+      icon: const Icon(Icons.login_rounded,
+          size: 16, color: AppColors.charcoal),
+      label: const Text(
+        'Connexion',
+        style: TextStyle(
+            color: AppColors.charcoal,
+            fontWeight: FontWeight.w600),
+      ),
+    ),
+  ],
+),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroVisual() {
+    return AnimatedBuilder(
+      animation: _floatController, //[cite: 1]
+      builder: (context, child) {
+        return SizedBox(
+          height: 420, //[cite: 1]
+          child: Stack(
+            clipBehavior: Clip.none, //[cite: 1]
+            children: [
+              Positioned(
+                top: 20 + _float1.value, //[cite: 1]
+                left: 0, //[cite: 1]
+                right: 40, //[cite: 1]
+                child: _buildFloatingCard(
+                  title: 'Prépa Championnat', //[cite: 1]
+                  subtitle: '8 séances · Groupe · Mensuel', //[cite: 1]
+                  icon: Icons.calendar_month_rounded, //[cite: 1]
+                  color: AppColors.red, //[cite: 1]
+                  tags: ['Service', 'Attaque', 'Défense'], //[cite: 1]
+                ),
+              ),
+              Positioned(
+                top: 160 + _float2.value, //[cite: 1]
+                right: 0, //[cite: 1]
+                left: 30, //[cite: 1]
+                child: _buildBilanCard(), //[cite: 1]
+              ),
+              Positioned(
+                bottom: 30 + _float1.value * 0.5, //[cite: 1]
+                left: 10, //[cite: 1]
+                child: _buildBadgeCard(
+                    '👥', '12 joueurs', 'Roster actif', AppColors.yellow), //[cite: 1]
+              ),
+              Positioned(
+                bottom: 60 + _float2.value * 0.5, //[cite: 1]
+                right: 10, //[cite: 1]
+                child: _buildBadgeCard(
+                    '📄', 'Export PDF', 'Partageable', AppColors.red), //[cite: 1]
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required List<String> tags,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20), //[cite: 1]
+      decoration: BoxDecoration(
+        color: AppColors.white, //[cite: 1]
+        borderRadius: BorderRadius.circular(20), //[cite: 1]
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.08), //[cite: 1]
+              blurRadius: 24, //[cite: 1]
+              offset: const Offset(0, 8)), //[cite: 1]
+          BoxShadow(
+              color: color.withOpacity(0.06), //[cite: 1]
+              blurRadius: 40, //[cite: 1]
+              spreadRadius: 4), //[cite: 1]
+        ],
+        border: Border.all(color: AppColors.grayLight, width: 1), //[cite: 1]
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+        children: [
+          Row(children: [
+            Container(
+              width: 36, //[cite: 1]
+              height: 36, //[cite: 1]
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1), //[cite: 1]
+                  borderRadius: BorderRadius.circular(10)), //[cite: 1]
+              child: Icon(icon, color: color, size: 18), //[cite: 1]
+            ),
+            const SizedBox(width: 12), //[cite: 1]
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, //[cite: 1]
+                            fontSize: 14, //[cite: 1]
+                            color: AppColors.charcoal)), //[cite: 1]
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.gray)), //[cite: 1]
+                  ]),
+            ),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3), //[cite: 1]
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1), //[cite: 1]
+                borderRadius: BorderRadius.circular(20), //[cite: 1]
+              ),
+              child: Text('Actif',
+                  style: TextStyle(
+                      color: color, //[cite: 1]
+                      fontSize: 10, //[cite: 1]
+                      fontWeight: FontWeight.w700)), //[cite: 1]
+            ),
+          ]),
+          const SizedBox(height: 14), //[cite: 1]
+          Wrap(
+            spacing: 6, //[cite: 1]
+            children: tags
+                .map((t) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4), //[cite: 1]
+                      decoration: BoxDecoration(
+                        color: AppColors.grayXLight, //[cite: 1]
+                        borderRadius: BorderRadius.circular(20), //[cite: 1]
+                      ),
+                      child: Text(t,
+                          style: const TextStyle(
+                              fontSize: 11, //[cite: 1]
+                              color: AppColors.charcoal, //[cite: 1]
+                              fontWeight: FontWeight.w600)), //[cite: 1]
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBilanCard() {
+    return Container(
+      padding: const EdgeInsets.all(18), //[cite: 1]
+      decoration: BoxDecoration(
+        color: AppColors.charcoal, //[cite: 1]
+        borderRadius: BorderRadius.circular(18), //[cite: 1]
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.25), //[cite: 1]
+              blurRadius: 20, //[cite: 1]
+              offset: const Offset(0, 8)), //[cite: 1]
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+        children: [
+          const Row(children: [
+            Icon(Icons.analytics_rounded, //[cite: 1]
+                color: AppColors.yellow, size: 16), //[cite: 1]
+            SizedBox(width: 8), //[cite: 1]
+            Text('Bilan mensuel',
+                style: TextStyle(
+                    color: AppColors.white, //[cite: 1]
+                    fontWeight: FontWeight.w700, //[cite: 1]
+                    fontSize: 12)), //[cite: 1]
+          ]),
+          const SizedBox(height: 14), //[cite: 1]
+          _buildMiniBar('Service', 0.72, AppColors.red), //[cite: 1]
+          const SizedBox(height: 6), //[cite: 1]
+          _buildMiniBar('Attaque', 0.58, AppColors.yellow), //[cite: 1]
+          const SizedBox(height: 6), //[cite: 1]
+          _buildMiniBar('Défense', 0.45, const Color(0xFF06D6A0)), //[cite: 1]
+          const SizedBox(height: 6), //[cite: 1]
+          _buildMiniBar('Physique', 0.30, const Color(0xFF3A86FF)), //[cite: 1]
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniBar(String label, double value, Color color) {
+    return Row(children: [
+      SizedBox(
+        width: 52, //[cite: 1]
+        child: Text(label,
+            style: const TextStyle(
+                color: AppColors.gray, fontSize: 10, fontWeight: FontWeight.w500)), //[cite: 1]
+      ),
+      const SizedBox(width: 8), //[cite: 1]
+      Expanded(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(99), //[cite: 1]
+          child: LinearProgressIndicator(
+            value: value, //[cite: 1]
+            backgroundColor: Colors.white.withOpacity(0.08), //[cite: 1]
+            valueColor: AlwaysStoppedAnimation<Color>(color), //[cite: 1]
+            minHeight: 6, //[cite: 1]
+          ),
+        ),
+      ),
+      const SizedBox(width: 8), //[cite: 1]
+      Text('${(value * 100).toInt()}%',
+          style: TextStyle(
+              color: color, fontSize: 10, fontWeight: FontWeight.w700)), //[cite: 1]
+    ]);
+  }
+
+  Widget _buildBadgeCard(
+      String emoji, String title, String sub, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), //[cite: 1]
+      decoration: BoxDecoration(
+        color: AppColors.white, //[cite: 1]
+        borderRadius: BorderRadius.circular(14), //[cite: 1]
+        boxShadow: [
+          BoxShadow(
+              color: color.withOpacity(0.12), //[cite: 1]
+              blurRadius: 16, //[cite: 1]
+              offset: const Offset(0, 4)), //[cite: 1]
+        ],
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5), //[cite: 1]
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [ //[cite: 1]
+        Text(emoji, style: const TextStyle(fontSize: 20)), //[cite: 1]
+        const SizedBox(width: 10), //[cite: 1]
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [ //[cite: 1]
+          Text(title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800, //[cite: 1]
+                  fontSize: 12, //[cite: 1]
+                  color: AppColors.charcoal)), //[cite: 1]
+          Text(sub,
+              style: const TextStyle(fontSize: 10, color: AppColors.gray)), //[cite: 1]
+        ]),
+      ]),
+    );
+  }
+
+  // ─── STATS ─────────────────────────────────────────────────────────────────
+  Widget _buildStats(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
+    final stats = [
+      {'value': 500, 'suffix': '+', 'label': 'Coachs actifs', 'icon': '👨‍💼'}, //[cite: 1]
+      {'value': 3200, 'suffix': '+', 'label': 'Plannings créés', 'icon': '📋'}, //[cite: 1]
+      {'value': 98, 'suffix': '%', 'label': 'Satisfaction', 'icon': '⭐'}, //[cite: 1]
+      {'value': 12, 'suffix': 'k+', 'label': 'Séances planifiées', 'icon': '📅'}, //[cite: 1]
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          vertical: 60, horizontal: isMobile ? 24 : 60), //[cite: 1]
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.charcoal, //[cite: 1]
+            Color(0xFF2d2d4e), //[cite: 1]
+          ],
+        ),
+      ),
+      child: isMobile
+          ? Wrap(
+              spacing: 20, //[cite: 1]
+              runSpacing: 24, //[cite: 1]
+              alignment: WrapAlignment.center, //[cite: 1]
+              children: stats
+                  .map((s) => SizedBox(
+                      width: 140, //[cite: 1]
+                      child: _buildStatItem(s, isMobile))) //[cite: 1]
+                  .toList(),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, //[cite: 1]
+              children: stats
+                  .map((s) => Expanded(child: _buildStatItem(s, isMobile))) //[cite: 1]
+                  .toList(),
+            ),
+    );
+  }
+
+  Widget _buildStatItem(Map<String, dynamic> s, bool isMobile) {
+    return AnimatedBuilder(
+      animation: _statsProgress, //[cite: 1]
+      builder: (context, child) {
+        final val =
+            ((s['value'] as int) * _statsProgress.value).toInt(); //[cite: 1]
+        return Column(children: [ //[cite: 1]
+          Text(s['icon'] as String,
+              style: TextStyle(fontSize: isMobile ? 28 : 36)), //[cite: 1]
+          const SizedBox(height: 10), //[cite: 1]
+          Text(
+            '$val${s['suffix']}',
+            style: TextStyle(
+                fontSize: isMobile ? 30 : 42, //[cite: 1]
+                fontWeight: FontWeight.w900, //[cite: 1]
+                color: AppColors.yellow, //[cite: 1]
+                letterSpacing: -1), //[cite: 1]
+          ),
+          const SizedBox(height: 4), //[cite: 1]
+          Text(s['label'] as String,
+              textAlign: TextAlign.center, //[cite: 1]
+              style: const TextStyle(
+                  color: AppColors.gray, //[cite: 1]
+                  fontSize: 13, //[cite: 1]
+                  fontWeight: FontWeight.w500)), //[cite: 1]
+        ]);
+      },
+    );
+  }
+
+  // ─── FEATURES ──────────────────────────────────────────────────────────────
+  Widget _buildFeatures(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
+    final features = [
+      {
+        'icon': Icons.calendar_month_rounded, //[cite: 1]
+        'color': AppColors.red, //[cite: 1]
+        'title': 'Plannings Intelligents', //[cite: 1]
+        'desc': 'Créez des cycles d\'entraînement structurés en mode Groupe ou Spécifique par postes. 8 domaines couverts.', //[cite: 1]
+        'tag': 'Création', //[cite: 1]
+      },
+      {
+        'icon': Icons.people_alt_rounded, //[cite: 1]
+        'color': const Color(0xFF3A86FF), //[cite: 1]
+        'title': 'Gestion d\'Effectif', //[cite: 1]
+        'desc': 'Gérez votre roster, suivez les postes, ajoutez ou retirez des joueurs au fil des transferts de saison.', //[cite: 1]
+        'tag': 'Joueurs', //[cite: 1]
+      },
+      {
+        'icon': Icons.analytics_rounded, //[cite: 1]
+        'color': AppColors.yellow, //[cite: 1]
+        'title': 'Bilans Automatisés', //[cite: 1]
+        'desc': 'Visualisez la répartition technique de vos séances et recevez des recommandations d\'équilibre.', //[cite: 1]
+        'tag': 'Analyse', //[cite: 1]
+      },
+      {
+        'icon': Icons.picture_as_pdf_rounded, //[cite: 1]
+        'color': const Color(0xFF06D6A0), //[cite: 1]
+        'title': 'Export PDF WhatsApp', //[cite: 1]
+        'desc': 'Générez un PDF professionnel de votre planning et partagez-le directement avec vos joueurs.', //[cite: 1]
+        'tag': 'Partage', //[cite: 1]
+      },
+      {
+        'icon': Icons.group_add_rounded, //[cite: 1]
+        'color': const Color(0xFF8338EC), //[cite: 1]
+        'title': 'Collaboration Staff', //[cite: 1]
+        'desc': 'Invitez vos adjoints à consulter ou modifier vos plannings. Travaillez en équipe en temps réel.', //[cite: 1]
+        'tag': 'Équipe', //[cite: 1]
+      },
+      {
+        'icon': Icons.fitness_center_rounded, //[cite: 1]
+        'color': const Color(0xFFEF476F), //[cite: 1]
+        'title': 'Physique & Technique', //[cite: 1]
+        'desc': 'Gérez les séances de musculation et endurance en plus des aspects techniques volleyball.', //[cite: 1]
+        'tag': 'Physique', //[cite: 1]
+      },
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          vertical: 80, horizontal: isMobile ? 24 : 60), //[cite: 1]
+      color: AppColors.offWhite, //[cite: 1]
+      child: Column(children: [
+        Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 6), //[cite: 1]
+          decoration: BoxDecoration(
+            color: AppColors.red.withOpacity(0.08), //[cite: 1]
+            borderRadius: BorderRadius.circular(20), //[cite: 1]
+          ),
+          child: const Text('FONCTIONNALITÉS',
+              style: TextStyle(
+                  color: AppColors.red, //[cite: 1]
+                  fontSize: 11, //[cite: 1]
+                  fontWeight: FontWeight.w800, //[cite: 1]
+                  letterSpacing: 2)), //[cite: 1]
+        ),
+        const SizedBox(height: 16), //[cite: 1]
+        Text(
+          isMobile
+              ? 'Pensé pour les coachs' //[cite: 1]
+              : 'Pensé par des coachs, pour des coachs', //[cite: 1]
+          textAlign: TextAlign.center, //[cite: 1]
+          style: TextStyle(
+              fontSize: isMobile ? 26 : 36, //[cite: 1]
+              fontWeight: FontWeight.w900, //[cite: 1]
+              color: AppColors.charcoal, //[cite: 1]
+              letterSpacing: -0.8), //[cite: 1]
+        ),
+        const SizedBox(height: 10), //[cite: 1]
+        const Text(
+          'Tout ce dont vous avez besoin pour professionnaliser votre coaching.',
+          textAlign: TextAlign.center, //[cite: 1]
+          style: TextStyle(
+              fontSize: 16, color: AppColors.gray, height: 1.5), //[cite: 1]
+        ),
+        const SizedBox(height: 56), //[cite: 1]
+
+        isMobile
+            ? Column(
+                children: features
+                    .map((f) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16), //[cite: 1]
+                          child: _buildFeatureCard(f), //[cite: 1]
+                        ))
+                    .toList(),
+              )
+            : _buildFeaturesGrid(features), //[cite: 1]
+      ]),
+    );
+  }
+
+  Widget _buildFeaturesGrid(List<Map<String, dynamic>> features) {
+    return Column(children: [
+      Row(children: [
+        Expanded(child: _buildFeatureCard(features[0])), //[cite: 1]
+        const SizedBox(width: 20), //[cite: 1]
+        Expanded(child: _buildFeatureCard(features[1])), //[cite: 1]
+        const SizedBox(width: 20), //[cite: 1]
+        Expanded(child: _buildFeatureCard(features[2])), //[cite: 1]
+      ]),
+      const SizedBox(height: 20), //[cite: 1]
+      Row(children: [
+        Expanded(child: _buildFeatureCard(features[3])), //[cite: 1]
+        const SizedBox(width: 20), //[cite: 1]
+        Expanded(child: _buildFeatureCard(features[4])), //[cite: 1]
+        const SizedBox(width: 20), //[cite: 1]
+        Expanded(child: _buildFeatureCard(features[5])), //[cite: 1]
+      ]),
+    ]);
+  }
+
+  Widget _buildFeatureCard(Map<String, dynamic> f) {
+    final color = f['color'] as Color; //[cite: 1]
+    return _HoverCard(
+      child: Container(
+        padding: const EdgeInsets.all(24), //[cite: 1]
+        decoration: BoxDecoration(
+          color: AppColors.white, //[cite: 1]
+          borderRadius: BorderRadius.circular(18), //[cite: 1]
+          border: Border.all(color: AppColors.grayLight, width: 1), //[cite: 1]
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
+          children: [
+            Row(children: [
+              Container(
+                width: 44, //[cite: 1]
+                height: 44, //[cite: 1]
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.1), //[cite: 1]
+                    borderRadius: BorderRadius.circular(12)), //[cite: 1]
+                child: Icon(f['icon'] as IconData, color: color, size: 22), //[cite: 1]
+              ),
+              const Spacer(), //[cite: 1]
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4), //[cite: 1]
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.08), //[cite: 1]
+                  borderRadius: BorderRadius.circular(20), //[cite: 1]
+                ),
+                child: Text(f['tag'] as String,
+                    style: TextStyle(
+                        color: color, //[cite: 1]
+                        fontSize: 10, //[cite: 1]
+                        fontWeight: FontWeight.w700, //[cite: 1]
+                        letterSpacing: 0.5)), //[cite: 1]
+              ),
+            ]),
+            const SizedBox(height: 18), //[cite: 1]
+            Text(f['title'] as String,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, //[cite: 1]
+                    fontSize: 16, //[cite: 1]
+                    color: AppColors.charcoal, //[cite: 1]
+                    letterSpacing: -0.3)), //[cite: 1]
+            const SizedBox(height: 10), //[cite: 1]
+            Text(f['desc'] as String,
+                style: const TextStyle(
+                    color: AppColors.gray, //[cite: 1]
+                    fontSize: 13, //[cite: 1]
+                    height: 1.55)), //[cite: 1]
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── CTA SECTION ───────────────────────────────────────────────────────────
+  Widget _buildCTA(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
+    return Container(
+      margin: EdgeInsets.symmetric(
+          horizontal: isMobile ? 24 : 60, vertical: 60), //[cite: 1]
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 28 : 60,
+          vertical: isMobile ? 40 : 60), //[cite: 1]
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.charcoal, Color(0xFF2d2d4e)], //[cite: 1]
+          begin: Alignment.topLeft, //[cite: 1]
+          end: Alignment.bottomRight, //[cite: 1]
+        ),
+        borderRadius: BorderRadius.circular(28), //[cite: 1]
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.charcoal.withOpacity(0.3), //[cite: 1]
+              blurRadius: 40, //[cite: 1]
+              offset: const Offset(0, 16)), //[cite: 1]
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+              right: isMobile ? -10 : 20, //[cite: 1]
+              top: -10, //[cite: 1]
+              child: Opacity(
+                  opacity: 0.07, //[cite: 1]
+                  child: Text('🏐',
+                      style: TextStyle(
+                          fontSize: isMobile ? 80 : 140)))), //[cite: 1]
+          Positioned(
+              left: isMobile ? -10 : 20, //[cite: 1]
+              bottom: -10, //[cite: 1]
+              child: Opacity(
+                  opacity: 0.05, //[cite: 1]
+                  child: Text('🏐',
+                      style: TextStyle(
+                          fontSize: isMobile ? 60 : 100)))), //[cite: 1]
+
+          Column(
+            children: [
+              Text(
+                isMobile
+                    ? 'Prêt à structurer\nvotre saison ?' //[cite: 1]
+                    : 'Prêt à structurer votre saison ?', //[cite: 1]
+                textAlign: TextAlign.center, //[cite: 1]
+                style: TextStyle(
+                    fontSize: isMobile ? 26 : 38, //[cite: 1]
+                    fontWeight: FontWeight.w900, //[cite: 1]
+                    color: AppColors.white, //[cite: 1]
+                    height: 1.15, //[cite: 1]
+                    letterSpacing: -0.8), //[cite: 1]
+              ),
+              const SizedBox(height: 16), //[cite: 1]
+              const Text(
+                'Rejoignez les coachs qui font confiance à VolleyPlan\npour structurer leurs entraînements.',
+                textAlign: TextAlign.center, //[cite: 1]
+                style: TextStyle(
+                    color: AppColors.gray, fontSize: 15, height: 1.6), //[cite: 1]
+              ),
+              const SizedBox(height: 36), //[cite: 1]
+              Wrap(
+                spacing: 16, //[cite: 1]
+                runSpacing: 12, //[cite: 1]
+                alignment: WrapAlignment.center, //[cite: 1]
+                children: [
+                  VpButton(
+                    label: 'Commencer gratuitement',
+                    icon: Icons.rocket_launch_rounded, //[cite: 1]
+                    onPressed: () => context.push('/register'), //[cite: 1]
+                  ),
+                  VpButton(
+                    label: 'Se connecter',
+                    variant: VpButtonVariant.ghost, //[cite: 1]
+                    onPressed: () => context.push('/login'), //[cite: 1]
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── FOOTER ────────────────────────────────────────────────────────────────
+  Widget _buildFooter() {
+    final year = DateTime.now().year; //[cite: 1]
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48), //[cite: 1]
+      color: AppColors.charcoal, //[cite: 1]
+      width: double.infinity, //[cite: 1]
+      child: Column(children: [
+        _buildLogo(), //[cite: 1]
+        const SizedBox(height: 16), //[cite: 1]
+        const Text(
+          'Propulsez votre équipe vers les sommets.',
+          style: TextStyle(color: AppColors.gray, fontSize: 14), //[cite: 1]
+        ),
+        const SizedBox(height: 36), //[cite: 1]
+        const Divider(color: Colors.white12), //[cite: 1]
+        const SizedBox(height: 20), //[cite: 1]
+        LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxWidth < 600) { //[cite: 1]
+            return Column(children: [
+              Text('© $year VolleyPlan. Tous droits réservés.', //[cite: 1]
+                  style: const TextStyle(
+                      color: AppColors.gray, fontSize: 12)), //[cite: 1]
+              const SizedBox(height: 6), //[cite: 1]
+              const Text('Développé avec passion pour le Volleyball 🏐', //[cite: 1]
+                  style: TextStyle(
+                      color: AppColors.gray, fontSize: 12)), //[cite: 1]
+            ]);
+          }
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween, //[cite: 1]
+              children: [
+                Text('© $year VolleyPlan. Tous droits réservés.', //[cite: 1]
+                    style: const TextStyle(
+                        color: AppColors.gray, fontSize: 12)), //[cite: 1]
+                const Text(
+                    'Développé avec passion pour le Volleyball 🏐', //[cite: 1]
+                    style:
+                        TextStyle(color: AppColors.gray, fontSize: 12)), //[cite: 1]
+              ]);
+        }),
+      ]),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. SECTION À PROPOS
+// ─────────────────────────────────────────────────────────────────────────────
+class _AboutSection extends StatelessWidget {
+  const _AboutSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.white,
+      width: double.infinity,
+      child: Column(
+        children: [
+          const Text('🏐', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: 16),
+          Text(
+            'L\'Assistant Tactique des Coachs Modernes',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal, letterSpacing: -0.5),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: const Text(
+              'VolleyPlan n\'est pas qu\'un simple calendrier. C\'est un véritable outil d\'intelligence sportive conçu pour éradiquer la charge mentale des coachs. Nous transformons vos intuitions tactiques en données structurées. Équilibrez vos séances, prévenez le surmenage de vos joueurs et amenez votre effectif au pic de sa forme le jour de la compétition, sans passer des heures sur Excel.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: AppColors.gray, height: 1.65),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. SECTION COMMENT ÇA MARCHE
+// ─────────────────────────────────────────────────────────────────────────────
+class _HowItWorksSection extends StatelessWidget {
+  const _HowItWorksSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.offWhite,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text('En 4 étapes simples', style: TextStyle(fontSize: isMobile ? 26 : 30, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          const SizedBox(height: 48),
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
+            alignment: WrapAlignment.center,
+            children: [
+              _stepCard('1', 'Roster', 'Créez votre équipe et assignez les postes clés en quelques secondes.'),
+              _stepCard('2', 'Planification', 'Générez des cycles d\'entraînements techniques ou physiques ciblés.'),
+              _stepCard('3', 'Analyse', 'Vérifiez la charge globale (Service, Réception, Physique) pour éviter les blessures.'),
+              _stepCard('4', 'Action', 'Exportez en un clic un PDF propre et partagez-le directement sur WhatsApp.'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepCard(String number, String title, String desc) {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.grayLight),
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.yellow,
+            radius: 20,
+            child: Text(number, style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          ),
+          const SizedBox(height: 18),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+          const SizedBox(height: 8),
+          Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gray, fontSize: 13, height: 1.5)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. POURQUOI VOLLEYPLAN (Marketing + Animation)
+// ─────────────────────────────────────────────────────────────────────────────
+class _WhyVolleyPlanSection extends StatefulWidget {
+  const _WhyVolleyPlanSection({super.key});
+
+  @override
+  State<_WhyVolleyPlanSection> createState() => _WhyVolleyPlanSectionState();
+}
+
+class _WhyVolleyPlanSectionState extends State<_WhyVolleyPlanSection> {
+  bool _isVisible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isVisible && mounted) setState(() => _isVisible = true);
+    });
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.charcoal,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text('La Solution Ultime', style: TextStyle(fontSize: isMobile ? 28 : 36, fontWeight: FontWeight.w900, color: AppColors.white)),
+          const SizedBox(height: 8),
+          const Text('Pensé pour ceux qui dirigent, adoré par ceux qui jouent.', style: TextStyle(color: AppColors.yellow, fontSize: 16, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+          const SizedBox(height: 56),
+          
+          isMobile 
+          ? Column(
+              children: [
+                const Text('POUR LES COACHS 👨‍💼', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
+                const SizedBox(height: 16),
+                _AnimatedBox(delay: 0, isVisible: _isVisible, title: 'Gain de temps massif', desc: 'Économisez jusqu\'à 5h par semaine sur la création et l\'ajustement de vos cycles.', icon: Icons.timer_10_rounded),
+                const SizedBox(height: 16),
+                _AnimatedBox(delay: 150, isVisible: _isVisible, title: 'Précision Tactique', desc: 'Des bilans graphiques vous alertent si vous négligez la défense ou le physique.', icon: Icons.analytics_rounded),
+                const SizedBox(height: 40),
+                const Text('POUR LES JOUEURS 🏃‍♂️', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
+                const SizedBox(height: 16),
+                _AnimatedBox(delay: 300, isVisible: _isVisible, title: 'Clarté absolue', desc: 'Fini le flou. Des plannings PDF clairs envoyés directement sur leur smartphone.', icon: Icons.picture_as_pdf_rounded),
+                const SizedBox(height: 16),
+                _AnimatedBox(delay: 450, isVisible: _isVisible, title: 'Progression linéaire', desc: 'Savoir exactement ce qu\'on travaille donne du sens et booste l\'engagement aux entraînements.', icon: Icons.trending_up_rounded),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      const Text('POUR LES COACHS 👨‍💼', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
+                      const SizedBox(height: 24),
+                      _AnimatedBox(delay: 0, isVisible: _isVisible, title: 'Gain de temps massif', desc: 'Économisez jusqu\'à 5h par semaine sur la création et l\'ajustement de vos cycles.', icon: Icons.timer_10_rounded),
+                      const SizedBox(height: 16),
+                      _AnimatedBox(delay: 150, isVisible: _isVisible, title: 'Précision Tactique', desc: 'Des bilans graphiques vous alertent si vous négligez la défense ou le physique.', icon: Icons.analytics_rounded),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 40),
+                Expanded(
+                  child: Column(
+                    children: [
+                      const Text('POUR LES JOUEURS 🏃‍♂️', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
+                      const SizedBox(height: 24),
+                      _AnimatedBox(delay: 300, isVisible: _isVisible, title: 'Clarté absolue', desc: 'Fini le flou. Des plannings PDF clairs envoyés directement sur leur smartphone.', icon: Icons.picture_as_pdf_rounded),
+                      const SizedBox(height: 16),
+                      _AnimatedBox(delay: 450, isVisible: _isVisible, title: 'Progression linéaire', desc: 'Savoir exactement ce qu\'on travaille donne du sens et booste l\'engagement aux entraînements.', icon: Icons.trending_up_rounded),
+                    ],
+                  ),
+                ),
+              ],
+            )
+        ],
+      ),
+    );
+  }
+}
+
+class _AnimatedBox extends StatelessWidget {
+  final int delay;
+  final bool isVisible;
+  final String title;
+  final String desc;
+  final IconData icon;
+
+  const _AnimatedBox({required this.delay, required this.isVisible, required this.title, required this.desc, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 600),
+      opacity: isVisible ? 1.0 : 0.0,
+      curve: Curves.easeOut,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 600 + delay),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: const Color(0xFF2d2d4e), borderRadius: BorderRadius.circular(18)),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: AppColors.red.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: AppColors.red, size: 28),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 4),
+                  Text(desc, style: const TextStyle(color: AppColors.gray, fontSize: 12, height: 1.4)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. SECTION GUIDE PRATIQUE
+// ─────────────────────────────────────────────────────────────────────────────
+class _GuideSection extends StatelessWidget {
+  const _GuideSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.white,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text('Guide d\'utilisation', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          const SizedBox(height: 12),
+          const Text('Découvrez l\'application en action en moins de deux minutes.', style: TextStyle(color: AppColors.gray, fontSize: 15), textAlign: TextAlign.center),
+          const SizedBox(height: 40),
+          Container(
+            constraints: const BoxConstraints(maxWidth: 900),
+            height: isMobile ? 240 : 450,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.offWhite,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.grayLight, width: 2),
+            ),
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(Icons.play_circle_fill_rounded, size: 72, color: AppColors.red),
+                  Opacity(
+                    opacity: 0.05,
+                    child: Text('🏐' * 40, style: const TextStyle(fontSize: 24), textAlign: TextAlign.center),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. SECTION TÉMOIGNAGES
+// ─────────────────────────────────────────────────────────────────────────────
+class _TestimonialsSection extends StatelessWidget {
+  const _TestimonialsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.offWhite,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text('Ils dominent le terrain avec nous', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal), textAlign: TextAlign.center),
+          const SizedBox(height: 48),
+          isMobile
+          ? Column(
+              children: [
+                _testimonialCard('« Avant VolleyPlan, je faisais tout sur un cahier ou Excel et je perdais mes fiches de match. Cette appli a sauvé mes nuits de préparation. L\'export PDF WhatsApp est incroyable. »', 'Coach Marc, Division Régionale', AppColors.red),
+                const SizedBox(height: 20),
+                _testimonialCard('« C\'est un plaisir de recevoir le programme précis par message avant d\'arriver à la salle. Mentalement, on sait exactement l\'intensité attendue au service et en bloc. »', 'Youssouf, Réceptionneur-Attaquant', AppColors.yellow),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: _testimonialCard('« Avant VolleyPlan, je faisais tout sur un cahier ou Excel et je perdais mes fiches de match. Cette appli a sauvé mes nuits de préparation. L\'export PDF WhatsApp est incroyable. »', 'Coach Marc, Division Régionale', AppColors.red)),
+                const SizedBox(width: 24),
+                Expanded(child: _testimonialCard('« C\'est un plaisir de recevoir le programme précis par message avant d\'arriver à la salle. Mentalement, on sait exactement l\'intensité attendue au service et en bloc. »', 'Youssouf, Réceptionneur-Attaquant', AppColors.yellow)),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _testimonialCard(String quote, String author, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppColors.white, 
+        borderRadius: BorderRadius.circular(20), 
+        boxShadow: [BoxShadow(color: AppColors.charcoal.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))]
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.format_quote_rounded, color: color.withOpacity(0.3), size: 44),
+          const SizedBox(height: 12),
+          Text(quote, style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: AppColors.charcoal, height: 1.6)),
+          const SizedBox(height: 20),
+          Text(author, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. SECTION FAQ
+// ─────────────────────────────────────────────────────────────────────────────
+class _FAQSection extends StatelessWidget {
+  const _FAQSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.white,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text('Foire Aux Questions', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          const SizedBox(height: 40),
+          Container(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                _faqItem('L\'application est-elle gratuite ?', 'Oui ! La version actuelle permet de configurer entièrement votre effectif, de concevoir vos plannings de cycles et d\'exporter vos séances gratuitement. Des outils de statistiques avancés arriveront plus tard.'),
+                _faqItem('Mes joueurs doivent-ils créer un compte ?', 'Non, pas du tout. C\'est la force de VolleyPlan. Seul le coach utilise l\'application. Les joueurs reçoivent simplement une feuille de route claire et lisible au format PDF directement sur WhatsApp ou par mail.'),
+                _faqItem('Puis-je planifier autre chose que de la technique ?', 'Absolument. VolleyPlan intègre un module physique complet pour suivre la musculation, le cardio, l\'endurance et la récupération en dehors des heures de jeu pur.'),
+                _faqItem('Est-ce adapté aux équipes de beach-volley ?', 'Oui, la gestion d\'effectif et des postes s\'adapte parfaitement aux petits rosters et permet de cibler des séances très individualisées.'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _faqItem(String question, String answer) {
+    return Theme(
+      data: ThemeData().copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        title: Text(question, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal, fontSize: 15)),
+        iconColor: AppColors.red,
+        collapsedIconColor: AppColors.gray,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+            child: Text(answer, style: const TextStyle(color: AppColors.gray, fontSize: 14, height: 1.5)),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOVER CARD — Effet survol avec élévation d'origine
+// ─────────────────────────────────────────────────────────────────────────────
+class _HoverCard extends StatefulWidget {
+  final Widget child;
+  const _HoverCard({required this.child});
+
+  @override
+  State<_HoverCard> createState() => _HoverCardState();
+}
+
+class _HoverCardState extends State<_HoverCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _elevation;
+  late Animation<Offset> _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _elevation = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _translate =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(0, -0.012))
+            .animate(CurvedAnimation(
+                parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _controller.forward(),
+      onExit: (_) => _controller.reverse(),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return SlideTransition(
+            position: _translate, //[cite: 1]
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18), //[cite: 1]
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.charcoal
+                        .withOpacity(0.06 + _elevation.value * 0.1), //[cite: 1]
+                    blurRadius: 8 + _elevation.value * 20, //[cite: 1]
+                    offset: Offset(0, 2 + _elevation.value * 8), //[cite: 1]
+                  ),
+                ],
+              ),
+              child: widget.child, //[cite: 1]
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRID PAINTER — Grille de fond décorative d'origine
+// ─────────────────────────────────────────────────────────────────────────────
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFD72638).withOpacity(0.04) //[cite: 1]
+      ..strokeWidth = 1; //[cite: 1]
+
+    const step = 48.0; //[cite: 1]
+    for (double x = 0; x < size.width; x += step) { //[cite: 1]
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint); //[cite: 1]
+    }
+    for (double y = 0; y < size.height; y += step) { //[cite: 1]
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint); //[cite: 1]
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false; //[cite: 1]
+}
