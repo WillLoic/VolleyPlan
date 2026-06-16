@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/app_state.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,12 +23,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final appState = context.read<AppState>();
+    final l10n = AppLocalizations.of(context)!;
     try {
       await appState.resetPassword(widget.token, _passwordController.text);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Mot de passe mis à jour ! Connectez-vous."),
+          SnackBar(
+            content: Text(l10n.resetPasswordSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -41,10 +43,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final l10n = AppLocalizations.of(context)!;
     final bool isLoading = appState.loading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("VolleyPlan")),
+      appBar: AppBar(title: Text(l10n.appTitle)),
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 400),
@@ -56,14 +59,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               children: [
                 const Icon(Icons.lock_reset, size: 64, color: Colors.green),
                 const SizedBox(height: 16),
-                const Text("Nouveau mot de passe",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(l10n.newPasswordTitle,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
-                    labelText: "Nouveau mot de passe",
+                    labelText: l10n.newPasswordTitle,
                     prefixIcon: const Icon(Icons.password),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -73,18 +76,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   obscureText: _obscure,
                   validator: (v) => (v == null || v.length < 6)
-                      ? "Minimum 6 caractères"
+                      ? l10n.passwordLengthError
                       : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _confirmController,
-                  decoration: const InputDecoration(
-                      labelText: "Confirmer le mot de passe",
-                      prefixIcon: Icon(Icons.check_circle_outline)),
+                  decoration: InputDecoration(
+                      labelText: l10n.confirmPasswordField,
+                      prefixIcon: const Icon(Icons.check_circle_outline)),
                   obscureText: _obscure,
                   validator: (v) => v != _passwordController.text
-                      ? "Les mots de passe ne correspondent pas"
+                      ? l10n.passwordsDontMatchError
                       : null,
                 ),
                 const SizedBox(height: 24),
@@ -109,7 +112,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2))
-                        : const Text("Réinitialiser le mot de passe"),
+                        : Text(l10n.resetPasswordAction),
                   ),
                 ),
               ],

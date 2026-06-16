@@ -1,6 +1,7 @@
 // lib/widgets/planning_detail_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
@@ -57,16 +58,16 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
   }
 
   Future<void> _confirmDelete() async {
+    final l10n = AppLocalizations.of(context)!;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer le planning'),
-        content: Text(
-            'Êtes-vous sûr de vouloir supprimer le planning "${_planning!.titre}" ? Cette action est irréversible.'),
+        title: Text(l10n.deletePlanningTitle),
+        content: Text(l10n.deletePlanningConfirm(_planning!.titre)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -74,7 +75,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Supprimer'),
+            child: Text(l10n.deleteButton),
           ),
         ],
       ),
@@ -86,7 +87,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
         if (mounted) {
           Navigator.pop(context); // Ferme ce dialog
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Planning supprimé avec succès !')),
+            SnackBar(content: Text(l10n.planningDeletedSuccess)),
           );
         }
       } catch (e) {
@@ -103,15 +104,16 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loading) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.red));
     }
     if (_error != null) {
-      return Center(child: Text('Erreur: $_error'));
+      return Center(child: Text(l10n.errorPrefix(_error!)));
     }
     if (_planning == null || _bilan == null) {
-      return const Center(child: Text('Planning ou bilan introuvable.'));
+      return Center(child: Text(l10n.planningNotFound));
     }
 
     final appState = context.watch<AppState>();
@@ -162,12 +164,12 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildPlanningOverview(_planning!),
+                            _buildPlanningOverview(_planning!, l10n),
                             const Divider(height: 32),
-                            _buildBilanSection(_bilan!),
+                            _buildBilanSection(_bilan!, l10n),
                             if (isOwner) ...[
                               const Divider(height: 32),
-                              _buildStaffSection(isOwner, appState),
+                              _buildStaffSection(isOwner, appState, l10n),
                             ],
                           ],
                         ),
@@ -177,8 +179,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                         children: [
                           Expanded(
                             flex: 3,
-                            child: SingleChildScrollView(
-                                child: _buildPlanningOverview(_planning!)),
+                            child: SingleChildScrollView(child: _buildPlanningOverview(_planning!, l10n)),
                           ),
                           const SizedBox(width: 24),
                           Expanded(
@@ -186,10 +187,10 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                             child: Column(children: [
                               Expanded(
                                   child: SingleChildScrollView(
-                                      child: _buildBilanSection(_bilan!))),
+                                      child: _buildBilanSection(_bilan!, l10n))),
                               if (isOwner) ...[
                                 const Divider(height: 32),
-                                _buildStaffSection(isOwner, appState),
+                                _buildStaffSection(isOwner, appState, l10n),
                               ],
                             ]),
                           ),
@@ -197,7 +198,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                       ),
               ),
               const SizedBox(height: 24),
-              _buildActionButtons(context, isOwner, widget.token),
+              _buildActionButtons(context, isOwner, widget.token, l10n),
             ],
           ),
         ),
@@ -205,11 +206,11 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
     );
   }
 
-  Widget _buildStaffSection(bool isOwner, AppState appState) {
+  Widget _buildStaffSection(bool isOwner, AppState appState, AppLocalizations l10n) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Text('Staff / Collaboration',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(l10n.staffCollaborationTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
         if (isOwner)
           IconButton(
             icon: const Icon(Icons.person_add_alt_1,
@@ -227,13 +228,13 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                           .firstWhere((p) => p.id == _planning!.id);
                       setState(() => _planning = updated);
 
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Invitation envoyée à $email')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.inviteSentSuccess(email))));
                     }
                   } catch (e) {
                     if (mounted)
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Erreur: $e'),
+                          content: Text(l10n.errorPrefix(e.toString())),
                           backgroundColor: AppColors.red));
                   }
                 }),
@@ -274,15 +275,14 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                                 .firstWhere((p) => p.id == _planning!.id);
                             setState(() => _planning = updated);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Collaborateur retiré avec succès')),
+                              SnackBar(
+                                  content: Text(l10n.collaboratorRemovedSuccess)),
                             );
                           }
                         } catch (e) {
                           if (mounted)
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('Erreur lors du retrait : $e'),
+                                content: Text(l10n.errorPrefix(e.toString())),
                                 backgroundColor: AppColors.red));
                         }
                       },
@@ -293,63 +293,84 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
               ))
           .toList(),
       if (_planning!.staff.isEmpty)
-        const Text('Aucun collaborateur invité.',
-            style: TextStyle(
+        Text(l10n.noCollaborators,
+            style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.gray,
                 fontStyle: FontStyle.italic)),
     ]);
   }
 
-  Widget _buildPlanningOverview(Planning planning) {
+  Widget _buildPlanningOverview(Planning planning, AppLocalizations l10n) {
+    String getDurationLabel(String d) {
+      switch (d.toLowerCase()) {
+        case 'hebdomadaire': return l10n.planningFormDurationWeekly;
+        case 'mensuel': return l10n.planningFormDurationMonthly;
+        case 'trimestriel': return l10n.planningFormDurationQuarterly;
+        case 'semestriel': return l10n.planningFormDurationHalfYearly;
+        case 'annuel': return l10n.planningFormDurationYearly;
+        default: return d;
+      }
+    }
+
+    String getDomaineLabel(String id) {
+      switch (id.toLowerCase()) {
+        case 'service': return l10n.domaineService;
+        case 'reception': return l10n.domaineReception;
+        case 'passe': return l10n.domainePasse;
+        case 'attaque': return l10n.domaineAttaque;
+        case 'block': return l10n.domaineBlock;
+        case 'defense': return l10n.domaineDefense;
+        case 'physique': return l10n.domainePhysique;
+        case 'general': return l10n.domaineGeneral;
+        default: return id;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Aperçu du planning',
-            style: TextStyle(
+        Text(l10n.planningOverviewTitle,
+            style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppColors.charcoal)),
         const SizedBox(height: 16),
-        _detailRow(
-            'Mode', planning.mode == 'groupe' ? 'Groupe 👥' : 'Spécifique 🎯'),
+        _detailRow(l10n.labelMode,
+            planning.mode == 'groupe' ? '${l10n.modeGroup} 👥' : '${l10n.modeSpecific} 🎯'),
         if (planning.mode == 'individuel' && planning.poste != null)
-          _detailRow('Poste(s)', planning.poste!),
-        _detailRow('Durée',
-            planning.duree[0].toUpperCase() + planning.duree.substring(1)),
+          _detailRow(l10n.labelPostes, planning.poste!),
+        _detailRow(l10n.labelDuration, getDurationLabel(planning.duree)),
         if (planning.dateDebut != null)
-          _detailRow(
-              'Début',
+          _detailRow(l10n.labelStart,
               DateFormat('dd/MM/yyyy')
                   .format(DateTime.parse(planning.dateDebut!))),
         if (planning.dateFin != null)
-          _detailRow(
-              'Fin',
+          _detailRow(l10n.labelEnd,
               DateFormat('dd/MM/yyyy')
                   .format(DateTime.parse(planning.dateFin!))),
-        _detailRow('Nombre de séances', '${planning.nbSeances}'),
-        _detailRow(
-            'Joueurs concernés',
+        _detailRow(l10n.labelNbSessions, '${planning.nbSeances}'),
+        _detailRow(l10n.labelPlayersInvolved,
             planning.joueurs.isNotEmpty
                 ? planning.joueurs.map((j) => j.nom).join(', ')
-                : 'Aucun'),
+                : l10n.labelNone),
         const SizedBox(height: 16),
-        const Text('Séances',
-            style: TextStyle(
+        Text(l10n.labelSessions,
+            style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.charcoal)),
         const SizedBox(height: 8),
         if (planning.seances.isEmpty)
-          const Text('Aucune séance définie.',
-              style: TextStyle(color: AppColors.gray)),
+          Text(l10n.noSessionsDefined,
+              style: const TextStyle(color: AppColors.gray)),
         ...planning.seances
             .map((s) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Séance ${s.ordre + 1} : ${s.titre}',
+                      Text(l10n.sessionIndexLabel(s.ordre + 1, s.titre),
                           style: const TextStyle(fontWeight: FontWeight.w600)),
                       if (s.dateSeance != null ||
                           s.heureDebut != null ||
@@ -367,7 +388,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
 
                           final info = [
                             datePart,
-                            if (s.heureDebut != null) 'à ${s.heureDebut}',
+                            if (s.heureDebut != null) l10n.atTime(s.heureDebut!),
                             if (s.lieu != null) '(${s.lieu})',
                           ].join(' ').trim();
 
@@ -424,24 +445,67 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
     );
   }
 
-  Widget _buildBilanSection(Map<String, dynamic> bilan) {
+  Widget _buildBilanSection(Map<String, dynamic> bilan, AppLocalizations l10n) {
+    String getDomaineLabel(String id) {
+      switch (id.toLowerCase()) {
+        case 'service': return l10n.domaineService;
+        case 'reception': return l10n.domaineReception;
+        case 'passe': return l10n.domainePasse;
+        case 'attaque': return l10n.domaineAttaque;
+        case 'block': return l10n.domaineBlock;
+        case 'defense': return l10n.domaineDefense;
+        case 'physique': return l10n.domainePhysique;
+        case 'general': return l10n.domaineGeneral;
+        default: return id;
+      }
+    }
+
+    // Traduction intelligente des recommandations du backend
+    String translateRec(String text) {
+      if (l10n.localeName == 'fr') return text; // Déjà en FR
+      
+      // Mapping manuel pour la Beta si le backend n'envoie pas d'IDs
+      if (text.contains("représente")) {
+        final parts = text.split(" représente ");
+        final pct = parts[1].split("%")[0];
+        return "${getDomaineLabel(parts[0])} represents $pct% of the volume — consider diversifying.";
+      }
+      if (text.contains("peu travaillé")) {
+        final domain = text.split(" peu travaillé")[0];
+        return "${getDomaineLabel(domain)} is rarely worked on — needs strengthening?";
+      }
+      if (text.contains("Aucune séance physique planifiée")) {
+        return "No physical session planned — think about integrating strength or endurance.";
+      }
+      if (text.contains("Durée moyenne de")) {
+        return text.replaceAll("Durée moyenne de", "Average duration of").replaceAll("min/séance — séances courtes, vérifiez la densité.", "min/session — short sessions, check density.");
+      }
+      if (text.contains("Séances longues")) {
+        return text.replaceAll("Séances longues", "Long sessions").replaceAll("en moy. — surveillez la récupération des joueurs.", "avg. — monitor player recovery.");
+      }
+      if (text.contains("Planning bien équilibré")) {
+        return "Well-balanced schedule — good area distribution!";
+      }
+      return text;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Bilan du planning',
-            style: TextStyle(
+        Text(l10n.planningBilanTitle,
+            style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppColors.charcoal)),
         const SizedBox(height: 16),
-        _bilanStat('Nombre de séances', '${bilan['nb_seances']}'),
+        _bilanStat(l10n.labelNbSessions, '${bilan['nb_seances']}'),
         _bilanStat(
-            'Volume total', AppConstants.fmtMinutes(bilan['total_minutes'])),
-        _bilanStat('Durée moy./séance',
+            l10n.labelTotalVolume, AppConstants.fmtMinutes(bilan['total_minutes'])),
+        _bilanStat(l10n.labelAvgDurationPerSession,
             AppConstants.fmtMinutes(bilan['avg_seance_minutes'])),
         const SizedBox(height: 16),
-        const Text('Répartition par domaine',
-            style: TextStyle(
+        Text(l10n.distributionByDomainTitle,
+            style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.charcoal)),
@@ -455,7 +519,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
                 SizedBox(
                     width: 80,
                     child:
-                        Text(d['label'], style: const TextStyle(fontSize: 13))),
+                        Text(getDomaineLabel(d['id']), style: const TextStyle(fontSize: 13))),
                 Expanded(
                   child: LinearProgressIndicator(
                     value: d['pct'] / 100,
@@ -472,19 +536,19 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
           );
         }).toList(),
         const SizedBox(height: 16),
-        const Text('Recommandations',
-            style: TextStyle(
+        Text(l10n.recommendationsTitle,
+            style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.charcoal)),
         const SizedBox(height: 8),
         if ((bilan['recommandations'] as List).isEmpty)
-          const Text('Aucune recommandation spécifique.',
-              style: TextStyle(color: AppColors.gray)),
+          Text(l10n.noSpecificRecommendations,
+              style: const TextStyle(color: AppColors.gray)),
         ...(bilan['recommandations'] as List)
             .map((rec) => Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('• $rec', style: const TextStyle(fontSize: 13)),
+                  child: Text('• ${translateRec(rec)}', style: const TextStyle(fontSize: 13)),
                 ))
             .toList(),
       ],
@@ -512,7 +576,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
   }
 
   Widget _buildActionButtons(
-      BuildContext context, bool isOwner, String? token) {
+      BuildContext context, bool isOwner, String? token, AppLocalizations l10n) {
     final appState = context.read<AppState>();
     // Remplacement du Row par un Wrap pour la responsivité des boutons
     return Wrap(
@@ -522,7 +586,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
       children: [
         if (isOwner)
           VpButton(
-            label: 'Exporter PDF',
+            label: l10n.exportPdfAction,
             icon: Icons.picture_as_pdf,
             variant: VpButtonVariant.ghost,
             onPressed: () async {
@@ -537,14 +601,14 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('PDF généré et téléchargé !')),
+                    SnackBar(content: Text(l10n.pdfExportSuccess)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text('Erreur lors de l\'export PDF: $e'),
+                        content: Text(l10n.errorPrefix(e.toString())),
                         backgroundColor: AppColors.red),
                   );
                 }
@@ -552,7 +616,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
             },
           ),
         VpButton(
-          label: 'Modifier',
+          label: l10n.editAction,
           icon: Icons.edit,
           onPressed: () {
             final route = token != null
@@ -565,7 +629,7 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
         ),
         if (isOwner) ...[
           VpButton(
-            label: 'Supprimer',
+            label: l10n.deleteButton,
             icon: Icons.delete,
             variant: VpButtonVariant.danger,
             onPressed: _confirmDelete,

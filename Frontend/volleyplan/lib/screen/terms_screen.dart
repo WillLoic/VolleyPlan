@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../utils/constants.dart';
 
 class TermsScreen extends StatelessWidget {
@@ -7,6 +8,7 @@ class TermsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -26,36 +28,37 @@ class TermsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildHeroSection(isMobile),
+                        _buildHeroSection(l10n, isMobile),
                         const SizedBox(height: 40),
-                        _buildSection('1', 'Objet et acceptation',
-                            AppColors.red, _objet),
-                        _buildSection('2', 'Description du service',
+                        _buildSection('1', l10n.termsSection1Title,
+                            AppColors.red, l10n.termsSection1Content),
+                        _buildSection('2', l10n.termsSection2Title,
                             AppColors.yellow, null,
-                            customWidget: _buildServiceDescription(isMobile)),
-                        _buildSection('3', 'Inscription et compte utilisateur',
+                            customWidget:
+                                _buildServiceDescription(l10n, isMobile)),
+                        _buildSection('3', l10n.termsSection3Title,
                             const Color(0xFF3A86FF), null,
-                            customWidget: _buildInscription(isMobile)),
-                        _buildSection('4', 'Utilisation autorisée',
+                            customWidget: _buildInscription(l10n, isMobile)),
+                        _buildSection('4', l10n.termsSection4Title,
                             const Color(0xFF06D6A0), null,
-                            customWidget: _buildAllowed(isMobile)),
-                        _buildSection('5', 'Utilisations interdites',
-                            AppColors.red, null,
-                            customWidget: _buildForbidden(isMobile)),
-                        _buildSection('6', 'Propriété des données',
-                            const Color(0xFF8338EC), _dataOwnership),
-                        _buildSection('7', 'Propriété intellectuelle',
-                            AppColors.yellow, _ipSection),
-                        _buildSection('8', 'Disponibilité du service',
-                            const Color(0xFF3A86FF), _availability),
-                        _buildSection('9', 'Responsabilités',
-                            const Color(0xFF06D6A0), _responsibilities),
-                        _buildSection('10', 'Évolution du service et des CGU',
-                            AppColors.red, null,
-                            customWidget: _buildEvolution(isMobile)),
-                        _buildSection('11', 'Droit applicable',
-                            AppColors.yellow, _law),
-                        _buildContactSection(isMobile),
+                            customWidget: _buildAllowed(l10n, isMobile)),
+                        _buildSection(
+                            '5', l10n.termsSection5Title, AppColors.red, null,
+                            customWidget: _buildForbidden(l10n, isMobile)),
+                        _buildSection('6', l10n.termsSection6Title,
+                            const Color(0xFF8338EC), l10n.termsSection6Content),
+                        _buildSection('7', l10n.termsSection7Title,
+                            AppColors.yellow, l10n.termsSection7Content),
+                        _buildSection('8', l10n.termsSection8Title,
+                            const Color(0xFF3A86FF), l10n.termsSection8Content),
+                        _buildSection('9', l10n.termsSection9Title,
+                            const Color(0xFF06D6A0), l10n.termsSection9Content),
+                        _buildSection(
+                            '10', l10n.termsSection10Title, AppColors.red, null,
+                            customWidget: _buildEvolution(l10n, isMobile)),
+                        _buildSection('11', l10n.termsSection11Title,
+                            AppColors.yellow, l10n.termsSection11Content),
+                        _buildContactSection(l10n, isMobile),
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -71,20 +74,22 @@ class TermsScreen extends StatelessWidget {
 
   // ── Header ───────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 40, vertical: 16),
+      padding:
+          EdgeInsets.symmetric(horizontal: isMobile ? 16 : 40, vertical: 16),
       decoration: const BoxDecoration(
         color: AppColors.white,
-        border: Border(
-            bottom: BorderSide(color: AppColors.grayLight, width: 1)),
+        border:
+            Border(bottom: BorderSide(color: AppColors.grayLight, width: 1)),
       ),
       child: Row(children: [
         GestureDetector(
-          onTap: () => context.go('/'),
+          onTap: () => context.go('/register'),
           child: Row(children: [
             Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                     colors: [AppColors.red, AppColors.yellow]),
@@ -95,25 +100,27 @@ class TermsScreen extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const Text('VolleyPlan',
-                style: TextStyle(fontWeight: FontWeight.w900,
-                    fontSize: 16, color: AppColors.charcoal)),
+                style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    color: AppColors.charcoal)),
           ]),
         ),
         const Spacer(),
         TextButton.icon(
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go('/register'),
           icon: const Icon(Icons.arrow_back_rounded,
               size: 16, color: AppColors.gray),
-          label: const Text('Retour',
-              style: TextStyle(color: AppColors.gray,
-                  fontWeight: FontWeight.w600)),
+          label: Text(l10n.backLabel,
+              style: TextStyle(
+                  color: AppColors.gray, fontWeight: FontWeight.w600)),
         ),
       ]),
     );
   }
 
   // ── Hero ─────────────────────────────────────────────────────────
-  Widget _buildHeroSection(bool isMobile) {
+  Widget _buildHeroSection(AppLocalizations l10n, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -134,14 +141,16 @@ class TermsScreen extends StatelessWidget {
               color: AppColors.yellow.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text('DOCUMENT LÉGAL',
-                style: TextStyle(color: AppColors.yellow,
-                    fontSize: 11, fontWeight: FontWeight.w800,
+            child: Text(l10n.legalBadge,
+                style: TextStyle(
+                    color: AppColors.yellow,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 1.5)),
           ),
           const SizedBox(height: 16),
           Text(
-            '📋 Conditions Générales\nd\'Utilisation',
+            '📋 ${l10n.termsTitle}',
             style: TextStyle(
                 fontSize: isMobile ? 26 : 34,
                 fontWeight: FontWeight.w900,
@@ -149,16 +158,15 @@ class TermsScreen extends StatelessWidget {
                 height: 1.2),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Dernière mise à jour : juin 2026 · Version 1.0',
-            style: TextStyle(color: AppColors.gray, fontSize: 13),
+          Text(
+            '${l10n.termsLastUpdate} · Version 1.0',
+            style: const TextStyle(color: AppColors.gray, fontSize: 13),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'En utilisant VolleyPlan, vous acceptez les présentes conditions. '
-            'Prenez le temps de les lire — elles définissent nos droits et '
-            'obligations mutuels.',
-            style: TextStyle(color: AppColors.gray, fontSize: 14, height: 1.6),
+          Text(
+            l10n.termsHeroIntro,
+            style: const TextStyle(
+                color: AppColors.gray, fontSize: 14, height: 1.6),
           ),
         ],
       ),
@@ -187,7 +195,8 @@ class TermsScreen extends StatelessWidget {
           children: [
             Row(children: [
               Container(
-                width: 32, height: 32,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                     color: color, borderRadius: BorderRadius.circular(8)),
                 child: Center(
@@ -219,14 +228,14 @@ class TermsScreen extends StatelessWidget {
   }
 
   // ── Service description ──────────────────────────────────────────
-  Widget _buildServiceDescription(bool isMobile) {
+  Widget _buildServiceDescription(AppLocalizations l10n, bool isMobile) {
     final features = [
-      '📅 Création et gestion de plannings d\'entraînement',
-      '👥 Gestion d\'un roster de joueurs par poste',
-      '📊 Génération de bilans automatiques par domaine de jeu',
-      '📄 Export de plannings au format PDF',
-      '🤝 Collaboration entre membres du staff sportif',
-      '💬 Partage de plannings via WhatsApp',
+      '📅 ${l10n.termsFeature1}',
+      '👥 ${l10n.termsFeature2}',
+      '📊 ${l10n.termsFeature3}',
+      '📄 ${l10n.termsFeature4}',
+      '🤝 ${l10n.termsFeature5}',
+      '💬 ${l10n.termsFeature6}',
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,14 +245,12 @@ class TermsScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(f.substring(0, 2),
-                      style: const TextStyle(fontSize: 16)),
+                  Text(f.substring(0, 2), style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(f.substring(2).trim(),
                         style: const TextStyle(
-                            color: AppColors.gray,
-                            fontSize: 13, height: 1.5)),
+                            color: AppColors.gray, fontSize: 13, height: 1.5)),
                   ),
                 ],
               ),
@@ -254,28 +261,27 @@ class TermsScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.yellow.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: AppColors.yellow.withOpacity(0.3)),
+            border: Border.all(color: AppColors.yellow.withOpacity(0.3)),
           ),
-          child: const Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('🚧', style: TextStyle(fontSize: 18)),
-              SizedBox(width: 10),
+              const Text('🚧', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Phase Beta',
-                        style: TextStyle(fontWeight: FontWeight.w700,
-                            fontSize: 14, color: AppColors.charcoal)),
+                    Text(l10n.termsBetaTitle,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: AppColors.charcoal)),
                     SizedBox(height: 4),
                     Text(
-                      'Le service est gratuit pendant la beta. Des bugs peuvent survenir. '
-                      'Des fonctionnalités peuvent évoluer. Aucune garantie de '
-                      'disponibilité continue n\'est offerte.',
-                      style: TextStyle(color: AppColors.gray,
-                          fontSize: 12, height: 1.5),
+                      l10n.termsBetaContent,
+                      style: const TextStyle(
+                          color: AppColors.gray, fontSize: 12, height: 1.5),
                     ),
                   ],
                 ),
@@ -288,21 +294,27 @@ class TermsScreen extends StatelessWidget {
   }
 
   // ── Inscription ──────────────────────────────────────────────────
-  Widget _buildInscription(bool isMobile) {
+  Widget _buildInscription(AppLocalizations l10n, bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSubSection('Conditions d\'inscription', [
-          'Être âgé d\'au moins 16 ans',
-          'Fournir des informations exactes (nom, téléphone, équipe)',
-          'Créer un mot de passe que vous gardez confidentiel',
-        ], AppColors.red),
+        _buildSubSection(
+            l10n.termsInscriptionReqTitle,
+            [
+              l10n.termsInscriptionReq1,
+              l10n.termsInscriptionReq2,
+              l10n.termsInscriptionReq3,
+            ],
+            AppColors.red),
         const SizedBox(height: 12),
-        _buildSubSection('Votre responsabilité', [
-          'Confidentialité de votre mot de passe',
-          'Toutes les activités effectuées depuis votre compte',
-          'Exactitude des informations saisies',
-        ], const Color(0xFF3A86FF)),
+        _buildSubSection(
+            l10n.termsUserResponsibilityTitle,
+            [
+              l10n.termsUserResp1,
+              l10n.termsUserResp2,
+              l10n.termsUserResp3,
+            ],
+            const Color(0xFF3A86FF)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(12),
@@ -310,17 +322,19 @@ class TermsScreen extends StatelessWidget {
             color: const Color(0xFF3A86FF).withOpacity(0.08),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('ℹ️', style: TextStyle(fontSize: 16)),
-              SizedBox(width: 8),
+              const Text('ℹ️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Un compte = un coach = une équipe. '
-                  'La création de comptes multiples est interdite.',
-                  style: TextStyle(color: AppColors.charcoal,
-                      fontSize: 13, height: 1.5, fontWeight: FontWeight.w500),
+                  l10n.termsSingleAccountNote,
+                  style: TextStyle(
+                      color: AppColors.charcoal,
+                      fontSize: 13,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -331,68 +345,71 @@ class TermsScreen extends StatelessWidget {
   }
 
   // ── Allowed ──────────────────────────────────────────────────────
-  Widget _buildAllowed(bool isMobile) {
+  Widget _buildAllowed(AppLocalizations l10n, bool isMobile) {
     final items = [
-      'Planifier vos séances d\'entraînement de volleyball',
-      'Gérer le roster de votre équipe',
-      'Analyser la répartition de votre volume d\'entraînement',
-      'Partager vos plannings avec vos joueurs et staff',
-      'Collaborer avec vos assistants coachs',
-      'Utiliser VolleyPlan pour votre entraînement personnel (joueurs)',
+      l10n.termsAllowed1,
+      l10n.termsAllowed2,
+      l10n.termsAllowed3,
+      l10n.termsAllowed4,
+      l10n.termsAllowed5,
+      l10n.termsAllowed6,
     ];
     return Column(
-      children: items.map((item) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF06D6A0).withOpacity(0.06),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: const Color(0xFF06D6A0).withOpacity(0.2)),
-            ),
-            child: Row(children: [
-              const Icon(Icons.check_circle_rounded,
-                  color: Color(0xFF06D6A0), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(item,
-                    style: const TextStyle(
-                        color: AppColors.charcoal, fontSize: 13)),
-              ),
-            ]),
-          )).toList(),
+      children: items
+          .map((item) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF06D6A0).withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: const Color(0xFF06D6A0).withOpacity(0.2)),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF06D6A0), size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(item,
+                        style: const TextStyle(
+                            color: AppColors.charcoal, fontSize: 13)),
+                  ),
+                ]),
+              ))
+          .toList(),
     );
   }
 
   // ── Forbidden ────────────────────────────────────────────────────
-  Widget _buildForbidden(bool isMobile) {
+  Widget _buildForbidden(AppLocalizations l10n, bool isMobile) {
     final categories = [
       {
-        'title': 'Activités illégales',
+        'title': l10n.termsForbiddenIllegalTitle,
         'items': [
-          'Actes contraires à la législation camerounaise ou internationale',
-          'Usurpation d\'identité ou faux profils',
-          'Fraude envers d\'autres utilisateurs',
+          l10n.termsForbiddenIllegal1,
+          l10n.termsForbiddenIllegal2,
+          l10n.termsForbiddenIllegal3,
         ],
         'color': AppColors.red,
       },
       {
-        'title': 'Atteintes techniques',
+        'title': l10n.termsForbiddenTechTitle,
         'items': [
-          'Pirater ou contourner les mesures de sécurité',
-          'Attaques par déni de service',
-          'Injection de code malveillant',
-          'Accéder aux données d\'autres utilisateurs sans autorisation',
+          l10n.termsForbiddenTech1,
+          l10n.termsForbiddenTech2,
+          l10n.termsForbiddenTech3,
+          l10n.termsForbiddenTech4,
         ],
         'color': const Color(0xFF8338EC),
       },
       {
-        'title': 'Abus du service',
+        'title': l10n.termsForbiddenAbuseTitle,
         'items': [
-          'Créer des contenus injurieux ou illicites',
-          'Spammer d\'autres utilisateurs',
-          'Utiliser des robots ou scripts automatisés',
-          'Revendre l\'accès sans autorisation',
+          l10n.termsForbiddenAbuse1,
+          l10n.termsForbiddenAbuse2,
+          l10n.termsForbiddenAbuse3,
+          l10n.termsForbiddenAbuse4,
         ],
         'color': AppColors.yellow,
       },
@@ -417,8 +434,10 @@ class TermsScreen extends StatelessWidget {
                 const Icon(Icons.block_rounded, size: 16),
                 const SizedBox(width: 8),
                 Text(cat['title'] as String,
-                    style: TextStyle(fontWeight: FontWeight.w700,
-                        fontSize: 13, color: color)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: color)),
               ]),
               const SizedBox(height: 10),
               ...items.map((item) => Padding(
@@ -427,7 +446,8 @@ class TermsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 5, height: 5,
+                          width: 5,
+                          height: 5,
                           margin: const EdgeInsets.only(top: 7, right: 8),
                           decoration: BoxDecoration(
                               color: color, shape: BoxShape.circle),
@@ -436,7 +456,8 @@ class TermsScreen extends StatelessWidget {
                           child: Text(item,
                               style: const TextStyle(
                                   color: AppColors.gray,
-                                  fontSize: 13, height: 1.5)),
+                                  fontSize: 13,
+                                  height: 1.5)),
                         ),
                       ],
                     ),
@@ -449,31 +470,27 @@ class TermsScreen extends StatelessWidget {
   }
 
   // ── Evolution ────────────────────────────────────────────────────
-  Widget _buildEvolution(bool isMobile) {
+  Widget _buildEvolution(AppLocalizations l10n, bool isMobile) {
     return Column(
       children: [
         _buildEvolutionCard(
           '🆓',
-          'Phase Beta gratuite',
-          'L\'accès gratuit actuel est lié à la phase Beta. Lors du passage '
-          'à un modèle payant, vous serez prévenu au moins 30 jours à l\'avance.',
+          l10n.termsEvolutionBetaTitle,
+          l10n.termsEvolutionBetaContent,
           AppColors.red,
         ),
         const SizedBox(height: 10),
         _buildEvolutionCard(
           '📤',
-          'Export de vos données',
-          'Avant toute décision de paiement, vous pourrez exporter tous vos '
-          'plannings en PDF. Des fonctionnalités de base resteront gratuites.',
+          l10n.termsEvolutionExportTitle,
+          l10n.termsEvolutionExportContent,
           AppColors.yellow,
         ),
         const SizedBox(height: 10),
         _buildEvolutionCard(
           '📢',
-          'Modifications des CGU',
-          'Nous pouvons modifier ces CGU. Toute modification importante sera '
-          'notifiée via l\'application ou Facebook. L\'utilisation continue '
-          'vaut acceptation.',
+          l10n.termsEvolutionCguTitle,
+          l10n.termsEvolutionCguContent,
           const Color(0xFF3A86FF),
         ),
       ],
@@ -492,29 +509,29 @@ class TermsScreen extends StatelessWidget {
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(icon, style: const TextStyle(fontSize: 22)),
         const SizedBox(width: 12),
-        Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
-              style: TextStyle(fontWeight: FontWeight.w700,
-                  fontSize: 14, color: color)),
+              style: TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 14, color: color)),
           const SizedBox(height: 6),
           Text(desc,
-              style: const TextStyle(color: AppColors.gray,
-                  fontSize: 13, height: 1.5)),
+              style: const TextStyle(
+                  color: AppColors.gray, fontSize: 13, height: 1.5)),
         ])),
       ]),
     );
   }
 
   // ── SubSection helper ─────────────────────────────────────────────
-  Widget _buildSubSection(
-      String title, List<String> items, Color color) {
+  Widget _buildSubSection(String title, List<String> items, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: TextStyle(fontWeight: FontWeight.w700,
-                fontSize: 13, color: color)),
+            style: TextStyle(
+                fontWeight: FontWeight.w700, fontSize: 13, color: color)),
         const SizedBox(height: 8),
         ...items.map((item) => Padding(
               padding: const EdgeInsets.only(bottom: 6, left: 4),
@@ -522,16 +539,16 @@ class TermsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 5, height: 5,
+                    width: 5,
+                    height: 5,
                     margin: const EdgeInsets.only(top: 7, right: 8),
-                    decoration: BoxDecoration(
-                        color: color, shape: BoxShape.circle),
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle),
                   ),
                   Expanded(
                     child: Text(item,
                         style: const TextStyle(
-                            color: AppColors.gray,
-                            fontSize: 13, height: 1.5)),
+                            color: AppColors.gray, fontSize: 13, height: 1.5)),
                   ),
                 ],
               ),
@@ -541,7 +558,7 @@ class TermsScreen extends StatelessWidget {
   }
 
   // ── Contact ──────────────────────────────────────────────────────
-  Widget _buildContactSection(bool isMobile) {
+  Widget _buildContactSection(AppLocalizations l10n, bool isMobile) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -550,16 +567,18 @@ class TermsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('📬 Nous contacter',
-            style: TextStyle(fontWeight: FontWeight.w800,
-                fontSize: 18, color: AppColors.white)),
+        Text('📬 ${l10n.termsContactTitle}',
+            style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppColors.white)),
         const SizedBox(height: 12),
-        const Text('Pour toute question relative aux présentes CGU :',
-            style: TextStyle(color: AppColors.gray, fontSize: 14)),
+        Text(l10n.termsContactSubtitle,
+            style: const TextStyle(color: AppColors.gray, fontSize: 14)),
         const SizedBox(height: 16),
         _contactRow('📘', 'Facebook', 'Page VolleyPlan'),
         _contactRow('💬', 'WhatsApp', 'Via la page Facebook'),
-        _contactRow('⚖️', 'Juridiction', 'Tribunaux de Yaoundé, Cameroun'),
+        _contactRow('⚖️', 'Juridiction', 'Yaoundé, Cameroun'),
         _contactRow('🌍', 'Droit applicable', 'Droit camerounais'),
       ]),
     );
@@ -572,63 +591,15 @@ class TermsScreen extends StatelessWidget {
         Text(icon, style: const TextStyle(fontSize: 18)),
         const SizedBox(width: 10),
         Text('$label : ',
-            style: const TextStyle(color: AppColors.gray,
-                fontSize: 13, fontWeight: FontWeight.w600)),
+            style: const TextStyle(
+                color: AppColors.gray,
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         Expanded(
           child: Text(value,
-              style: const TextStyle(
-                  color: AppColors.white, fontSize: 13)),
+              style: const TextStyle(color: AppColors.white, fontSize: 13)),
         ),
       ]),
     );
   }
-
-  // ── Textes statiques ─────────────────────────────────────────────
-  static const _objet =
-      'Les présentes Conditions Générales d\'Utilisation (CGU) régissent '
-      'l\'accès et l\'utilisation de l\'application VolleyPlan.\n\n'
-      'En créant un compte ou en utilisant VolleyPlan, vous acceptez sans '
-      'réserve les présentes CGU. Si vous n\'acceptez pas ces conditions, '
-      'vous ne devez pas utiliser l\'application.';
-
-  static const _dataOwnership =
-      'Les plannings, joueurs et données que vous créez dans VolleyPlan '
-      'vous appartiennent entièrement. Nous ne revendiquons aucun droit de '
-      'propriété sur vos contenus.\n\n'
-      'En utilisant VolleyPlan, vous nous accordez une licence limitée, '
-      'non exclusive et non transférable pour héberger et traiter vos '
-      'données dans le seul but de vous fournir le service.\n\n'
-      'Vous êtes responsable d\'avoir obtenu les autorisations nécessaires '
-      'pour saisir les données de vos joueurs.';
-
-  static const _ipSection =
-      'L\'application VolleyPlan, son code source, son design, ses algorithmes '
-      'de calcul de bilan, son logo et ses textes sont protégés par le droit '
-      'de la propriété intellectuelle.\n\n'
-      'Il est interdit de copier ou reproduire l\'application, de créer une '
-      'application dérivée, ou de décompiler le code source.';
-
-  static const _availability =
-      'Nous faisons nos meilleurs efforts pour maintenir VolleyPlan disponible. '
-      'Cependant, pendant la phase Beta, nous ne garantissons pas une '
-      'disponibilité 24h/24, l\'absence de bugs, ni la conservation permanente '
-      'des données.\n\n'
-      'Le service dépend de prestataires tiers (Render, Supabase, Firebase, '
-      'Cloudflare). Des interruptions indépendantes de notre volonté peuvent '
-      'survenir.';
-
-  static const _responsibilities =
-      'Dans les limites autorisées par la loi, VolleyPlan ne saurait être '
-      'tenu responsable de perte de données due à une défaillance technique, '
-      'd\'interruption de service imprévue, ou de décisions sportives prises '
-      'sur la base des recommandations de l\'application.\n\n'
-      'Vous êtes responsable de l\'utilisation que vous faites de l\'application '
-      'et de la précision des données que vous saisissez. Nous recommandons '
-      'd\'exporter régulièrement vos plannings en PDF.';
-
-  static const _law =
-      'Les présentes CGU sont régies par le droit camerounais.\n\n'
-      'En cas de litige, nous privilégions la résolution amiable. '
-      'À défaut, les tribunaux compétents de Yaoundé (Cameroun) '
-      'sont seuls compétents.';
 }

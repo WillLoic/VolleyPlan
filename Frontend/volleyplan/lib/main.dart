@@ -12,6 +12,9 @@ import 'utils/constants.dart';
 import 'screen/auth/reset_password_screen.dart';
 import 'screen/landing_screen.dart';
 import 'services/analytics_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Import pour les délégateurs standards
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import généré
+
 import 'screen/private_screen.dart'; // Importe ta page de confidentialité
 import 'screen/terms_screen.dart'; // Importe ta page de conditions
 
@@ -33,12 +36,30 @@ void main() {
   );
 }
 
-class VolleyPlanApp extends StatelessWidget {
+class VolleyPlanApp extends StatefulWidget {
   const VolleyPlanApp({super.key});
 
   @override
+  State<VolleyPlanApp> createState() => _VolleyPlanAppState();
+}
+
+class _VolleyPlanAppState extends State<VolleyPlanApp> {
+  late final GoRouter _routerConfig;
+
+  @override
+  void initState() {
+    super.initState();
+    // On initialise le router une seule fois lors de la création de l'app.
+    // Il continuera d'écouter les changements (comme le login/logout) via refreshListenable.
+    final appState = Provider.of<AppState>(context, listen: false);
+    _routerConfig = _createRouter(appState);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // by the _incrementCounter method above.
+    // On watch AppState ici uniquement pour la locale (changement de langue)
+    final appState = context.watch<AppState>();
+
     return MaterialApp.router(
       title: 'VolleyPlan Coach Edition',
       debugShowCheckedModeBanner: false,
@@ -50,99 +71,177 @@ class VolleyPlanApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: AppColors.offWhite,
       ),
-      routerConfig: _router(context.read<AppState>()),
+      // --- Configuration de la localisation ---
+      localizationsDelegates: const [
+        AppLocalizations.delegate, // Délégataire généré par l'outil
+        GlobalMaterialLocalizations
+            .delegate, // Localisation des widgets Material Design
+        GlobalWidgetsLocalizations
+            .delegate, // Localisation des widgets standards
+        GlobalCupertinoLocalizations
+            .delegate, // Localisation des widgets iOS-style
+      ],
+      supportedLocales: const [
+        Locale('en'), // Anglais
+        Locale('fr'), // Français
+      ],
+      locale: appState.currentLocale, // Utilise la locale de AppState
+      // --- Fin de la configuration de la localisation ---
+      routerConfig: _routerConfig,
     );
   }
 
-  // On transforme le router en fonction pour qu'il puisse écouter AppState
-  static GoRouter _router(AppState appState) => GoRouter(
-        initialLocation: '/',
-        refreshListenable:
-            appState, // Le router se rafraîchit quand l'état change
-        redirect: (context, state) {
-          final bool loggedIn = appState.isLoggedIn;
-          final bool initializing = !appState.isInitialized;
+  // Méthode pour configurer l'instance unique du router
+  GoRouter _createRouter(AppState appState) {
+    return GoRouter(
+      initialLocation: '/',
+      refreshListenable: appState,
+      redirect: (context, state) {
+        final bool loggedIn = appState.isLoggedIn;
+        final bool initializing = !appState.isInitialized;
+        final String loc = state.matchedLocation;
+        final bool isAuthPage = loc == '/login' || loc == '/register';
 
-          // Liste des routes d'authentification
-          final String loc = state.matchedLocation;
-          final bool isAuthPage = loc == '/login' || loc == '/register';
+        if (initializing) return null;
 
-          // Tant qu'on n'a pas fini de vérifier le token, on ne redirige pas
-          if (initializing) return null;
+        if (!loggedIn &&
+            !isAuthPage &&
+            loc != '/' &&
+            !loc.startsWith('/invite') &&
+            !loc.startsWith('/collaborations') &&
+            !loc.startsWith('/reset-password') &&
+            !loc.startsWith('/planning') &&
+            loc != '/privacy' &&
+            loc != '/terms') {
+          return '/login';
+        }
 
-          // Si pas connecté, on autorise la landing, les pages d'auth, d'invitation, de collaboration et de planning
-          if (!loggedIn &&
-              !isAuthPage &&
-              loc != '/' &&
-              !loc.startsWith('/invite') &&
-              !loc.startsWith('/collaborations') &&
-              !loc.startsWith('/reset-password') &&
-              !loc.startsWith('/planning') &&
-              loc != '/privacy' && // Autoriser la page de confidentialité
-              loc != '/terms') // Autoriser la page des conditions d'utilisation
-          {
-            return '/login';
-          }
+        if (loggedIn && (isAuthPage || loc == '/')) return '/home';
+        return null;
+      },
+      routes: [
+        ShellRoute(
+          builder: (context, state, child) {
+            return _GlobalLanguageWrapper(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => const LandingScreen(),
+            ),
+            GoRoute(
+              path: '/privacy',
+              builder: (context, state) => const PrivacyScreen(),
+            ),
+            GoRoute(
+              path: '/terms',
+              builder: (context, state) => const TermsScreen(),
+            ),
+            GoRoute(
+              path: '/login',
+              builder: (context, state) => const LoginScreen(),
+            ),
+            GoRoute(
+              path: '/register',
+              builder: (context, state) => const RegisterScreen(),
+            ),
+            GoRoute(
+              path: '/reset-password',
+              builder: (context, state) {
+                final token = state.uri.queryParameters['token'] ?? '';
+                return ResetPasswordScreen(token: token);
+              },
+            ),
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+            GoRoute(
+              path: '/planning/create',
+              builder: (context, state) => const PlanningFormScreen(),
+            ),
+            GoRoute(
+              path: '/invite/:token',
+              builder: (context, state) =>
+                  InvitationScreen(token: state.pathParameters['token'] ?? ''),
+            ),
+            GoRoute(
+              path: '/collaborations/:token',
+              builder: (context, state) =>
+                  CollaboratorDashboard(token: state.pathParameters['token']),
+            ),
+            GoRoute(
+              path: '/planning/:id',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '');
+                final token = state.uri.queryParameters['token'];
+                return PlanningFormScreen(planningId: id, token: token);
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
-          // Si connecté et sur la landing ou page d'auth -> vers home
-          if (loggedIn && (isAuthPage || loc == '/')) return '/home';
+/// Widget qui enveloppe toute l'application avec une barre de langue "discrète"
+class _GlobalLanguageWrapper extends StatefulWidget {
+  final Widget child;
+  const _GlobalLanguageWrapper({required this.child});
 
-          return null;
-        },
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const LandingScreen(),
-          ),
-          GoRoute(
-            path: '/privacy',
-            builder: (context, state) => const PrivacyScreen(),
-          ),
-          GoRoute(
-            path: '/terms',
-            builder: (context, state) => const TermsScreen(),
-          ),
-          GoRoute(
-            path: '/login',
-            builder: (context, state) => const LoginScreen(),
-          ),
-          GoRoute(
-            path: '/register',
-            builder: (context, state) => const RegisterScreen(),
-          ),
-          GoRoute(
-            path: '/reset-password',
-            builder: (context, state) {
-              final token = state.uri.queryParameters['token'] ?? '';
-              return ResetPasswordScreen(token: token);
-            },
-          ),
-          GoRoute(
-            path: '/home',
-            builder: (context, state) => const HomeScreen(),
-          ),
-          GoRoute(
-            path: '/planning/create',
-            builder: (context, state) => const PlanningFormScreen(),
-          ),
-          GoRoute(
-            path: '/invite/:token',
-            builder: (context, state) =>
-                InvitationScreen(token: state.pathParameters['token'] ?? ''),
-          ),
-          GoRoute(
-            path: '/collaborations/:token',
-            builder: (context, state) =>
-                CollaboratorDashboard(token: state.pathParameters['token']),
-          ),
-          GoRoute(
-            path: '/planning/:id',
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '');
-              final token = state.uri.queryParameters['token'];
-              return PlanningFormScreen(planningId: id, token: token);
-            },
+  @override
+  State<_GlobalLanguageWrapper> createState() => _GlobalLanguageWrapperState();
+}
+
+class _GlobalLanguageWrapperState extends State<_GlobalLanguageWrapper> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = context.read<AppState>();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          widget.child,
+          Positioned(
+            top: 0,
+            right: 0,
+            child: MouseRegion(
+              onEnter: (_) => setState(() => _isHovered = true),
+              onExit: (_) => setState(() => _isHovered = false),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: _isHovered
+                    ? 1.0
+                    : 0.2, // Disparaît (devient translucide) si pas utilisé
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal.withOpacity(0.8),
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(12)),
+                  ),
+                  child: PopupMenuButton<Locale>(
+                    tooltip: 'Changer la langue',
+                    icon: const Icon(Icons.language,
+                        color: Colors.white, size: 18),
+                    onSelected: (Locale locale) => appState.setLocale(locale),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                          value: Locale('fr'), child: Text('🇫🇷 Français')),
+                      const PopupMenuItem(
+                          value: Locale('en'), child: Text('🇺🇸 English')),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
-      );
+      ),
+    );
+  }
 }

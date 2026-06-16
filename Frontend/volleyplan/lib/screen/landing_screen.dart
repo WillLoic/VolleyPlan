@@ -1,6 +1,7 @@
 /*import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 
@@ -760,49 +761,43 @@ class _LandingScreenState extends State<LandingScreen>
       {
         'icon': Icons.calendar_month_rounded,
         'color': AppColors.red,
-        'title': 'Plannings Intelligents',
-        'desc':
-            'Créez des cycles d\'entraînement structurés en mode Groupe ou Spécifique par postes. 8 domaines couverts.',
+        'title': l10n.featurePlanningTitle,
+        'desc': l10n.featurePlanningDesc,
         'tag': 'Création',
       },
       {
         'icon': Icons.people_alt_rounded,
         'color': const Color(0xFF3A86FF),
-        'title': 'Gestion d\'Effectif',
-        'desc':
-            'Gérez votre roster, suivez les postes, ajoutez ou retirez des joueurs au fil des transferts de saison.',
+        'title': l10n.featurePlayersTitle,
+        'desc': l10n.featurePlayersDesc,
         'tag': 'Joueurs',
       },
       {
         'icon': Icons.analytics_rounded,
         'color': AppColors.yellow,
-        'title': 'Bilans Automatisés',
-        'desc':
-            'Visualisez la répartition technique de vos séances et recevez des recommandations d\'équilibre.',
+        'title': l10n.featureAnalyseTitle,
+        'desc': l10n.featureAnalyseDesc,
         'tag': 'Analyse',
       },
       {
         'icon': Icons.picture_as_pdf_rounded,
         'color': const Color(0xFF06D6A0),
-        'title': 'Export PDF WhatsApp',
-        'desc':
-            'Générez un PDF professionnel de votre planning et partagez-le directement avec vos joueurs.',
+        'title': l10n.featureExportTitle,
+        'desc': l10n.featureExportDesc,
         'tag': 'Partage',
       },
       {
         'icon': Icons.group_add_rounded,
         'color': const Color(0xFF8338EC),
-        'title': 'Collaboration Staff',
-        'desc':
-            'Invitez vos adjoints à consulter ou modifier vos plannings. Travaillez en équipe en temps réel.',
+        'title': l10n.featureStaffTitle,
+        'desc': l10n.featureStaffDesc,
         'tag': 'Équipe',
       },
       {
         'icon': Icons.fitness_center_rounded,
         'color': const Color(0xFFEF476F),
-        'title': 'Physique & Technique',
-        'desc':
-            'Gérez les séances de musculation et endurance en plus des aspects techniques volleyball.',
+        'title': l10n.featurePhysiqueTitle,
+        'desc': l10n.featurePhysiqueDesc,
         'tag': 'Physique',
       },
     ];
@@ -1166,13 +1161,10 @@ class _GridPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }*/
 
-
-
-
-
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 
@@ -1229,6 +1221,9 @@ class _LandingScreenState extends State<LandingScreen>
   final GlobalKey _testimonialsKey = GlobalKey();
   final GlobalKey _faqKey = GlobalKey();
 
+  // Getter pour accéder aux traductions dans toutes les méthodes de la classe
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   @override
   void initState() {
     super.initState();
@@ -1259,11 +1254,10 @@ class _LandingScreenState extends State<LandingScreen>
     _subtitleFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: _heroController,
         curve: const Interval(0.3, 0.65, curve: Curves.easeOut)));
-    _ctaSlide =
-        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-            CurvedAnimation(
-                parent: _heroController,
-                curve: const Interval(0.5, 0.85, curve: Curves.easeOutCubic)));
+    _ctaSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(CurvedAnimation(
+            parent: _heroController,
+            curve: const Interval(0.5, 0.85, curve: Curves.easeOutCubic)));
     _ctaFade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
         parent: _heroController,
         curve: const Interval(0.5, 0.85, curve: Curves.easeOut)));
@@ -1274,8 +1268,8 @@ class _LandingScreenState extends State<LandingScreen>
       duration: const Duration(milliseconds: 3200),
     )..repeat();
 
-    _ballX = Tween<double>(begin: -0.15, end: 1.15).animate(CurvedAnimation(
-        parent: _ballController, curve: Curves.easeInOut));
+    _ballX = Tween<double>(begin: -0.15, end: 1.15).animate(
+        CurvedAnimation(parent: _ballController, curve: Curves.easeInOut));
     _ballY = TweenSequence<double>([
       TweenSequenceItem(
           tween: Tween<double>(begin: 0.55, end: 0.15)
@@ -1315,8 +1309,8 @@ class _LandingScreenState extends State<LandingScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     );
-    _statsProgress = CurvedAnimation(
-        parent: _statsController, curve: Curves.easeOutCubic);
+    _statsProgress =
+        CurvedAnimation(parent: _statsController, curve: Curves.easeOutCubic);
 
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) _heroController.forward();
@@ -1361,19 +1355,29 @@ class _LandingScreenState extends State<LandingScreen>
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: ListView(
-            shrinkWrap: true, // Permet au ListView de ne prendre que la place nécessaire
-            physics: const ClampingScrollPhysics(), // Évite les rebonds bizarres en fin de liste
+            shrinkWrap:
+                true, // Permet au ListView de ne prendre que la place nécessaire
+            physics:
+                const ClampingScrollPhysics(), // Évite les rebonds bizarres en fin de liste
             children: [
-              const Text('Navigation',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+              Text(l10n.landingMenuTitle,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.charcoal)),
               const SizedBox(height: 12),
-              _buildSheetItem('Accueil', Icons.home_rounded, _heroKey),
-              _buildSheetItem('À propos', Icons.info_outline_rounded, _aboutKey),
-              _buildSheetItem('Comment ça marche', Icons.alt_route_rounded, _howItWorksKey),
-              _buildSheetItem('Pourquoi nous ?', Icons.gpp_good_rounded, _whyKey),
-              _buildSheetItem('Guide Pratique', Icons.play_circle_outline_rounded, _guideKey),
-              _buildSheetItem('Témoignages', Icons.comment_rounded, _testimonialsKey),
-              _buildSheetItem('FAQ', Icons.help_outline_rounded, _faqKey),
+              _buildSheetItem(l10n.homeLabel, Icons.home_rounded, _heroKey),
+              _buildSheetItem(
+                  l10n.landingMenuAbout, Icons.info_outline_rounded, _aboutKey),
+              _buildSheetItem(
+                  l10n.landingMenuHow, Icons.alt_route_rounded, _howItWorksKey),
+              _buildSheetItem(
+                  l10n.landingMenuWhy, Icons.gpp_good_rounded, _whyKey),
+              _buildSheetItem(l10n.landingMenuGuide,
+                  Icons.play_circle_outline_rounded, _guideKey),
+              _buildSheetItem(
+                  l10n.landingMenuTestimonials, Icons.comment_rounded, _testimonialsKey),
+              _buildSheetItem(l10n.landingMenuFaq, Icons.help_outline_rounded, _faqKey),
             ],
           ),
         ),
@@ -1384,7 +1388,9 @@ class _LandingScreenState extends State<LandingScreen>
   Widget _buildSheetItem(String label, IconData icon, GlobalKey targetKey) {
     return ListTile(
       leading: Icon(icon, color: AppColors.red),
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.charcoal)),
+      title: Text(label,
+          style: const TextStyle(
+              fontWeight: FontWeight.w700, color: AppColors.charcoal)),
       onTap: () {
         Navigator.pop(context);
         _scrollToSection(targetKey);
@@ -1418,7 +1424,7 @@ class _LandingScreenState extends State<LandingScreen>
                 _AboutSection(key: _aboutKey),
                 _HowItWorksSection(key: _howItWorksKey),
                 _WhyVolleyPlanSection(key: _whyKey),
-                _buildFeatures(context), //[cite: 1]
+                _buildFeatures(context, l10n), //[cite: 1]
                 _GuideSection(key: _guideKey),
                 _TestimonialsSection(key: _testimonialsKey),
                 _FAQSection(key: _faqKey),
@@ -1427,7 +1433,7 @@ class _LandingScreenState extends State<LandingScreen>
               ],
             ),
           ),
-          
+
           // Menu Flottant en bas à droite (uniquement au scroll)
           if (_showFloatingMenu)
             Positioned(
@@ -1469,7 +1475,9 @@ class _LandingScreenState extends State<LandingScreen>
           horizontal: isMobile ? 20 : 40, vertical: 18), //[cite: 1]
       decoration: const BoxDecoration(
         color: AppColors.white, //[cite: 1]
-        border: Border(bottom: BorderSide(color: AppColors.grayLight, width: 1)), //[cite: 1]
+        border: Border(
+            bottom:
+                BorderSide(color: AppColors.grayLight, width: 1)), //[cite: 1]
       ),
       child: Row(
         children: [
@@ -1479,27 +1487,32 @@ class _LandingScreenState extends State<LandingScreen>
             TextButton(
               onPressed: _showNavigationSheet,
               style: TextButton.styleFrom(foregroundColor: AppColors.charcoal),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.menu_rounded, size: 18),
-                  SizedBox(width: 6),
-                  Text('Menu', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                  const Icon(Icons.menu_rounded, size: 18),
+                  const SizedBox(width: 6),
+                  Text(l10n.navMenu,
+                      style:
+                          const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                 ],
               ),
             ),
             const SizedBox(width: 20),
             TextButton(
               onPressed: () => context.push('/login'), //[cite: 1]
-              style: TextButton.styleFrom(foregroundColor: AppColors.charcoal), //[cite: 1]
-              child: const Text('Connexion', //[cite: 1]
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)), //[cite: 1]
+              style: TextButton.styleFrom(
+                  foregroundColor: AppColors.charcoal), //[cite: 1]
+              child: Text(l10n.loginAction, //[cite: 1]
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 14)), //[cite: 1]
             ),
             const SizedBox(width: 12), //[cite: 1]
           ],
           VpButton(
-            label: isMobile ? 'Menu' : 'S\'inscrire',
+            label: isMobile ? l10n.navMenu : l10n.registerAction,
             small: true, //[cite: 1]
-            onPressed: () => isMobile ? _showNavigationSheet() : context.push('/register'),
+            onPressed: () =>
+                isMobile ? _showNavigationSheet() : context.push('/register'),
           ),
         ],
       ),
@@ -1507,7 +1520,8 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   Widget _buildLogo() {
-    return Row(children: [ //[cite: 1]
+    return Row(children: [
+      //[cite: 1]
       Container(
         width: 34, //[cite: 1]
         height: 34, //[cite: 1]
@@ -1524,7 +1538,8 @@ class _LandingScreenState extends State<LandingScreen>
                 offset: const Offset(0, 3)) //[cite: 1]
           ],
         ),
-        child: const Center(child: Text('🏐', style: TextStyle(fontSize: 18))), //[cite: 1]
+        child: const Center(
+            child: Text('🏐', style: TextStyle(fontSize: 18))), //[cite: 1]
       ),
       const SizedBox(width: 10), //[cite: 1]
       const Text('VolleyPlan',
@@ -1624,8 +1639,8 @@ class _LandingScreenState extends State<LandingScreen>
         FadeTransition(
           opacity: _badgeFade, //[cite: 1]
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 7), //[cite: 1]
+            padding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 7), //[cite: 1]
             decoration: BoxDecoration(
               color: AppColors.red.withOpacity(0.08), //[cite: 1]
               borderRadius: BorderRadius.circular(30), //[cite: 1]
@@ -1639,9 +1654,10 @@ class _LandingScreenState extends State<LandingScreen>
                     width: 6, //[cite: 1]
                     height: 6, //[cite: 1]
                     decoration: const BoxDecoration(
-                        color: AppColors.red, shape: BoxShape.circle)), //[cite: 1]
+                        color: AppColors.red,
+                        shape: BoxShape.circle)), //[cite: 1]
                 const SizedBox(width: 8), //[cite: 1]
-                const Text('COACH EDITION v1.0',
+                Text(l10n.landingHeroBadge,
                     style: TextStyle(
                         color: AppColors.red, //[cite: 1]
                         fontSize: 11, //[cite: 1]
@@ -1658,18 +1674,18 @@ class _LandingScreenState extends State<LandingScreen>
           child: FadeTransition(
             opacity: _titleFade, //[cite: 1]
             child: RichText(
-              text: const TextSpan(
-                style: TextStyle(
+              text: TextSpan(
+                style: const TextStyle(
                     fontSize: 52, //[cite: 1]
                     fontWeight: FontWeight.w900, //[cite: 1]
                     color: AppColors.charcoal, //[cite: 1]
                     height: 1.05, //[cite: 1]
                     letterSpacing: -1.5), //[cite: 1]
                 children: [
-                  TextSpan(text: 'L\'excellence\ndu coaching\n'), //[cite: 1]
+                  TextSpan(text: l10n.landingHeroTitle1), //[cite: 1]
                   TextSpan(
-                      text: 'commence ici.',
-                      style: TextStyle(color: AppColors.red)), //[cite: 1]
+                      text: l10n.landingHeroTitle2,
+                      style: const TextStyle(color: AppColors.red)), //[cite: 1]
                 ],
               ),
             ),
@@ -1681,8 +1697,8 @@ class _LandingScreenState extends State<LandingScreen>
           position: _subtitleSlide, //[cite: 1]
           child: FadeTransition(
             opacity: _subtitleFade, //[cite: 1]
-            child: const Text(
-              'Gérez vos joueurs, concevez des plannings précis\net analysez vos performances — tout en un.', //[cite: 1]
+            child: Text(
+              l10n.landingHeroSubtitle, //[cite: 1]
               style: TextStyle(
                   fontSize: 17, //[cite: 1]
                   color: AppColors.gray, //[cite: 1]
@@ -1698,30 +1714,31 @@ class _LandingScreenState extends State<LandingScreen>
           child: FadeTransition(
             opacity: _ctaFade, //[cite: 1]
             child: // REMPLACE LE ROW PAR CE WRAP RESPONSIVE
-Wrap(
-  spacing: 16,         // Équivalent du SizedBox(width: 16) entre les boutons
-  runSpacing: 12,      // Espace vertical automatique si le bouton "Connexion" passe en dessous
-  alignment: WrapAlignment.start,
-  crossAxisAlignment: WrapCrossAlignment.center,
-  children: [
-    VpButton(
-      label: 'Démarrer gratuitement',
-      icon: Icons.arrow_forward_rounded,
-      onPressed: () => context.push('/register'),
-    ),
-    TextButton.icon(
-      onPressed: () => context.push('/login'),
-      icon: const Icon(Icons.login_rounded,
-          size: 16, color: AppColors.charcoal),
-      label: const Text(
-        'Connexion',
-        style: TextStyle(
-            color: AppColors.charcoal,
-            fontWeight: FontWeight.w600),
-      ),
-    ),
-  ],
-),
+                Wrap(
+              spacing:
+                  16, // Équivalent du SizedBox(width: 16) entre les boutons
+              runSpacing:
+                  12, // Espace vertical automatique si le bouton "Connexion" passe en dessous
+              alignment: WrapAlignment.start,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                VpButton(
+                  label: l10n.landingCtaStart,
+                  icon: Icons.arrow_forward_rounded,
+                  onPressed: () => context.push('/register'),
+                ),
+                TextButton.icon(
+                  onPressed: () => context.push('/login'),
+                  icon: const Icon(Icons.login_rounded,
+                      size: 16, color: AppColors.charcoal),
+                  label: Text(
+                    l10n.loginAction,
+                    style: const TextStyle(
+                        color: AppColors.charcoal, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -1729,6 +1746,7 @@ Wrap(
   }
 
   Widget _buildHeroVisual() {
+    final l10n = AppLocalizations.of(context)!;
     return AnimatedBuilder(
       animation: _floatController, //[cite: 1]
       builder: (context, child) {
@@ -1742,30 +1760,30 @@ Wrap(
                 left: 0, //[cite: 1]
                 right: 40, //[cite: 1]
                 child: _buildFloatingCard(
-                  title: 'Prépa Championnat', //[cite: 1]
-                  subtitle: '8 séances · Groupe · Mensuel', //[cite: 1]
+                  title: l10n.landingVisualPlanTitle, //[cite: 1]
+                  subtitle: l10n.landingVisualPlanSub, //[cite: 1]
                   icon: Icons.calendar_month_rounded, //[cite: 1]
                   color: AppColors.red, //[cite: 1]
-                  tags: ['Service', 'Attaque', 'Défense'], //[cite: 1]
+                  tags: [l10n.domaineService, l10n.domaineAttaque, l10n.domaineDefense], //[cite: 1]
                 ),
               ),
               Positioned(
                 top: 160 + _float2.value, //[cite: 1]
                 right: 0, //[cite: 1]
                 left: 30, //[cite: 1]
-                child: _buildBilanCard(), //[cite: 1]
+                child: _buildBilanCard(l10n), //[cite: 1]
               ),
               Positioned(
                 bottom: 30 + _float1.value * 0.5, //[cite: 1]
                 left: 10, //[cite: 1]
-                child: _buildBadgeCard(
-                    '👥', '12 joueurs', 'Roster actif', AppColors.yellow), //[cite: 1]
+                child: _buildBadgeCard('👥', l10n.landingVisualPlayersCount, l10n.landingVisualRosterActive,
+                    AppColors.yellow), //[cite: 1]
               ),
               Positioned(
                 bottom: 60 + _float2.value * 0.5, //[cite: 1]
                 right: 10, //[cite: 1]
-                child: _buildBadgeCard(
-                    '📄', 'Export PDF', 'Partageable', AppColors.red), //[cite: 1]
+                child: _buildBadgeCard('📄', l10n.landingVisualExportPdf, l10n.landingVisualShareable,
+                    AppColors.red), //[cite: 1]
               ),
             ],
           ),
@@ -1826,13 +1844,13 @@ Wrap(
                   ]),
             ),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3), //[cite: 1]
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 3), //[cite: 1]
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1), //[cite: 1]
                 borderRadius: BorderRadius.circular(20), //[cite: 1]
               ),
-              child: Text('Actif',
+              child: Text(l10n.landingVisualActive,
                   style: TextStyle(
                       color: color, //[cite: 1]
                       fontSize: 10, //[cite: 1]
@@ -1863,7 +1881,7 @@ Wrap(
     );
   }
 
-  Widget _buildBilanCard() {
+  Widget _buildBilanCard(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(18), //[cite: 1]
       decoration: BoxDecoration(
@@ -1879,24 +1897,25 @@ Wrap(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, //[cite: 1]
         children: [
-          const Row(children: [
-            Icon(Icons.analytics_rounded, //[cite: 1]
-                color: AppColors.yellow, size: 16), //[cite: 1]
+          Row(children: [
+            const Icon(Icons.analytics_rounded, //[cite: 1]
+                color: AppColors.yellow,
+                size: 16), //[cite: 1]
             SizedBox(width: 8), //[cite: 1]
-            Text('Bilan mensuel',
-                style: TextStyle(
+            Text(l10n.landingVisualReportTitle,
+                style: const TextStyle(
                     color: AppColors.white, //[cite: 1]
                     fontWeight: FontWeight.w700, //[cite: 1]
                     fontSize: 12)), //[cite: 1]
           ]),
           const SizedBox(height: 14), //[cite: 1]
-          _buildMiniBar('Service', 0.72, AppColors.red), //[cite: 1]
+          _buildMiniBar(l10n.domaineService, 0.72, AppColors.red), //[cite: 1]
           const SizedBox(height: 6), //[cite: 1]
-          _buildMiniBar('Attaque', 0.58, AppColors.yellow), //[cite: 1]
+          _buildMiniBar(l10n.domaineAttaque, 0.58, AppColors.yellow), //[cite: 1]
           const SizedBox(height: 6), //[cite: 1]
-          _buildMiniBar('Défense', 0.45, const Color(0xFF06D6A0)), //[cite: 1]
+          _buildMiniBar(l10n.domaineDefense, 0.45, const Color(0xFF06D6A0)), //[cite: 1]
           const SizedBox(height: 6), //[cite: 1]
-          _buildMiniBar('Physique', 0.30, const Color(0xFF3A86FF)), //[cite: 1]
+          _buildMiniBar(l10n.domainePhysique, 0.30, const Color(0xFF3A86FF)), //[cite: 1]
         ],
       ),
     );
@@ -1908,7 +1927,9 @@ Wrap(
         width: 52, //[cite: 1]
         child: Text(label,
             style: const TextStyle(
-                color: AppColors.gray, fontSize: 10, fontWeight: FontWeight.w500)), //[cite: 1]
+                color: AppColors.gray,
+                fontSize: 10,
+                fontWeight: FontWeight.w500)), //[cite: 1]
       ),
       const SizedBox(width: 8), //[cite: 1]
       Expanded(
@@ -1925,14 +1946,16 @@ Wrap(
       const SizedBox(width: 8), //[cite: 1]
       Text('${(value * 100).toInt()}%',
           style: TextStyle(
-              color: color, fontSize: 10, fontWeight: FontWeight.w700)), //[cite: 1]
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w700)), //[cite: 1]
     ]);
   }
 
-  Widget _buildBadgeCard(
-      String emoji, String title, String sub, Color color) {
+  Widget _buildBadgeCard(String emoji, String title, String sub, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), //[cite: 1]
+      padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 10), //[cite: 1]
       decoration: BoxDecoration(
         color: AppColors.white, //[cite: 1]
         borderRadius: BorderRadius.circular(14), //[cite: 1]
@@ -1942,19 +1965,23 @@ Wrap(
               blurRadius: 16, //[cite: 1]
               offset: const Offset(0, 4)), //[cite: 1]
         ],
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5), //[cite: 1]
+        border:
+            Border.all(color: color.withOpacity(0.2), width: 1.5), //[cite: 1]
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [ //[cite: 1]
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        //[cite: 1]
         Text(emoji, style: const TextStyle(fontSize: 20)), //[cite: 1]
         const SizedBox(width: 10), //[cite: 1]
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [ //[cite: 1]
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          //[cite: 1]
           Text(title,
               style: const TextStyle(
                   fontWeight: FontWeight.w800, //[cite: 1]
                   fontSize: 12, //[cite: 1]
                   color: AppColors.charcoal)), //[cite: 1]
           Text(sub,
-              style: const TextStyle(fontSize: 10, color: AppColors.gray)), //[cite: 1]
+              style: const TextStyle(
+                  fontSize: 10, color: AppColors.gray)), //[cite: 1]
         ]),
       ]),
     );
@@ -1962,12 +1989,33 @@ Wrap(
 
   // ─── STATS ─────────────────────────────────────────────────────────────────
   Widget _buildStats(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
     final stats = [
-      {'value': 500, 'suffix': '+', 'label': 'Coachs actifs', 'icon': '👨‍💼'}, //[cite: 1]
-      {'value': 3200, 'suffix': '+', 'label': 'Plannings créés', 'icon': '📋'}, //[cite: 1]
-      {'value': 98, 'suffix': '%', 'label': 'Satisfaction', 'icon': '⭐'}, //[cite: 1]
-      {'value': 12, 'suffix': 'k+', 'label': 'Séances planifiées', 'icon': '📅'}, //[cite: 1]
+      {
+        'value': 500,
+        'suffix': '+',
+        'label': l10n.landingStatCoaches,
+        'icon': '👨‍💼'
+      }, //[cite: 1]
+      {
+        'value': 3200,
+        'suffix': '+',
+        'label': l10n.landingStatPlannings,
+        'icon': '📋'
+      }, //[cite: 1]
+      {
+        'value': 98,
+        'suffix': '%',
+        'label': l10n.landingStatSatisfaction,
+        'icon': '⭐'
+      }, //[cite: 1]
+      {
+        'value': 12,
+        'suffix': 'k+',
+        'label': l10n.landingStatSessions,
+        'icon': '📅'
+      }, //[cite: 1]
     ];
 
     return Container(
@@ -1995,7 +2043,8 @@ Wrap(
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly, //[cite: 1]
               children: stats
-                  .map((s) => Expanded(child: _buildStatItem(s, isMobile))) //[cite: 1]
+                  .map((s) =>
+                      Expanded(child: _buildStatItem(s, isMobile))) //[cite: 1]
                   .toList(),
             ),
     );
@@ -2007,7 +2056,8 @@ Wrap(
       builder: (context, child) {
         final val =
             ((s['value'] as int) * _statsProgress.value).toInt(); //[cite: 1]
-        return Column(children: [ //[cite: 1]
+        return Column(children: [
+          //[cite: 1]
           Text(s['icon'] as String,
               style: TextStyle(fontSize: isMobile ? 28 : 36)), //[cite: 1]
           const SizedBox(height: 10), //[cite: 1]
@@ -2032,50 +2082,50 @@ Wrap(
   }
 
   // ─── FEATURES ──────────────────────────────────────────────────────────────
-  Widget _buildFeatures(BuildContext context) {
+  Widget _buildFeatures(BuildContext context, AppLocalizations l10n) {
     final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
     final features = [
       {
         'icon': Icons.calendar_month_rounded, //[cite: 1]
         'color': AppColors.red, //[cite: 1]
-        'title': 'Plannings Intelligents', //[cite: 1]
-        'desc': 'Créez des cycles d\'entraînement structurés en mode Groupe ou Spécifique par postes. 8 domaines couverts.', //[cite: 1]
-        'tag': 'Création', //[cite: 1]
+        'title': l10n.featurePlanningTitle, //[cite: 1]
+        'desc': l10n.featurePlanningDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagCreation, //[cite: 1]
       },
       {
         'icon': Icons.people_alt_rounded, //[cite: 1]
         'color': const Color(0xFF3A86FF), //[cite: 1]
-        'title': 'Gestion d\'Effectif', //[cite: 1]
-        'desc': 'Gérez votre roster, suivez les postes, ajoutez ou retirez des joueurs au fil des transferts de saison.', //[cite: 1]
-        'tag': 'Joueurs', //[cite: 1]
+        'title': l10n.featurePlayersTitle, //[cite: 1]
+        'desc': l10n.featurePlayersDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagPlayers, //[cite: 1]
       },
       {
         'icon': Icons.analytics_rounded, //[cite: 1]
         'color': AppColors.yellow, //[cite: 1]
-        'title': 'Bilans Automatisés', //[cite: 1]
-        'desc': 'Visualisez la répartition technique de vos séances et recevez des recommandations d\'équilibre.', //[cite: 1]
-        'tag': 'Analyse', //[cite: 1]
+        'title': l10n.featureAnalyseTitle, //[cite: 1]
+        'desc': l10n.featureAnalyseDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagAnalyse, //[cite: 1]
       },
       {
         'icon': Icons.picture_as_pdf_rounded, //[cite: 1]
         'color': const Color(0xFF06D6A0), //[cite: 1]
-        'title': 'Export PDF WhatsApp', //[cite: 1]
-        'desc': 'Générez un PDF professionnel de votre planning et partagez-le directement avec vos joueurs.', //[cite: 1]
-        'tag': 'Partage', //[cite: 1]
+        'title': l10n.featureExportTitle, //[cite: 1]
+        'desc': l10n.featureExportDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagShare, //[cite: 1]
       },
       {
         'icon': Icons.group_add_rounded, //[cite: 1]
         'color': const Color(0xFF8338EC), //[cite: 1]
-        'title': 'Collaboration Staff', //[cite: 1]
-        'desc': 'Invitez vos adjoints à consulter ou modifier vos plannings. Travaillez en équipe en temps réel.', //[cite: 1]
-        'tag': 'Équipe', //[cite: 1]
+        'title': l10n.featureStaffTitle, //[cite: 1]
+        'desc': l10n.featureStaffDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagTeam, //[cite: 1]
       },
       {
         'icon': Icons.fitness_center_rounded, //[cite: 1]
         'color': const Color(0xFFEF476F), //[cite: 1]
-        'title': 'Physique & Technique', //[cite: 1]
-        'desc': 'Gérez les séances de musculation et endurance en plus des aspects techniques volleyball.', //[cite: 1]
-        'tag': 'Physique', //[cite: 1]
+        'title': l10n.featurePhysiqueTitle, //[cite: 1]
+        'desc': l10n.featurePhysiqueDesc, //[cite: 1]
+        'tag': l10n.landingFeatureTagPhysique, //[cite: 1]
       },
     ];
 
@@ -2085,14 +2135,14 @@ Wrap(
       color: AppColors.offWhite, //[cite: 1]
       child: Column(children: [
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 6), //[cite: 1]
+          padding: const EdgeInsets.symmetric(
+              horizontal: 12, vertical: 6), //[cite: 1]
           decoration: BoxDecoration(
             color: AppColors.red.withOpacity(0.08), //[cite: 1]
             borderRadius: BorderRadius.circular(20), //[cite: 1]
           ),
-          child: const Text('FONCTIONNALITÉS',
-              style: TextStyle(
+          child: Text(l10n.landingFeatureLabel,
+              style: const TextStyle(
                   color: AppColors.red, //[cite: 1]
                   fontSize: 11, //[cite: 1]
                   fontWeight: FontWeight.w800, //[cite: 1]
@@ -2101,8 +2151,8 @@ Wrap(
         const SizedBox(height: 16), //[cite: 1]
         Text(
           isMobile
-              ? 'Pensé pour les coachs' //[cite: 1]
-              : 'Pensé par des coachs, pour des coachs', //[cite: 1]
+              ? l10n.landingFeatureHeadingMobile //[cite: 1]
+              : l10n.landingFeatureHeading, //[cite: 1]
           textAlign: TextAlign.center, //[cite: 1]
           style: TextStyle(
               fontSize: isMobile ? 26 : 36, //[cite: 1]
@@ -2111,10 +2161,10 @@ Wrap(
               letterSpacing: -0.8), //[cite: 1]
         ),
         const SizedBox(height: 10), //[cite: 1]
-        const Text(
-          'Tout ce dont vous avez besoin pour professionnaliser votre coaching.',
+        Text(
+          l10n.landingFeatureSubheading,
           textAlign: TextAlign.center, //[cite: 1]
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 16, color: AppColors.gray, height: 1.5), //[cite: 1]
         ),
         const SizedBox(height: 56), //[cite: 1]
@@ -2123,7 +2173,8 @@ Wrap(
             ? Column(
                 children: features
                     .map((f) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16), //[cite: 1]
+                          padding:
+                              const EdgeInsets.only(bottom: 16), //[cite: 1]
                           child: _buildFeatureCard(f), //[cite: 1]
                         ))
                     .toList(),
@@ -2173,7 +2224,8 @@ Wrap(
                 decoration: BoxDecoration(
                     color: color.withOpacity(0.1), //[cite: 1]
                     borderRadius: BorderRadius.circular(12)), //[cite: 1]
-                child: Icon(f['icon'] as IconData, color: color, size: 22), //[cite: 1]
+                child: Icon(f['icon'] as IconData,
+                    color: color, size: 22), //[cite: 1]
               ),
               const Spacer(), //[cite: 1]
               Container(
@@ -2212,6 +2264,7 @@ Wrap(
 
   // ─── CTA SECTION ───────────────────────────────────────────────────────────
   Widget _buildCTA(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768; //[cite: 1]
     return Container(
       margin: EdgeInsets.symmetric(
@@ -2256,8 +2309,8 @@ Wrap(
             children: [
               Text(
                 isMobile
-                    ? 'Prêt à structurer\nvotre saison ?' //[cite: 1]
-                    : 'Prêt à structurer votre saison ?', //[cite: 1]
+                    ? l10n.landingCtaTitle.replaceFirst(' ', '\n') //[cite: 1]
+                    : l10n.landingCtaTitle, //[cite: 1]
                 textAlign: TextAlign.center, //[cite: 1]
                 style: TextStyle(
                     fontSize: isMobile ? 26 : 38, //[cite: 1]
@@ -2267,11 +2320,13 @@ Wrap(
                     letterSpacing: -0.8), //[cite: 1]
               ),
               const SizedBox(height: 16), //[cite: 1]
-              const Text(
-                'Rejoignez les coachs qui font confiance à VolleyPlan\npour structurer leurs entraînements.',
+              Text(
+                l10n.landingCtaSubtitle,
                 textAlign: TextAlign.center, //[cite: 1]
-                style: TextStyle(
-                    color: AppColors.gray, fontSize: 15, height: 1.6), //[cite: 1]
+                style: const TextStyle(
+                    color: AppColors.gray,
+                    fontSize: 15,
+                    height: 1.6), //[cite: 1]
               ),
               const SizedBox(height: 36), //[cite: 1]
               Wrap(
@@ -2280,12 +2335,12 @@ Wrap(
                 alignment: WrapAlignment.center, //[cite: 1]
                 children: [
                   VpButton(
-                    label: 'Commencer gratuitement',
+                    label: l10n.landingCtaStart,
                     icon: Icons.rocket_launch_rounded, //[cite: 1]
                     onPressed: () => context.push('/register'), //[cite: 1]
                   ),
                   VpButton(
-                    label: 'Se connecter',
+                    label: l10n.loginAction,
                     variant: VpButtonVariant.ghost, //[cite: 1]
                     onPressed: () => context.push('/login'), //[cite: 1]
                   ),
@@ -2302,7 +2357,8 @@ Wrap(
   Widget _buildFooter() {
     final year = DateTime.now().year; //[cite: 1]
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48), //[cite: 1]
+      padding:
+          const EdgeInsets.symmetric(horizontal: 40, vertical: 48), //[cite: 1]
       color: AppColors.charcoal, //[cite: 1]
       width: double.infinity, //[cite: 1]
       child: Column(children: [
@@ -2316,13 +2372,15 @@ Wrap(
         const Divider(color: Colors.white12), //[cite: 1]
         const SizedBox(height: 20), //[cite: 1]
         LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth < 600) { //[cite: 1]
+          if (constraints.maxWidth < 600) {
+            //[cite: 1]
             return Column(children: [
               Text('© $year VolleyPlan. Tous droits réservés.', //[cite: 1]
                   style: const TextStyle(
                       color: AppColors.gray, fontSize: 12)), //[cite: 1]
               const SizedBox(height: 6), //[cite: 1]
-              const Text('Développé avec passion pour le Volleyball 🏐', //[cite: 1]
+              const Text(
+                  'Développé avec passion pour le Volleyball 🏐', //[cite: 1]
                   style: TextStyle(
                       color: AppColors.gray, fontSize: 12)), //[cite: 1]
             ]);
@@ -2335,8 +2393,8 @@ Wrap(
                         color: AppColors.gray, fontSize: 12)), //[cite: 1]
                 const Text(
                     'Développé avec passion pour le Volleyball 🏐', //[cite: 1]
-                    style:
-                        TextStyle(color: AppColors.gray, fontSize: 12)), //[cite: 1]
+                    style: TextStyle(
+                        color: AppColors.gray, fontSize: 12)), //[cite: 1]
               ]);
         }),
       ]),
@@ -2352,9 +2410,11 @@ class _AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.white,
       width: double.infinity,
       child: Column(
@@ -2362,17 +2422,22 @@ class _AboutSection extends StatelessWidget {
           const Text('🏐', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
           Text(
-            'L\'Assistant Tactique des Coachs Modernes',
+            l10n.landingAboutTitle,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal, letterSpacing: -0.5),
+            style: TextStyle(
+                fontSize: isMobile ? 26 : 32,
+                fontWeight: FontWeight.w900,
+                color: AppColors.charcoal,
+                letterSpacing: -0.5),
           ),
           const SizedBox(height: 24),
           Container(
             constraints: const BoxConstraints(maxWidth: 800),
-            child: const Text(
-              'VolleyPlan n\'est pas qu\'un simple calendrier. C\'est un véritable outil d\'intelligence sportive conçu pour éradiquer la charge mentale des coachs. Nous transformons vos intuitions tactiques en données structurées. Équilibrez vos séances, prévenez le surmenage de vos joueurs et amenez votre effectif au pic de sa forme le jour de la compétition, sans passer des heures sur Excel.',
+            child: Text(
+              l10n.landingAboutContent,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: AppColors.gray, height: 1.65),
+              style: const
+                  TextStyle(fontSize: 16, color: AppColors.gray, height: 1.65),
             ),
           ),
         ],
@@ -2389,24 +2454,31 @@ class _HowItWorksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.offWhite,
       width: double.infinity,
       child: Column(
         children: [
-          Text('En 4 étapes simples', style: TextStyle(fontSize: isMobile ? 26 : 30, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          Text(l10n.landingHowTitle,
+              style: TextStyle(
+                  fontSize: isMobile ? 26 : 30,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal)),
           const SizedBox(height: 48),
           Wrap(
             spacing: 24,
             runSpacing: 24,
             alignment: WrapAlignment.center,
             children: [
-              _stepCard('1', 'Roster', 'Créez votre équipe et assignez les postes clés en quelques secondes.'),
-              _stepCard('2', 'Planification', 'Générez des cycles d\'entraînements techniques ou physiques ciblés.'),
-              _stepCard('3', 'Analyse', 'Vérifiez la charge globale (Service, Réception, Physique) pour éviter les blessures.'),
-              _stepCard('4', 'Action', 'Exportez en un clic un PDF propre et partagez-le directement sur WhatsApp.'),
+              _stepCard('1', l10n.landingHowStep1Title, l10n.landingHowStep1Desc),
+              _stepCard('2', l10n.landingHowStep2Title, l10n.landingHowStep2Desc),
+              _stepCard('3', l10n.landingHowStep3Title, l10n.landingHowStep3Desc),
+              _stepCard('4', l10n.landingHowStep4Title, l10n.landingHowStep4Desc),
+              _stepCard('5', l10n.landingHowStep5Title, l10n.landingHowStep5Desc),
             ],
           ),
         ],
@@ -2428,12 +2500,21 @@ class _HowItWorksSection extends StatelessWidget {
           CircleAvatar(
             backgroundColor: AppColors.yellow,
             radius: 20,
-            child: Text(number, style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+            child: Text(number,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w900, color: AppColors.charcoal)),
           ),
           const SizedBox(height: 18),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.charcoal)),
           const SizedBox(height: 8),
-          Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gray, fontSize: 13, height: 1.5)),
+          Text(desc,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: AppColors.gray, fontSize: 13, height: 1.5)),
         ],
       ),
     );
@@ -2455,6 +2536,7 @@ class _WhyVolleyPlanSectionState extends State<_WhyVolleyPlanSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2462,60 +2544,129 @@ class _WhyVolleyPlanSectionState extends State<_WhyVolleyPlanSection> {
     });
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.charcoal,
       width: double.infinity,
       child: Column(
         children: [
-          Text('La Solution Ultime', style: TextStyle(fontSize: isMobile ? 28 : 36, fontWeight: FontWeight.w900, color: AppColors.white)),
+          Text(l10n.landingWhyTitle,
+              style: TextStyle(
+                  fontSize: isMobile ? 28 : 36,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.white)),
           const SizedBox(height: 8),
-          const Text('Pensé pour ceux qui dirigent, adoré par ceux qui jouent.', style: TextStyle(color: AppColors.yellow, fontSize: 16, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+          Text(l10n.landingWhySubtitle,
+              style: const TextStyle(
+                  color: AppColors.yellow,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center),
           const SizedBox(height: 56),
-          
-          isMobile 
-          ? Column(
-              children: [
-                const Text('POUR LES COACHS 👨‍💼', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-                const SizedBox(height: 16),
-                _AnimatedBox(delay: 0, isVisible: _isVisible, title: 'Gain de temps massif', desc: 'Économisez jusqu\'à 5h par semaine sur la création et l\'ajustement de vos cycles.', icon: Icons.timer_10_rounded),
-                const SizedBox(height: 16),
-                _AnimatedBox(delay: 150, isVisible: _isVisible, title: 'Précision Tactique', desc: 'Des bilans graphiques vous alertent si vous négligez la défense ou le physique.', icon: Icons.analytics_rounded),
-                const SizedBox(height: 40),
-                const Text('POUR LES JOUEURS 🏃‍♂️', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-                const SizedBox(height: 16),
-                _AnimatedBox(delay: 300, isVisible: _isVisible, title: 'Clarté absolue', desc: 'Fini le flou. Des plannings PDF clairs envoyés directement sur leur smartphone.', icon: Icons.picture_as_pdf_rounded),
-                const SizedBox(height: 16),
-                _AnimatedBox(delay: 450, isVisible: _isVisible, title: 'Progression linéaire', desc: 'Savoir exactement ce qu\'on travaille donne du sens et booste l\'engagement aux entraînements.', icon: Icons.trending_up_rounded),
-              ],
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text('POUR LES COACHS 👨‍💼', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-                      const SizedBox(height: 24),
-                      _AnimatedBox(delay: 0, isVisible: _isVisible, title: 'Gain de temps massif', desc: 'Économisez jusqu\'à 5h par semaine sur la création et l\'ajustement de vos cycles.', icon: Icons.timer_10_rounded),
-                      const SizedBox(height: 16),
-                      _AnimatedBox(delay: 150, isVisible: _isVisible, title: 'Précision Tactique', desc: 'Des bilans graphiques vous alertent si vous négligez la défense ou le physique.', icon: Icons.analytics_rounded),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 40),
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text('POUR LES JOUEURS 🏃‍♂️', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-                      const SizedBox(height: 24),
-                      _AnimatedBox(delay: 300, isVisible: _isVisible, title: 'Clarté absolue', desc: 'Fini le flou. Des plannings PDF clairs envoyés directement sur leur smartphone.', icon: Icons.picture_as_pdf_rounded),
-                      const SizedBox(height: 16),
-                      _AnimatedBox(delay: 450, isVisible: _isVisible, title: 'Progression linéaire', desc: 'Savoir exactement ce qu\'on travaille donne du sens et booste l\'engagement aux entraînements.', icon: Icons.trending_up_rounded),
-                    ],
-                  ),
-                ),
-              ],
-            )
+          isMobile
+              ? Column(
+                  children: [
+                    Text(l10n.landingWhyCoachHeading,
+                        style: const TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                            letterSpacing: 1)),
+                    const SizedBox(height: 16),
+                    _AnimatedBox(
+                        delay: 0,
+                        isVisible: _isVisible,
+                        title: l10n.landingWhyCoach1Title,
+                        desc: l10n.landingWhyCoach1Desc,
+                        icon: Icons.timer_10_rounded),
+                    const SizedBox(height: 16),
+                    _AnimatedBox(
+                        delay: 150,
+                        isVisible: _isVisible,
+                        title: l10n.landingWhyCoach2Title,
+                        desc: l10n.landingWhyCoach2Desc,
+                        icon: Icons.analytics_rounded),
+                    const SizedBox(height: 40),
+                    Text(l10n.landingWhyPlayerHeading,
+                        style: const TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                            letterSpacing: 1)),
+                    const SizedBox(height: 16),
+                    _AnimatedBox(
+                        delay: 300,
+                        isVisible: _isVisible,
+                        title: l10n.landingWhyPlayer1Title,
+                        desc: l10n.landingWhyPlayer1Desc,
+                        icon: Icons.picture_as_pdf_rounded),
+                    const SizedBox(height: 16),
+                    _AnimatedBox(
+                        delay: 450,
+                        isVisible: _isVisible,
+                        title: l10n.landingWhyPlayer2Title,
+                        desc: l10n.landingWhyPlayer2Desc,
+                        icon: Icons.trending_up_rounded),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(l10n.landingWhyCoachHeading,
+                              style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18,
+                                  letterSpacing: 1)),
+                          const SizedBox(height: 24),
+                          _AnimatedBox(
+                              delay: 0,
+                              isVisible: _isVisible,
+                              title: l10n.landingWhyCoach1Title,
+                              desc: l10n.landingWhyCoach1Desc,
+                              icon: Icons.timer_10_rounded),
+                          const SizedBox(height: 16),
+                          _AnimatedBox(
+                              delay: 150,
+                              isVisible: _isVisible,
+                              title: l10n.landingWhyCoach2Title,
+                              desc: l10n.landingWhyCoach2Desc,
+                              icon: Icons.analytics_rounded),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(l10n.landingWhyPlayerHeading,
+                              style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18,
+                                  letterSpacing: 1)),
+                          const SizedBox(height: 24),
+                          _AnimatedBox(
+                              delay: 300,
+                              isVisible: _isVisible,
+                              title: l10n.landingWhyPlayer1Title,
+                              desc: l10n.landingWhyPlayer1Desc,
+                              icon: Icons.picture_as_pdf_rounded),
+                          const SizedBox(height: 16),
+                          _AnimatedBox(
+                              delay: 450,
+                              isVisible: _isVisible,
+                              title: l10n.landingWhyPlayer2Title,
+                              desc: l10n.landingWhyPlayer2Desc,
+                              icon: Icons.trending_up_rounded),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
         ],
       ),
     );
@@ -2529,7 +2680,12 @@ class _AnimatedBox extends StatelessWidget {
   final String desc;
   final IconData icon;
 
-  const _AnimatedBox({required this.delay, required this.isVisible, required this.title, required this.desc, required this.icon});
+  const _AnimatedBox(
+      {required this.delay,
+      required this.isVisible,
+      required this.title,
+      required this.desc,
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -2541,12 +2697,16 @@ class _AnimatedBox extends StatelessWidget {
         duration: Duration(milliseconds: 600 + delay),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: const Color(0xFF2d2d4e), borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(
+            color: const Color(0xFF2d2d4e),
+            borderRadius: BorderRadius.circular(18)),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: AppColors.red.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                  color: AppColors.red.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: AppColors.red, size: 28),
             ),
             const SizedBox(width: 18),
@@ -2554,9 +2714,15 @@ class _AnimatedBox extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(title,
+                      style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15)),
                   const SizedBox(height: 4),
-                  Text(desc, style: const TextStyle(color: AppColors.gray, fontSize: 12, height: 1.4)),
+                  Text(desc,
+                      style: const TextStyle(
+                          color: AppColors.gray, fontSize: 12, height: 1.4)),
                 ],
               ),
             ),
@@ -2575,16 +2741,25 @@ class _GuideSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.white,
       width: double.infinity,
       child: Column(
         children: [
-          Text('Guide d\'utilisation', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          Text(l10n.landingGuideTitle,
+              style: TextStyle(
+                  fontSize: isMobile ? 26 : 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal)),
           const SizedBox(height: 12),
-          const Text('Découvrez l\'application en action en moins de deux minutes.', style: TextStyle(color: AppColors.gray, fontSize: 15), textAlign: TextAlign.center),
+          Text(
+              l10n.landingGuideSubtitle,
+              style: const TextStyle(color: AppColors.gray, fontSize: 15),
+              textAlign: TextAlign.center),
           const SizedBox(height: 40),
           Container(
             constraints: const BoxConstraints(maxWidth: 900),
@@ -2599,10 +2774,13 @@ class _GuideSection extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Icon(Icons.play_circle_fill_rounded, size: 72, color: AppColors.red),
+                  const Icon(Icons.play_circle_fill_rounded,
+                      size: 72, color: AppColors.red),
                   Opacity(
                     opacity: 0.05,
-                    child: Text('🏐' * 40, style: const TextStyle(fontSize: 24), textAlign: TextAlign.center),
+                    child: Text('🏐' * 40,
+                        style: const TextStyle(fontSize: 24),
+                        textAlign: TextAlign.center),
                   )
                 ],
               ),
@@ -2622,30 +2800,51 @@ class _TestimonialsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.offWhite,
       width: double.infinity,
       child: Column(
         children: [
-          Text('Ils dominent le terrain avec nous', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal), textAlign: TextAlign.center),
+          Text(l10n.landingTestimonialsTitle,
+              style: TextStyle(
+                  fontSize: isMobile ? 26 : 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal),
+              textAlign: TextAlign.center),
           const SizedBox(height: 48),
           isMobile
-          ? Column(
-              children: [
-                _testimonialCard('« Avant VolleyPlan, je faisais tout sur un cahier ou Excel et je perdais mes fiches de match. Cette appli a sauvé mes nuits de préparation. L\'export PDF WhatsApp est incroyable. »', 'Coach Marc, Division Régionale', AppColors.red),
-                const SizedBox(height: 20),
-                _testimonialCard('« C\'est un plaisir de recevoir le programme précis par message avant d\'arriver à la salle. Mentalement, on sait exactement l\'intensité attendue au service et en bloc. »', 'Youssouf, Réceptionneur-Attaquant', AppColors.yellow),
-              ],
-            )
-          : Row(
-              children: [
-                Expanded(child: _testimonialCard('« Avant VolleyPlan, je faisais tout sur un cahier ou Excel et je perdais mes fiches de match. Cette appli a sauvé mes nuits de préparation. L\'export PDF WhatsApp est incroyable. »', 'Coach Marc, Division Régionale', AppColors.red)),
-                const SizedBox(width: 24),
-                Expanded(child: _testimonialCard('« C\'est un plaisir de recevoir le programme précis par message avant d\'arriver à la salle. Mentalement, on sait exactement l\'intensité attendue au service et en bloc. »', 'Youssouf, Réceptionneur-Attaquant', AppColors.yellow)),
-              ],
-            ),
+              ? Column(
+                  children: [
+                    _testimonialCard(
+                        l10n.landingTestimonial1Quote,
+                        l10n.landingTestimonial1Author,
+                        AppColors.red),
+                    const SizedBox(height: 20),
+                    _testimonialCard(
+                        l10n.landingTestimonial2Quote,
+                        l10n.landingTestimonial2Author,
+                        AppColors.yellow),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                        child: _testimonialCard(
+                            l10n.landingTestimonial1Quote,
+                            l10n.landingTestimonial1Author,
+                            AppColors.red)),
+                    const SizedBox(width: 24),
+                    Expanded(
+                        child: _testimonialCard(
+                            l10n.landingTestimonial2Quote,
+                            l10n.landingTestimonial2Author,
+                            AppColors.yellow)),
+                  ],
+                ),
         ],
       ),
     );
@@ -2655,18 +2854,32 @@ class _TestimonialsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.white, 
-        borderRadius: BorderRadius.circular(20), 
-        boxShadow: [BoxShadow(color: AppColors.charcoal.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))]
-      ),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.charcoal.withOpacity(0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 4))
+          ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.format_quote_rounded, color: color.withOpacity(0.3), size: 44),
+          Icon(Icons.format_quote_rounded,
+              color: color.withOpacity(0.3), size: 44),
           const SizedBox(height: 12),
-          Text(quote, style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: AppColors.charcoal, height: 1.6)),
+          Text(quote,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.charcoal,
+                  height: 1.6)),
           const SizedBox(height: 20),
-          Text(author, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal, fontSize: 13)),
+          Text(author,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.charcoal,
+                  fontSize: 13)),
         ],
       ),
     );
@@ -2681,23 +2894,29 @@ class _FAQSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      padding:
+          EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
       color: AppColors.white,
       width: double.infinity,
       child: Column(
         children: [
-          Text('Foire Aux Questions', style: TextStyle(fontSize: isMobile ? 26 : 32, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+          Text(l10n.landingFaqTitle,
+              style: TextStyle(
+                  fontSize: isMobile ? 26 : 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal)),
           const SizedBox(height: 40),
           Container(
             constraints: const BoxConstraints(maxWidth: 800),
             child: Column(
               children: [
-                _faqItem('L\'application est-elle gratuite ?', 'Oui ! La version actuelle permet de configurer entièrement votre effectif, de concevoir vos plannings de cycles et d\'exporter vos séances gratuitement. Des outils de statistiques avancés arriveront plus tard.'),
-                _faqItem('Mes joueurs doivent-ils créer un compte ?', 'Non, pas du tout. C\'est la force de VolleyPlan. Seul le coach utilise l\'application. Les joueurs reçoivent simplement une feuille de route claire et lisible au format PDF directement sur WhatsApp ou par mail.'),
-                _faqItem('Puis-je planifier autre chose que de la technique ?', 'Absolument. VolleyPlan intègre un module physique complet pour suivre la musculation, le cardio, l\'endurance et la récupération en dehors des heures de jeu pur.'),
-                _faqItem('Est-ce adapté aux équipes de beach-volley ?', 'Oui, la gestion d\'effectif et des postes s\'adapte parfaitement aux petits rosters et permet de cibler des séances très individualisées.'),
+                _faqItem(l10n.landingFaq1Q, l10n.landingFaq1A),
+                _faqItem(l10n.landingFaq2Q, l10n.landingFaq2A),
+                _faqItem(l10n.landingFaq3Q, l10n.landingFaq3A),
+                _faqItem(l10n.landingFaq4Q, l10n.landingFaq4A),
               ],
             ),
           ),
@@ -2710,13 +2929,19 @@ class _FAQSection extends StatelessWidget {
     return Theme(
       data: ThemeData().copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        title: Text(question, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal, fontSize: 15)),
+        title: Text(question,
+            style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppColors.charcoal,
+                fontSize: 15)),
         iconColor: AppColors.red,
         collapsedIconColor: AppColors.gray,
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-            child: Text(answer, style: const TextStyle(color: AppColors.gray, fontSize: 14, height: 1.5)),
+            child: Text(answer,
+                style: const TextStyle(
+                    color: AppColors.gray, fontSize: 14, height: 1.5)),
           )
         ],
       ),
@@ -2746,12 +2971,10 @@ class _HoverCardState extends State<_HoverCard>
     super.initState();
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 200));
-    _elevation = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _translate =
-        Tween<Offset>(begin: Offset.zero, end: const Offset(0, -0.012))
-            .animate(CurvedAnimation(
-                parent: _controller, curve: Curves.easeOut));
+    _elevation = Tween<double>(begin: 0, end: 1)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _translate = Tween<Offset>(begin: Offset.zero, end: const Offset(0, -0.012))
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -2802,10 +3025,12 @@ class _GridPainter extends CustomPainter {
       ..strokeWidth = 1; //[cite: 1]
 
     const step = 48.0; //[cite: 1]
-    for (double x = 0; x < size.width; x += step) { //[cite: 1]
+    for (double x = 0; x < size.width; x += step) {
+      //[cite: 1]
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint); //[cite: 1]
     }
-    for (double y = 0; y < size.height; y += step) { //[cite: 1]
+    for (double y = 0; y < size.height; y += step) {
+      //[cite: 1]
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint); //[cite: 1]
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 
@@ -16,21 +17,21 @@ class _InviteCollaboratorDialogState extends State<InviteCollaboratorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Inviter un collaborateur',
-          style: TextStyle(fontWeight: FontWeight.w800)),
+      title: Text(l10n.inviteCollaboratorTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-              'Entrez l\'adresse email du coach ou du préparateur physique à inviter sur ce planning.',
-              style: TextStyle(fontSize: 13, color: AppColors.gray)),
+          Text(l10n.inviteCollaboratorSubtitle,
+              style: const TextStyle(fontSize: 13, color: AppColors.gray)),
           const SizedBox(height: 16),
           TextField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              hintText: 'email@exemple.com',
+              hintText: l10n.inviteEmailHint,
               filled: true,
               fillColor: AppColors.grayXLight,
               border: OutlineInputBorder(
@@ -43,9 +44,9 @@ class _InviteCollaboratorDialogState extends State<InviteCollaboratorDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler')),
+            child: Text(l10n.cancelButton)),
         VpButton(
-          label: 'Envoyer l\'invitation',
+          label: l10n.inviteSendAction,
           onPressed: () {
             if (_emailCtrl.text.contains('@')) {
               widget.onInvite(_emailCtrl.text.trim());

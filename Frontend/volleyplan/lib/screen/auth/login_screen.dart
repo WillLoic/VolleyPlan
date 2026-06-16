@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/app_state.dart';
 import '../../utils/constants.dart';
 import '../../widgets/vp_button.dart';
@@ -35,21 +36,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showForgotPasswordDialog() {
     final emailController = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Mot de passe oublié",
+        title: Text(l10n.forgotPasswordTitle,
             style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                "Saisissez votre email pour recevoir un lien de réinitialisation."),
+            Text(
+                l10n.forgotPasswordMessage),
             const SizedBox(height: 16),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
-                  labelText: "Email", border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                  labelText: l10n.emailField, border: const OutlineInputBorder()),
               keyboardType: TextInputType.emailAddress,
             ),
           ],
@@ -57,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Annuler")),
+              child: Text(l10n.cancelAction)),
           ElevatedButton(
             onPressed: () async {
               final email = emailController.text.trim();
@@ -68,9 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (mounted) {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                          "Si votre compte existe, un email a été envoyé."),
+                          l10n.emailSentMessage),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -95,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       body: Center(
@@ -122,8 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: AppColors.charcoal)),
-                const Text('COACH EDITION',
-                    style: TextStyle(
+                Text(l10n.landingHeroBadge,
+                    style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: AppColors.yellow,
@@ -144,16 +147,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Connexion',
-                          style: TextStyle(
+                      Text(l10n.loginTitle,
+                          style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: AppColors.charcoal)),
                       const SizedBox(height: 20),
                       _field(
-                          'Email', _telCtrl, TextInputType.emailAddress),
+                          l10n.emailField, _telCtrl, TextInputType.emailAddress),
                       const SizedBox(height: 14),
-                      _field('Mot de passe', _pwdCtrl, TextInputType.text,
+                      _field(l10n.passwordField, _pwdCtrl, TextInputType.text,
                           obscure: _obscure,
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -178,22 +181,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                       const SizedBox(height: 24),
                       VpButton(
-                          label: 'Se connecter',
+                          label: l10n.loginAction,
                           onPressed: _login,
                           loading: _loading,
                           icon: Icons.login),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: _showForgotPasswordDialog,
-                        child: const Text("Mot de passe oublié ?",
+                        child: Text(l10n.forgotPasswordLink,
                             style:
-                                TextStyle(color: AppColors.gray, fontSize: 13)),
+                                const TextStyle(color: AppColors.gray, fontSize: 13)),
                       ),
                       const SizedBox(height: 14),
                       TextButton(
                         onPressed: () => context.go('/register'),
-                        child: const Text("Pas encore de compte ? S'inscrire",
-                            style: TextStyle(color: AppColors.red)),
+                        child: Text("${l10n.noAccountPrompt} ${l10n.registerAction}",
+                            style: const TextStyle(color: AppColors.red)),
                       ),
                     ],
                   ),

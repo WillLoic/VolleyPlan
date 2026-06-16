@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/app_state.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final l10n = AppLocalizations.of(context)!;
 
     // Si on vient de rafraîchir la page, on attend que tryAutoLogin ait fini de tout charger
     if (!state.isInitialized) {
@@ -40,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdmin = state.coach?.role == 'admin';
 
     final pages = [
-      _DashboardTab(),
+      _DashboardTab(onSeeAll: () => setState(() => _navIndex = 1)),
       _PlanningsTab(),
       _JoueursTab(),
       _GlobalBilanTab(),
@@ -84,27 +86,30 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedItemColor: AppColors.red,
               unselectedItemColor: AppColors.gray,
               items: [
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.home_rounded), label: 'Accueil'),
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.calendar_month_rounded),
-                    label: 'Plannings'),
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.people_rounded), label: 'Joueurs'),
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.analytics_rounded), label: 'Bilan'),
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.person_rounded), label: 'Profil'),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.home_rounded),
+                    label: l10n.homeLabel),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.calendar_month_rounded),
+                    label: l10n.navPlannings),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.people_rounded),
+                    label: l10n.navPlayers),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.analytics_rounded),
+                    label: l10n.navBilan),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.person_rounded),
+                    label: l10n.navProfile),
                 if (isAdmin)
-                  const BottomNavigationBarItem(
-                      icon: Icon(Icons.admin_panel_settings_rounded),
-                      label: 'Admin'),
+                  BottomNavigationBarItem(
+                      icon: const Icon(Icons.admin_panel_settings_rounded),
+                      label: l10n.navAdmin),
               ],
             ),
     );
   }
 }
-
 
 //on rend la barre lateral responsive
 
@@ -118,14 +123,15 @@ class _Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final items = [
-      (Icons.home_rounded, 'Accueil'),
-      (Icons.calendar_month_rounded, 'Plannings'),
-      (Icons.people_rounded, 'Joueurs'),
-      (Icons.analytics_rounded, 'Bilan Global'),
-      (Icons.person_rounded, 'Profil'),
+      (Icons.home_rounded, l10n.homeLabel),
+      (Icons.calendar_month_rounded, l10n.navPlannings),
+      (Icons.people_rounded, l10n.navPlayers),
+      (Icons.analytics_rounded, l10n.navBilan),
+      (Icons.person_rounded, l10n.navProfile),
       if (coach?.role == 'admin')
-        (Icons.admin_panel_settings_rounded, 'Dashboard Admin'),
+        (Icons.admin_panel_settings_rounded, l10n.navAdmin),
     ];
 
     return Container(
@@ -244,8 +250,8 @@ class _Sidebar extends StatelessWidget {
                             },
                             icon: const Icon(Icons.logout,
                                 size: 14, color: AppColors.gray),
-                            label: const Text('Déconnexion',
-                                style: TextStyle(
+                            label: Text(l10n.logoutLabel,
+                                style: const TextStyle(
                                     color: AppColors.gray, fontSize: 12)),
                           ),
                         ],
@@ -335,32 +341,36 @@ class _AdminTabState extends State<_AdminTab> {
             spacing: 16,
             runSpacing: 16,
             children: [
-              _adminKpi('Coachs inscrits', '${kpis?['total_coaches']}', Colors.blue),
-              _adminKpi('utilisateurs actifs quotidien/utilisateurs actifs mensuel', '${kpis?['dau']} / ${kpis?['mau']}',
+              _adminKpi(
+                  'Coachs inscrits', '${kpis?['total_coaches']}', Colors.blue),
+              _adminKpi(
+                  'utilisateurs actifs quotidien/utilisateurs actifs mensuel',
+                  '${kpis?['dau']} / ${kpis?['mau']}',
                   Colors.blueAccent),
-              _adminKpi(
-                  'Plannings total', '${kpis?['total_plannings']}', AppColors.red),
-              _adminKpi(
-                  'Nombre de seance moyen par planning', '${kpis?['avg_seances']}', AppColors.red),
-              _adminKpi(
-                  'Nombre d\'exercice moyen par planning', '${kpis?['avg_exercises']}', AppColors.red),
-              _adminKpi('nombre de PDF Exporter', '${kpis?['pdf_exports']}', Colors.green),
+              _adminKpi('Plannings total', '${kpis?['total_plannings']}',
+                  AppColors.red),
+              _adminKpi('Nombre de seance moyen par planning',
+                  '${kpis?['avg_seances']}', AppColors.red),
+              _adminKpi('Nombre d\'exercice moyen par planning',
+                  '${kpis?['avg_exercises']}', AppColors.red),
+              _adminKpi('nombre de PDF Exporter', '${kpis?['pdf_exports']}',
+                  Colors.green),
               _adminKpi('Nombre total de Joueurs', '${kpis?['total_joueurs']}',
                   const Color(0xFF06D6A0)),
-              _adminKpi('Nombre de joueurs moyen par coach', '${kpis?['avg_players_per_coach']}',
-                  const Color(0xFF06D6A0)),
-              _adminKpi('Nombre de manipulation sur les joueurs', '${kpis?['player_activity']}',
-                  const Color(0xFF06D6A0)),
-              _adminKpi('Nombre total d\'invitations envoyes', '${kpis?['invites_sent']}',
-                  const Color(0xFF8338EC)),
-              _adminKpi('Pourcentage d\'invitation acceptees', '${kpis?['acceptance_rate']}%',
-                  const Color(0xFF8338EC)),
-              _adminKpi('Nombre de collaboration moyen par planning', '${kpis?['avg_collaborators']}',
-                  const Color(0xFF8338EC)),
-              _adminKpi('Nombre de requette de Mots de passe oublies', '${kpis?['password_resets']}',
-                  Colors.orange),
-              _adminKpi(
-                  'Nombre total de Feedbacks', '${kpis?['total_feedbacks']}', AppColors.yellow),
+              _adminKpi('Nombre de joueurs moyen par coach',
+                  '${kpis?['avg_players_per_coach']}', const Color(0xFF06D6A0)),
+              _adminKpi('Nombre de manipulation sur les joueurs',
+                  '${kpis?['player_activity']}', const Color(0xFF06D6A0)),
+              _adminKpi('Nombre total d\'invitations envoyes',
+                  '${kpis?['invites_sent']}', const Color(0xFF8338EC)),
+              _adminKpi('Pourcentage d\'invitation acceptees',
+                  '${kpis?['acceptance_rate']}%', const Color(0xFF8338EC)),
+              _adminKpi('Nombre de collaboration moyen par planning',
+                  '${kpis?['avg_collaborators']}', const Color(0xFF8338EC)),
+              _adminKpi('Nombre de requette de Mots de passe oublies',
+                  '${kpis?['password_resets']}', Colors.orange),
+              _adminKpi('Nombre total de Feedbacks',
+                  '${kpis?['total_feedbacks']}', AppColors.yellow),
             ],
           ),
           const SizedBox(height: 32),
@@ -626,13 +636,14 @@ class _ProfileTabState extends State<_ProfileTab> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Mon Profil',
-              style: TextStyle(
+          Text(l10n.profileTitle,
+              style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: AppColors.charcoal)),
@@ -652,7 +663,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                   controller: _emailCtrl,
                   readOnly: true,
                   decoration: InputDecoration(
-                    labelText: 'Email (non modifiable)',
+                    labelText: l10n.profileEmailReadonly,
                     prefixIcon: const Icon(Icons.email_outlined),
                     filled: true,
                     fillColor: AppColors.grayXLight,
@@ -666,7 +677,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                 TextField(
                   controller: _nomCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Nom Complet',
+                    labelText: l10n.fullNameField,
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -676,7 +687,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                 TextField(
                   controller: _telCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Téléphone',
+                    labelText: l10n.phoneField,
                     prefixIcon: const Icon(Icons.phone_outlined),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -686,7 +697,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                 TextField(
                   controller: _equipeCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Nom de l\'équipe',
+                    labelText: l10n.teamNameField,
                     prefixIcon: const Icon(Icons.group_outlined),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -694,7 +705,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                 ),
                 const SizedBox(height: 32),
                 VpButton(
-                  label: 'Sauvegarder les modifications',
+                  label: l10n.profileSaveAction,
                   loading: state.loading,
                   onPressed: () async {
                     try {
@@ -702,13 +713,12 @@ class _ProfileTabState extends State<_ProfileTab> {
                           _nomCtrl.text, _telCtrl.text, _equipeCtrl.text);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Profil mis à jour !')));
+                            SnackBar(content: Text(l10n.profileUpdateSuccess)));
                       }
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text('Erreur: $e'),
+                            content: Text(l10n.errorPrefix(e.toString())),
                             backgroundColor: AppColors.red));
                       }
                     }
@@ -718,7 +728,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                 const Divider(color: AppColors.grayLight),
                 const SizedBox(height: 24),
                 VpButton(
-                  label: 'Déconnexion',
+                  label: l10n.logoutLabel,
                   variant: VpButtonVariant.danger,
                   icon: Icons.logout,
                   onPressed: () {
@@ -737,9 +747,13 @@ class _ProfileTabState extends State<_ProfileTab> {
 
 // ── Dashboard Tab ─────────────────────────────────────────────────
 class _DashboardTab extends StatelessWidget {
+  final VoidCallback onSeeAll;
+  const _DashboardTab({required this.onSeeAll});
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final l10n = AppLocalizations.of(context)!;
 
     // On ne calcule les stats que sur nos propres plannings
     final myPlannings =
@@ -753,7 +767,7 @@ class _DashboardTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Bonjour coach, ${state.coach?.nom ?? "Coach"} 👋',
+          Text(l10n.welcomeCoach(state.coach?.nom ?? "Coach"),
               style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
@@ -794,13 +808,13 @@ class _DashboardTab extends StatelessWidget {
 
           // KPIs
           Wrap(spacing: 16, runSpacing: 16, children: [
-            _kpi('Plannings', '${myPlannings.length}', AppColors.red,
+            _kpi(l10n.navPlannings, '${myPlannings.length}', AppColors.red,
                 Icons.calendar_month_rounded),
-            _kpi('Séances', '$totalSeances', const Color(0xFF3A86FF),
+            _kpi(l10n.dashboardKpiSessions, '$totalSeances', const Color(0xFF3A86FF),
                 Icons.event_note_rounded),
-            _kpi('Volume', AppConstants.fmtMinutes(totalVol), AppColors.yellow,
+            _kpi(l10n.dashboardKpiVolume, AppConstants.fmtMinutes(totalVol), AppColors.yellow,
                 Icons.timer_rounded),
-            _kpi('Joueurs', '${state.joueurs.length}', const Color(0xFF06D6A0),
+            _kpi(l10n.navPlayers, '${state.joueurs.length}', const Color(0xFF06D6A0),
                 Icons.people_rounded),
           ]),
           const SizedBox(height: 32),
@@ -809,15 +823,15 @@ class _DashboardTab extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Plannings récents',
-                  style: TextStyle(
+              Text(l10n.dashboardRecentPlannings,
+                  style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: AppColors.charcoal)),
               TextButton(
-                  onPressed: () {},
-                  child: const Text('Voir tous',
-                      style: TextStyle(color: AppColors.red))),
+                  onPressed: onSeeAll,
+                  child: Text(l10n.dashboardSeeAll,
+                      style: const TextStyle(color: AppColors.red))),
             ],
           ),
           const SizedBox(height: 12),
@@ -834,21 +848,21 @@ class _DashboardTab extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text('Créer un planning',
-                          style: TextStyle(
+                      Text(l10n.dashboardCreatePlanningTitle,
+                          style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w800)),
-                      Text('Groupe ou Spécifique',
+                      Text(l10n.dashboardCreatePlanningSubtitle,
                           style:
-                              TextStyle(color: AppColors.gray, fontSize: 13)),
+                              const TextStyle(color: AppColors.gray, fontSize: 13)),
                     ])),
                 VpButton(
-                    label: 'Commencer',
+                    label: l10n.dashboardStartAction,
                     onPressed: () => context.push('/planning/create'),
                     icon: Icons.add),
               ],
@@ -892,6 +906,7 @@ class _PlanningsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -900,13 +915,13 @@ class _PlanningsTab extends StatelessWidget {
         backgroundColor: AppColors.red,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Nouveau',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        label: Text(l10n.btnNew,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: state.loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.red))
           : state.plannings.isEmpty
-              ? _empty(context)
+              ? _empty(context, l10n)
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: state.plannings.length + 1,
@@ -914,8 +929,8 @@ class _PlanningsTab extends StatelessWidget {
                     if (i == 0)
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 20),
-                        child: const Text('Mes plannings',
-                            style: TextStyle(
+                        child: Text(l10n.myPlanningsTitle,
+                            style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.charcoal)),
@@ -926,23 +941,23 @@ class _PlanningsTab extends StatelessWidget {
     );
   }
 
-  Widget _empty(BuildContext context) => Center(
+  Widget _empty(BuildContext context, AppLocalizations l10n) => Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('📋', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 16),
-          const Text('Aucun planning',
-              style: TextStyle(
+          Text(l10n.noPlanningsTitle,
+              style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppColors.charcoal)),
           const SizedBox(height: 8),
-          const Text('Créez votre premier planning',
-              style: TextStyle(color: AppColors.gray)),
+          Text(l10n.noPlanningsSubtitle,
+              style: const TextStyle(color: AppColors.gray)),
           const SizedBox(height: 24),
           VpButton(
-              label: 'Créer un planning',
+              label: l10n.btnCreatePlanning,
               onPressed: () => context.push('/planning/create'),
               icon: Icons.add),
         ],
@@ -989,25 +1004,26 @@ class _FeedbackButton extends StatelessWidget {
 }
 
 void _showFeedbackDialog(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
   final ctrl = TextEditingController();
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Une suggestion ?',
-          style: TextStyle(
+      title: Text(l10n.feedbackTitle,
+          style: const TextStyle(
               fontWeight: FontWeight.w800, color: AppColors.charcoal)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text("Votre avis nous aide à améliorer VolleyPlan.",
-              style: TextStyle(fontSize: 13, color: AppColors.gray)),
+          Text(l10n.feedbackSubtitle,
+              style: const TextStyle(fontSize: 13, color: AppColors.gray)),
           const SizedBox(height: 16),
           TextField(
             controller: ctrl,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: 'Ex: "J\'aimerais pouvoir trier les joueurs par poste"',
+              hintText: l10n.feedbackHint,
               filled: true,
               fillColor: AppColors.grayXLight,
               border: OutlineInputBorder(
@@ -1020,7 +1036,7 @@ void _showFeedbackDialog(BuildContext context) {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Plus tard')),
+            child: Text(l10n.feedbackLater)),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.red,
@@ -1034,11 +1050,11 @@ void _showFeedbackDialog(BuildContext context) {
             if (context.mounted) {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Merci pour votre retour !')),
+                SnackBar(content: Text(l10n.feedbackSuccess)),
               );
             }
           },
-          child: const Text('Envoyer'),
+          child: Text(l10n.feedbackSend),
         ),
       ],
     ),
@@ -1058,9 +1074,23 @@ class _JoueursTabState extends State<_JoueursTab> {
 
   @override
   Widget build(BuildContext context) {
+    
+    final l10n = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     // Détection de la largeur de la fenêtre pour éviter l'overflow horizontal sur mobile
     final isNarrow = MediaQuery.of(context).size.width < 650;
+
+    String getPosteLabel(String p) {
+      switch (p) {
+        case 'Passeur': return l10n.postePasseur;
+        case 'Libéro': return l10n.posteLibero;
+        case 'Central': return l10n.posteCentral;
+        case 'Pointu': return l10n.postePointu;
+        case 'Réceptionneur-Attaquant': return l10n.posteReceptionneurAttaquant;
+        case 'Universal': return l10n.posteUniversal;
+        default: return p;
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -1069,7 +1099,7 @@ class _JoueursTabState extends State<_JoueursTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mes joueurs',
+            Text(l10n.myPlayersTitle,
                 style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -1089,8 +1119,8 @@ class _JoueursTabState extends State<_JoueursTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Ajouter un joueur',
-                      style: TextStyle(
+                  Text(l10n.addPlayerTitle,
+                      style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           color: AppColors.charcoal)),
                   const SizedBox(height: 12),
@@ -1102,8 +1132,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                       children: [
                         TextField(
                           controller: _nomCtrl,
-                          decoration: InputDecoration(
-                            hintText: 'Nom du joueur',
+                          decoration: InputDecoration( // Removed const
+                            hintText: l10n.playerNameHint,
                             filled: true,
                             fillColor: AppColors.grayXLight,
                             border: OutlineInputBorder(
@@ -1116,7 +1146,7 @@ class _JoueursTabState extends State<_JoueursTab> {
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
                           value: _posteSelected,
-                          hint: const Text('Poste'),
+                          hint: Text(l10n.positionHint), // Removed const
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: AppColors.grayXLight,
@@ -1128,15 +1158,15 @@ class _JoueursTabState extends State<_JoueursTab> {
                           ),
                           items: AppConstants.postes
                               .map((p) => DropdownMenuItem(
-                                  value: p,
-                                  child: Text(p,
+                                  value: p, // Removed const
+                                  child: Text(getPosteLabel(p),
                                       style: const TextStyle(fontSize: 13))))
                               .toList(),
                           onChanged: (v) => setState(() => _posteSelected = v),
                         ),
                         const SizedBox(height: 16),
                         VpButton(
-                            label: 'Ajouter le joueur',
+                            label: l10n.addPlayerButton,
                             onPressed: () async {
                               if (_nomCtrl.text.isEmpty) return;
                               await state.addJoueur(_nomCtrl.text.trim(),
@@ -1151,9 +1181,9 @@ class _JoueursTabState extends State<_JoueursTab> {
                     Row(children: [
                       Expanded(
                           child: TextField(
-                        controller: _nomCtrl,
-                        decoration: InputDecoration(
-                          hintText: 'Nom du joueur',
+                        controller: _nomCtrl, // Removed const
+                        decoration: InputDecoration( // Removed const
+                          hintText: l10n.playerNameHint,
                           filled: true,
                           fillColor: AppColors.grayXLight,
                           border: OutlineInputBorder(
@@ -1165,19 +1195,19 @@ class _JoueursTabState extends State<_JoueursTab> {
                       )),
                       const SizedBox(width: 10),
                       DropdownButton<String>(
-                        value: _posteSelected,
-                        hint: const Text('Poste'),
+                        value: _posteSelected, // Removed const
+                        hint: Text(l10n.positionHint), // Removed const
                         items: AppConstants.postes
                             .map((p) => DropdownMenuItem(
-                                value: p,
-                                child: Text(p,
+                                value: p, // Removed const
+                                child: Text(getPosteLabel(p),
                                     style: const TextStyle(fontSize: 13))))
                             .toList(),
                         onChanged: (v) => setState(() => _posteSelected = v),
                       ),
                       const SizedBox(width: 10),
                       VpButton(
-                          label: 'Ajouter',
+                          label: l10n.addPlayerShortButton,
                           small: true,
                           onPressed: () async {
                             if (_nomCtrl.text.isEmpty) return;
@@ -1190,6 +1220,9 @@ class _JoueursTabState extends State<_JoueursTab> {
                 ],
               ),
             ),
+            if (state.joueurs.isEmpty)
+              Center(
+                  child: Text(l10n.noPlayersMessage, style: const TextStyle(color: AppColors.gray, fontStyle: FontStyle.italic))),
             const SizedBox(height: 20),
 
             // Liste joueurs
@@ -1209,7 +1242,7 @@ class _JoueursTabState extends State<_JoueursTab> {
                     title: Text(j.nom,
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: j.poste != null
-                        ? Text(j.poste!,
+                        ? Text(getPosteLabel(j.poste!),
                             style: const TextStyle(
                                 color: AppColors.gray, fontSize: 12))
                         : null,
@@ -1224,7 +1257,7 @@ class _JoueursTabState extends State<_JoueursTab> {
                             icon: const Icon(Icons.delete_outline,
                                 color: AppColors.red, size: 20),
                             onPressed: () =>
-                                _confirmDelete(context, j.id, j.nom)),
+                                _confirmDelete(context, j.id, j.nom, l10n)),
                       ],
                     ),
                   ),
@@ -1238,21 +1271,33 @@ class _JoueursTabState extends State<_JoueursTab> {
   void _showEditDialog(BuildContext context, joueur) {
     final ctrl = TextEditingController(text: joueur.nom);
     String? poste = joueur.poste;
+    final l10n = AppLocalizations.of(context)!;
+    String getPosteLabel(String p) {
+      switch (p) {
+        case 'Passeur': return l10n.postePasseur;
+        case 'Libéro': return l10n.posteLibero;
+        case 'Central': return l10n.posteCentral;
+        case 'Pointu': return l10n.postePointu;
+        case 'Réceptionneur-Attaquant': return l10n.posteReceptionneurAttaquant;
+        case 'Universal': return l10n.posteUniversal;
+        default: return p;
+      }
+    }
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: const Text('Modifier le joueur'),
+              title: Text(l10n.editPlayerTitle),
               content: Column(mainAxisSize: MainAxisSize.min, children: [
                 TextField(
                     controller: ctrl,
-                    decoration: const InputDecoration(labelText: 'Nom')),
+                    decoration: InputDecoration(labelText: l10n.nameLabel)),
                 const SizedBox(height: 12),
                 DropdownButton<String>(
                   value: poste,
                   isExpanded: true,
-                  hint: const Text('Poste'),
+                  hint: Text(l10n.positionHint),
                   items: AppConstants.postes
-                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                      .map((p) => DropdownMenuItem(value: p, child: Text(getPosteLabel(p))))
                       .toList(),
                   onChanged: (v) {
                     poste = v;
@@ -1262,8 +1307,8 @@ class _JoueursTabState extends State<_JoueursTab> {
               ]),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Annuler')),
+                    onPressed: () => Navigator.pop(ctx), // Removed const
+                    child: Text(l10n.cancelButton)),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.red,
@@ -1273,23 +1318,22 @@ class _JoueursTabState extends State<_JoueursTab> {
                         joueur.id, {'nom': ctrl.text, 'poste': poste});
                     if (context.mounted) Navigator.pop(ctx);
                   },
-                  child: const Text('Sauvegarder'),
+                  child: Text(l10n.saveButton),
                 ),
               ],
             ));
   }
 
-  void _confirmDelete(BuildContext context, int id, String nom) {
+  void _confirmDelete(BuildContext context, int id, String nom, AppLocalizations l10n) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: const Text('Supprimer le joueur'),
-              content: Text(
-                  'Supprimer $nom ? Il sera désactivé mais conservé dans les plannings existants.'),
+              title: Text(l10n.deletePlayerTitle),
+              content: Text(l10n.deletePlayerConfirmation(nom)),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Annuler')),
+                    onPressed: () => Navigator.pop(ctx), // Removed const
+                    child: Text(l10n.cancelButton)),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.red,
@@ -1298,7 +1342,7 @@ class _JoueursTabState extends State<_JoueursTab> {
                     await context.read<AppState>().removeJoueur(id);
                     if (context.mounted) Navigator.pop(ctx);
                   },
-                  child: const Text('Supprimer'),
+                  child: Text(l10n.deleteButton),
                 ),
               ],
             ));
@@ -1312,6 +1356,22 @@ class _PlanningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    String getDomaineLabel(String id) {
+      switch (id.toLowerCase()) {
+        case 'service': return l10n.domaineService;
+        case 'reception': return l10n.domaineReception;
+        case 'passe': return l10n.domainePasse;
+        case 'attaque': return l10n.domaineAttaque;
+        case 'block': return l10n.domaineBlock;
+        case 'defense': return l10n.domaineDefense;
+        case 'physique': return l10n.domainePhysique;
+        case 'general': return l10n.domaineGeneral;
+        default: return id;
+      }
+    }
+
     final domaines =
         planning.seances.expand((s) => s.domaines).toSet().toList();
 
@@ -1349,8 +1409,8 @@ class _PlanningCard extends StatelessWidget {
                   ),
                   child: Text(
                     planning.mode == 'groupe'
-                        ? '👥 Groupe'
-                        : '🎯 ${planning.poste ?? "Individuel"}',
+                        ? '👥 ${l10n.modeGroup}'
+                        : '🎯 ${planning.poste ?? l10n.modeIndividual}',
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -1371,13 +1431,13 @@ class _PlanningCard extends StatelessWidget {
                     color: AppColors.charcoal)),
             const SizedBox(height: 10),
             Row(children: [
-              _stat('${planning.seances.length}', 'séances', AppColors.red),
+              _stat('${planning.seances.length}', l10n.labelSessionsSmall, AppColors.red),
               const SizedBox(width: 20),
-              _stat(AppConstants.fmtMinutes(planning.volumeTotal), 'volume',
+              _stat(AppConstants.fmtMinutes(planning.volumeTotal), l10n.labelVolumeSmall,
                   AppColors.charcoal),
               const SizedBox(width: 20),
               _stat(
-                  '${planning.joueurs.length}', 'joueurs', AppColors.charcoal),
+                  '${planning.joueurs.length}', l10n.labelPlayersSmall, AppColors.charcoal),
             ]),
             if (domaines.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -1394,7 +1454,7 @@ class _PlanningCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                                '${AppConstants.domaineIcon(d)} ${AppConstants.domaineLabel(d)}',
+                                '${AppConstants.domaineIcon(d)} ${getDomaineLabel(d)}',
                                 style: TextStyle(
                                     fontSize: 10,
                                     color: AppConstants.domaineColor(d),
@@ -1439,6 +1499,21 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final bilan = state.globalBilan;
+    final l10n = AppLocalizations.of(context)!;
+
+    String getDomaineLabel(String id) {
+      switch (id.toLowerCase()) {
+        case 'service': return l10n.domaineService;
+        case 'reception': return l10n.domaineReception;
+        case 'passe': return l10n.domainePasse;
+        case 'attaque': return l10n.domaineAttaque;
+        case 'block': return l10n.domaineBlock;
+        case 'defense': return l10n.domaineDefense;
+        case 'physique': return l10n.domainePhysique;
+        case 'general': return l10n.domaineGeneral;
+        default: return id;
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -1447,41 +1522,41 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Bilan Global',
-                style: TextStyle(
+            Text(l10n.globalBilanTitle,
+                style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                     color: AppColors.charcoal)),
             const SizedBox(height: 8),
-            const Text('Statistiques cumulées de l\'ensemble de vos plannings.',
-                style: TextStyle(color: AppColors.gray, fontSize: 14)),
+            Text(l10n.globalBilanSubtitle,
+                style: const TextStyle(color: AppColors.gray, fontSize: 14)),
             const SizedBox(height: 32),
             if (state.loading && bilan == null)
               const Center(
                   child: CircularProgressIndicator(color: AppColors.red))
             else if (bilan == null)
-              const Center(child: Text('Aucune donnée disponible.'))
+              Center(child: Text(l10n.noDataAvailable))
             else ...[
               // KPIs Globaux
               Wrap(spacing: 16, runSpacing: 16, children: [
-                _statCard('Plannings total', '${bilan['nb_plannings']}',
+                _statCard(l10n.kpiTotalPlannings, '${bilan['nb_plannings']}',
                     Icons.collections_bookmark_rounded),
-                _statCard('Séances total', '${bilan['nb_seances']}',
+                _statCard(l10n.kpiTotalSessions, '${bilan['nb_seances']}',
                     Icons.event_available_rounded),
                 _statCard(
-                    'Volume total',
+                    l10n.kpiTotalVolume,
                     AppConstants.fmtMinutes(bilan['total_minutes']),
                     Icons.timer_rounded),
                 _statCard(
-                    'Moyenne/séance',
+                    l10n.kpiAvgPerSession,
                     AppConstants.fmtMinutes(bilan['avg_seance_minutes']),
                     Icons.av_timer_rounded),
               ]),
               const SizedBox(height: 40),
 
               // Répartition
-              const Text('Répartition globale par domaine',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(l10n.globalDistributionTitle,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -1500,7 +1575,7 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(d['label'],
+                              Text(getDomaineLabel(d['id']),
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w600)),
                               Text(
@@ -1526,8 +1601,8 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
               const SizedBox(height: 32),
 
               // Recommandations
-              const Text('Analyses & Conseils',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(l10n.analysisAndAdviceTitle,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               ...(bilan['recommandations'] as List).map((rec) => Container(
                     margin: const EdgeInsets.only(bottom: 8),

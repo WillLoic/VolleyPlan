@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart'; // Import nécessaire pour TapGestureRecognizer
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/app_state.dart';
 import '../../utils/constants.dart';
 import '../../widgets/vp_button.dart';
@@ -25,12 +26,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _completePhoneNumber = "";
 
   Future<void> _register() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_nomCtrl.text.isEmpty ||
         _telCtrl.text.isEmpty ||
         _emailCtrl.text.isEmpty ||
         _equipeCtrl.text.isEmpty ||
         _pwdCtrl.text.isEmpty) {
-      setState(() => _error = 'Veuillez remplir tous les champs.');
+      setState(() => _error = l10n.fillAllFieldsError);
       return;
     }
     setState(() {
@@ -56,6 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.offWhite,
       body: Center(
@@ -96,19 +99,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Créer un compte',
-                          style: TextStyle(
+                      Text(l10n.registerTitle,
+                          style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: AppColors.charcoal)),
                       const SizedBox(height: 20),
-                      _field('Nom du coach', _nomCtrl, TextInputType.name),
+                      _field(l10n.fullNameField, _nomCtrl, TextInputType.name),
                       const SizedBox(height: 14),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Numéro de téléphone',
-                              style: TextStyle(
+                          Text(l10n.phoneField,
+                              style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.charcoal)),
@@ -131,7 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             initialCountryCode:
                                 'CM', // Cameroun par défaut comme discuté
-                            languageCode: "fr",
+                            languageCode: Localizations.localeOf(context).languageCode,
                             disableLengthCheck:
                                 true, // NE BLOQUE PAS l'utilisateur sur la longueur
                             invalidNumberMessage:
@@ -147,12 +150,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      _field('Email', _emailCtrl, TextInputType.emailAddress),
+                      _field(l10n.emailField, _emailCtrl, TextInputType.emailAddress),
                       const SizedBox(height: 14),
                       _field(
-                          "Nom de l'équipe", _equipeCtrl, TextInputType.text),
+                          l10n.teamNameField, _equipeCtrl, TextInputType.text),
                       const SizedBox(height: 14),
-                      _field('Mot de passe', _pwdCtrl, TextInputType.text,
+                      _field(l10n.passwordField, _pwdCtrl, TextInputType.text,
                           obscure: _obscure,
                           suffix: IconButton(
                             icon: Icon(
@@ -182,14 +185,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            text: 'En vous inscrivant, vous acceptez nos\n',
+                            text: l10n.registerTermsPrompt,
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.gray,
                             ),
                             children: <TextSpan>[
                               TextSpan(
-                                text: 'Conditions d\'utilisation',
+                                text: l10n.termsTitle,
                                 style: const TextStyle(
                                   color: AppColors.red,
                                   fontWeight: FontWeight.bold,
@@ -198,9 +201,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () => context.push('/terms'),
                               ),
-                              const TextSpan(text: ' et notre '),
+                              TextSpan(text: l10n.andOurLabel),
                               TextSpan(
-                                text: 'Politique de confidentialité',
+                                text: l10n.privacyPolicyLabel,
                                 style: const TextStyle(
                                   color: AppColors.red,
                                   fontWeight: FontWeight.bold,
@@ -215,15 +218,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 24),
                       VpButton(
-                          label: "S'inscrire",
+                          label: l10n.registerAction,
                           onPressed: _register,
                           loading: _loading,
                           icon: Icons.person_add),
                       const SizedBox(height: 14),
                       TextButton(
                         onPressed: () => context.go('/login'),
-                        child: const Text('Déjà un compte ? Se connecter',
-                            style: TextStyle(color: AppColors.red)),
+                        child: Text("${l10n.alreadyAccountPrompt} ${l10n.loginAction}",
+                            style: const TextStyle(color: AppColors.red)),
                       ),
                     ],
                   ),

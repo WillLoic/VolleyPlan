@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../utils/constants.dart';
 
 class PrivacyScreen extends StatelessWidget {
@@ -7,6 +8,7 @@ class PrivacyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -26,67 +28,67 @@ class PrivacyScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildHeroSection(isMobile),
+                        _buildHeroSection(l10n, isMobile),
                         const SizedBox(height: 40),
                         _buildSection(
                           number: '1',
-                          title: 'Introduction',
+                          title: l10n.privacySection1Title,
                           color: AppColors.red,
-                          content: _intro,
+                          content: l10n.privacySection1Content,
                         ),
                         _buildSection(
                           number: '2',
-                          title: 'Qui sommes-nous ?',
+                          title: l10n.privacySection2Title,
                           color: AppColors.yellow,
-                          content: _whoWeAre,
+                          content: l10n.privacySection2Content,
                         ),
                         _buildSection(
                           number: '3',
-                          title: 'Données que nous collectons',
+                          title: l10n.privacySection3Title,
                           color: const Color(0xFF3A86FF),
                           content: null,
-                          customWidget: _buildDataCollected(isMobile),
+                          customWidget: _buildDataCollected(l10n, isMobile),
                         ),
                         _buildSection(
                           number: '4',
-                          title: 'Pourquoi nous collectons ces données',
+                          title: l10n.privacySection4Title,
                           color: const Color(0xFF06D6A0),
                           content: null,
-                          customWidget: _buildWhyTable(isMobile),
+                          customWidget: _buildWhyTable(l10n, isMobile),
                         ),
                         _buildSection(
                           number: '5',
-                          title: 'Comment nous stockons vos données',
+                          title: l10n.privacySection5Title,
                           color: const Color(0xFF8338EC),
                           content: null,
-                          customWidget: _buildStorage(isMobile),
+                          customWidget: _buildStorage(l10n, isMobile),
                         ),
                         _buildSection(
                           number: '6',
-                          title: 'Partage des données',
+                          title: l10n.privacySection6Title,
                           color: AppColors.red,
-                          content: _sharing,
+                          content: l10n.privacySection6Content,
                         ),
                         _buildSection(
                           number: '7',
-                          title: 'Vos droits',
+                          title: l10n.privacySection7Title,
                           color: AppColors.yellow,
                           content: null,
-                          customWidget: _buildRights(isMobile),
+                          customWidget: _buildRights(l10n, isMobile),
                         ),
                         _buildSection(
                           number: '8',
-                          title: 'Données des mineurs',
+                          title: l10n.privacySection8Title,
                           color: const Color(0xFF3A86FF),
-                          content: _minors,
+                          content: l10n.privacySection8Content,
                         ),
                         _buildSection(
                           number: '9',
-                          title: 'Modifications de cette politique',
+                          title: l10n.privacySection9Title,
                           color: const Color(0xFF06D6A0),
-                          content: _modifications,
+                          content: l10n.privacySection9Content,
                         ),
-                        _buildContactSection(isMobile),
+                        _buildContactSection(l10n, isMobile),
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -102,21 +104,23 @@ class PrivacyScreen extends StatelessWidget {
 
   // ── Header ──────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 40, vertical: 16),
+      padding:
+          EdgeInsets.symmetric(horizontal: isMobile ? 16 : 40, vertical: 16),
       decoration: const BoxDecoration(
         color: AppColors.white,
-        border: Border(
-            bottom: BorderSide(color: AppColors.grayLight, width: 1)),
+        border:
+            Border(bottom: BorderSide(color: AppColors.grayLight, width: 1)),
       ),
       child: Row(children: [
         // Logo
         GestureDetector(
-          onTap: () => context.go('/'),
+          onTap: () => context.go('/register'),
           child: Row(children: [
             Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                     colors: [AppColors.red, AppColors.yellow]),
@@ -135,19 +139,19 @@ class PrivacyScreen extends StatelessWidget {
         ),
         const Spacer(),
         TextButton.icon(
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go('/register'),
           icon: const Icon(Icons.arrow_back_rounded,
               size: 16, color: AppColors.gray),
-          label: const Text('Retour',
-              style: TextStyle(color: AppColors.gray,
-                  fontWeight: FontWeight.w600)),
+          label: Text(l10n.backLabel,
+              style: TextStyle(
+                  color: AppColors.gray, fontWeight: FontWeight.w600)),
         ),
       ]),
     );
   }
 
   // ── Hero ─────────────────────────────────────────────────────────
-  Widget _buildHeroSection(bool isMobile) {
+  Widget _buildHeroSection(AppLocalizations l10n, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -168,13 +172,16 @@ class PrivacyScreen extends StatelessWidget {
               color: AppColors.red.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text('DOCUMENT LÉGAL',
-                style: TextStyle(color: AppColors.red, fontSize: 11,
-                    fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+            child: Text(l10n.legalBadge,
+                style: TextStyle(
+                    color: AppColors.red,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5)),
           ),
           const SizedBox(height: 16),
           Text(
-            '🔒 Politique de\nConfidentialité',
+            '🔒 ${l10n.privacyTitle}',
             style: TextStyle(
                 fontSize: isMobile ? 28 : 36,
                 fontWeight: FontWeight.w900,
@@ -182,16 +189,15 @@ class PrivacyScreen extends StatelessWidget {
                 height: 1.15),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Dernière mise à jour : juin 2026 · Version 1.0',
-            style: TextStyle(color: AppColors.gray, fontSize: 13),
+          Text(
+            '${l10n.termsLastUpdate} · Version 1.0',
+            style: const TextStyle(color: AppColors.gray, fontSize: 13),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Nous prenons la protection de vos données très au sérieux. '
-            'Ce document vous explique exactement comment nous utilisons '
-            'vos informations.',
-            style: TextStyle(color: AppColors.gray, fontSize: 14, height: 1.6),
+          Text(
+            l10n.privacyHeroIntro,
+            style: const TextStyle(
+                color: AppColors.gray, fontSize: 14, height: 1.6),
           ),
         ],
       ),
@@ -220,7 +226,8 @@ class PrivacyScreen extends StatelessWidget {
           children: [
             Row(children: [
               Container(
-                width: 32, height: 32,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                     color: color, borderRadius: BorderRadius.circular(8)),
                 child: Center(
@@ -252,47 +259,46 @@ class PrivacyScreen extends StatelessWidget {
   }
 
   // ── Données collectées ───────────────────────────────────────────
-  Widget _buildDataCollected(bool isMobile) {
+  Widget _buildDataCollected(AppLocalizations l10n, bool isMobile) {
     final categories = [
       {
         'icon': '👤',
-        'title': 'Données du Coach',
+        'title': l10n.privacyDataCoachTitle,
         'items': [
-          'Nom complet — pour personnaliser l\'expérience',
-          'Numéro de téléphone — identifiant unique de connexion',
-          'Nom de l\'équipe — personnalisation de l\'application',
-          'Mot de passe — stocké chiffré (hachage bcrypt), jamais en clair',
+          l10n.privacyDataCoachItem1,
+          l10n.privacyDataCoachItem2,
+          l10n.privacyDataCoachItem3,
+          l10n.privacyDataCoachItem4,
         ],
         'color': AppColors.red,
       },
       {
         'icon': '🏐',
-        'title': 'Données des Joueurs',
+        'title': l10n.privacyDataJoueursTitle,
         'items': [
-          'Nom des joueurs',
-          'Poste des joueurs',
-          'Statut actif/inactif',
+          l10n.privacyDataJoueursItem1,
+          l10n.privacyDataJoueursItem2,
+          l10n.privacyDataJoueursItem3,
         ],
         'color': AppColors.yellow,
-        'note': 'Ces données vous appartiennent. Vous êtes responsable '
-            'd\'avoir le consentement de vos joueurs.',
+        'note': l10n.privacyDataJoueursNote,
       },
       {
         'icon': '📋',
-        'title': 'Données de Planification',
+        'title': l10n.privacyDataPlanTitle,
         'items': [
-          'Titres et contenus de vos plannings',
-          'Séances, exercices, durées et domaines de jeu',
-          'Dates et heures des séances',
+          l10n.privacyDataPlanItem1,
+          l10n.privacyDataPlanItem2,
+          l10n.privacyDataPlanItem3,
         ],
         'color': const Color(0xFF3A86FF),
       },
       {
         'icon': '🤝',
-        'title': 'Données de Collaboration',
+        'title': l10n.privacyDataCollabTitle,
         'items': [
-          'Adresses email des membres du staff invités',
-          'Activité sur les plannings partagés',
+          l10n.privacyDataCollabItem1,
+          l10n.privacyDataCollabItem2,
         ],
         'color': const Color(0xFF8338EC),
       },
@@ -331,7 +337,8 @@ class PrivacyScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 5, height: 5,
+                          width: 5,
+                          height: 5,
                           margin: const EdgeInsets.only(top: 7, right: 8),
                           decoration: BoxDecoration(
                               color: color, shape: BoxShape.circle),
@@ -379,13 +386,13 @@ class PrivacyScreen extends StatelessWidget {
   }
 
   // ── Table pourquoi ───────────────────────────────────────────────
-  Widget _buildWhyTable(bool isMobile) {
+  Widget _buildWhyTable(AppLocalizations l10n, bool isMobile) {
     final rows = [
-      ['Identifiants (téléphone, mot de passe)', 'Authentification et sécurité'],
-      ['Nom et équipe', 'Personnalisation de l\'expérience'],
-      ['Joueurs et plannings', 'Fonctionnement du service principal'],
-      ['Email des collaborateurs', 'Envoi des invitations'],
-      ['Données techniques', 'Sécurité et amélioration du service'],
+      [l10n.privacyWhyRow1Data, l10n.privacyWhyRow1Purpose],
+      [l10n.privacyWhyRow2Data, l10n.privacyWhyRow2Purpose],
+      [l10n.privacyWhyRow3Data, l10n.privacyWhyRow3Purpose],
+      [l10n.privacyWhyRow4Data, l10n.privacyWhyRow4Purpose],
+      [l10n.privacyWhyRow5Data, l10n.privacyWhyRow5Purpose],
     ];
     return Column(
       children: [
@@ -393,34 +400,40 @@ class PrivacyScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
               color: AppColors.charcoal,
-              borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(10))),
-          child: const Row(children: [
-            Expanded(child: Text('Données',
-                style: TextStyle(color: AppColors.white,
-                    fontWeight: FontWeight.w700, fontSize: 13))),
-            Expanded(child: Text('Finalité',
-                style: TextStyle(color: AppColors.yellow,
-                    fontWeight: FontWeight.w700, fontSize: 13))),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10))),
+          child: Row(children: [
+            Expanded(
+                child: Text(l10n.privacyWhyHeaderData,
+                    style: const TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13))),
+            Expanded(
+                child: Text(l10n.privacyWhyHeaderPurpose,
+                    style: const TextStyle(
+                        color: AppColors.yellow,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13))),
           ]),
         ),
         ...rows.asMap().entries.map((e) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: e.key.isEven
-                    ? AppColors.grayXLight
-                    : AppColors.white,
+                color: e.key.isEven ? AppColors.grayXLight : AppColors.white,
                 borderRadius: e.key == rows.length - 1
                     ? const BorderRadius.vertical(bottom: Radius.circular(10))
                     : null,
               ),
               child: Row(children: [
-                Expanded(child: Text(e.value[0],
-                    style: const TextStyle(
-                        color: AppColors.charcoal, fontSize: 13))),
-                Expanded(child: Text(e.value[1],
-                    style: const TextStyle(
-                        color: AppColors.gray, fontSize: 13))),
+                Expanded(
+                    child: Text(e.value[0],
+                        style: const TextStyle(
+                            color: AppColors.charcoal, fontSize: 13))),
+                Expanded(
+                    child: Text(e.value[1],
+                        style: const TextStyle(
+                            color: AppColors.gray, fontSize: 13))),
               ]),
             )),
         const SizedBox(height: 12),
@@ -429,20 +442,21 @@ class PrivacyScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF06D6A0).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-                color: const Color(0xFF06D6A0).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF06D6A0).withOpacity(0.3)),
           ),
-          child: const Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('✅', style: TextStyle(fontSize: 16)),
-              SizedBox(width: 10),
+              const Text('✅', style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Nous n\'utilisons vos données que pour faire fonctionner '
-                  'VolleyPlan. Nous ne faisons pas de marketing sans votre consentement.',
-                  style: TextStyle(color: AppColors.charcoal,
-                      fontSize: 13, height: 1.5, fontWeight: FontWeight.w600),
+                  l10n.privacyWhyNote,
+                  style: const TextStyle(
+                      color: AppColors.charcoal,
+                      fontSize: 13,
+                      height: 1.5,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -453,38 +467,55 @@ class PrivacyScreen extends StatelessWidget {
   }
 
   // ── Stockage ─────────────────────────────────────────────────────
-  Widget _buildStorage(bool isMobile) {
+  Widget _buildStorage(AppLocalizations l10n, bool isMobile) {
     final infra = [
-      {'icon': '🗄️', 'name': 'Supabase (PostgreSQL)',
-       'desc': 'Base de données — serveurs dans l\'Union Européenne',
-       'color': const Color(0xFF3A86FF)},
-      {'icon': '🖥️', 'name': 'Render.com',
-       'desc': 'Backend Flask — serveurs USA/Europe',
-       'color': AppColors.red},
-      {'icon': '🔥', 'name': 'Firebase Hosting',
-       'desc': 'Frontend Flutter Web — CDN mondial',
-       'color': AppColors.yellow},
-      {'icon': '📧', 'name': 'Brevo',
-       'desc': 'Envoi d\'emails — hébergé en Europe',
-       'color': const Color(0xFF06D6A0)},
-      {'icon': '🛡️', 'name': 'Cloudflare',
-       'desc': 'Proxy et sécurité réseau',
-       'color': const Color(0xFF8338EC)},
+      {
+        'icon': '🗄️',
+        'name': 'Supabase (PostgreSQL)',
+        'desc': l10n.privacyStorageDb,
+        'color': const Color(0xFF3A86FF)
+      },
+      {
+        'icon': '🖥️',
+        'name': 'Render.com',
+        'desc': l10n.privacyStorageBackend,
+        'color': AppColors.red
+      },
+      {
+        'icon': '🔥',
+        'name': 'Firebase Hosting',
+        'desc': l10n.privacyStorageFrontend,
+        'color': AppColors.yellow
+      },
+      {
+        'icon': '📧',
+        'name': 'Brevo',
+        'desc': l10n.privacyStorageEmail,
+        'color': const Color(0xFF06D6A0)
+      },
+      {
+        'icon': '🛡️',
+        'name': 'Cloudflare',
+        'desc': l10n.privacyStorageProxy,
+        'color': const Color(0xFF8338EC)
+      },
     ];
 
     final durations = [
-      ['Compte et plannings', 'Aussi longtemps que votre compte est actif'],
-      ['Compte supprimé', 'Suppression définitive sous 30 jours'],
-      ['Logs techniques', '90 jours glissants'],
-      ['Emails d\'invitation', 'Jusqu\'à expiration ou révocation'],
+      [l10n.privacyStorageDurRow1Label, l10n.privacyStorageDurRow1Value],
+      [l10n.privacyStorageDurRow2Label, l10n.privacyStorageDurRow2Value],
+      [l10n.privacyStorageDurRow3Label, l10n.privacyStorageDurRow3Value],
+      [l10n.privacyStorageDurRow4Label, l10n.privacyStorageDurRow4Value],
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Infrastructure technique',
-            style: TextStyle(fontWeight: FontWeight.w700,
-                fontSize: 14, color: AppColors.charcoal)),
+        Text(l10n.privacyStorageInfraTitle,
+            style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.charcoal)),
         const SizedBox(height: 12),
         ...infra.map((item) {
           final color = item['color'] as Color;
@@ -499,32 +530,34 @@ class PrivacyScreen extends StatelessWidget {
               Text(item['icon'] as String,
                   style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 12),
-              Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(item['name'] as String,
-                    style: TextStyle(fontWeight: FontWeight.w700,
-                        fontSize: 13, color: color)),
-                Text(item['desc'] as String,
-                    style: const TextStyle(color: AppColors.gray,
-                        fontSize: 12)),
-              ])),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(item['name'] as String,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            color: color)),
+                    Text(item['desc'] as String,
+                        style: const TextStyle(
+                            color: AppColors.gray, fontSize: 12)),
+                  ])),
             ]),
           );
         }),
         const SizedBox(height: 20),
-        const Text('Durée de conservation',
-            style: TextStyle(fontWeight: FontWeight.w700,
-                fontSize: 14, color: AppColors.charcoal)),
+        Text(l10n.privacyStorageDurationTitle,
+            style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.charcoal)),
         const SizedBox(height: 12),
         ...durations.asMap().entries.map((e) => Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               margin: const EdgeInsets.only(bottom: 6),
               decoration: BoxDecoration(
-                color: e.key.isEven
-                    ? AppColors.grayXLight
-                    : AppColors.white,
+                color: e.key.isEven ? AppColors.grayXLight : AppColors.white,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(children: [
@@ -539,8 +572,8 @@ class PrivacyScreen extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: Text(e.value[1],
-                      style: const TextStyle(
-                          color: AppColors.gray, fontSize: 13)),
+                      style:
+                          const TextStyle(color: AppColors.gray, fontSize: 13)),
                 ),
               ]),
             )),
@@ -549,35 +582,52 @@ class PrivacyScreen extends StatelessWidget {
   }
 
   // ── Droits ───────────────────────────────────────────────────────
-  Widget _buildRights(bool isMobile) {
+  Widget _buildRights(AppLocalizations l10n, bool isMobile) {
     final rights = [
-      {'icon': '👁️', 'right': 'Accès',
-       'desc': 'Obtenir une copie de vos données personnelles',
-       'color': AppColors.red},
-      {'icon': '✏️', 'right': 'Rectification',
-       'desc': 'Corriger des données inexactes',
-       'color': AppColors.yellow},
-      {'icon': '🗑️', 'right': 'Suppression',
-       'desc': 'Demander l\'effacement de votre compte et vos données',
-       'color': const Color(0xFF3A86FF)},
-      {'icon': '📦', 'right': 'Portabilité',
-       'desc': 'Recevoir vos données dans un format lisible (JSON)',
-       'color': const Color(0xFF06D6A0)},
-      {'icon': '🚫', 'right': 'Opposition',
-       'desc': 'Vous opposer à certains traitements',
-       'color': const Color(0xFF8338EC)},
+      {
+        'icon': '👁️',
+        'right': l10n.privacyRightsAccess,
+        'desc': l10n.privacyRightsAccessDesc,
+        'color': AppColors.red
+      },
+      {
+        'icon': '✏️',
+        'right': l10n.privacyRightsRectif,
+        'desc': l10n.privacyRightsRectifDesc,
+        'color': AppColors.yellow
+      },
+      {
+        'icon': '🗑️',
+        'right': l10n.privacyRightsDelete,
+        'desc': l10n.privacyRightsDeleteDesc,
+        'color': const Color(0xFF3A86FF)
+      },
+      {
+        'icon': '📦',
+        'right': l10n.privacyRightsPortability,
+        'desc': l10n.privacyRightsPortabilityDesc,
+        'color': const Color(0xFF06D6A0)
+      },
+      {
+        'icon': '🚫',
+        'right': l10n.privacyRightsOpposition,
+        'desc': l10n.privacyRightsOppositionDesc,
+        'color': const Color(0xFF8338EC)
+      },
     ];
 
     return Column(
       children: [
         isMobile
-            ? Column(children: rights.map((r) =>
-                _buildRightCard(r, isMobile)).toList())
+            ? Column(
+                children:
+                    rights.map((r) => _buildRightCard(r, isMobile)).toList())
             : Wrap(
-                spacing: 10, runSpacing: 10,
-                children: rights.map((r) =>
-                    SizedBox(width: 230,
-                        child: _buildRightCard(r, isMobile)))
+                spacing: 10,
+                runSpacing: 10,
+                children: rights
+                    .map((r) => SizedBox(
+                        width: 230, child: _buildRightCard(r, isMobile)))
                     .toList()),
         const SizedBox(height: 16),
         Container(
@@ -585,21 +635,21 @@ class PrivacyScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.red.withOpacity(0.06),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: AppColors.red.withOpacity(0.2)),
+            border: Border.all(color: AppColors.red.withOpacity(0.2)),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('📩 Comment exercer vos droits ?',
-                  style: TextStyle(fontWeight: FontWeight.w700,
-                      fontSize: 14, color: AppColors.charcoal)),
-              SizedBox(height: 8),
+              Text(l10n.privacyRightsExerciseTitle,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppColors.charcoal)),
+              const SizedBox(height: 8),
               Text(
-                'Contactez-nous via WhatsApp ou notre page Facebook VolleyPlan. '
-                'Nous nous engageons à répondre dans un délai de 30 jours.',
-                style: TextStyle(color: AppColors.gray,
-                    fontSize: 13, height: 1.5),
+                l10n.privacyRightsExerciseContent,
+                style: const TextStyle(
+                    color: AppColors.gray, fontSize: 13, height: 1.5),
               ),
             ],
           ),
@@ -623,18 +673,18 @@ class PrivacyScreen extends StatelessWidget {
         Text(r['icon'] as String, style: const TextStyle(fontSize: 24)),
         const SizedBox(height: 6),
         Text(r['right'] as String,
-            style: TextStyle(fontWeight: FontWeight.w800,
-                fontSize: 14, color: color)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, fontSize: 14, color: color)),
         const SizedBox(height: 4),
         Text(r['desc'] as String,
-            style: const TextStyle(color: AppColors.gray,
-                fontSize: 12, height: 1.4)),
+            style: const TextStyle(
+                color: AppColors.gray, fontSize: 12, height: 1.4)),
       ]),
     );
   }
 
   // ── Contact ──────────────────────────────────────────────────────
-  Widget _buildContactSection(bool isMobile) {
+  Widget _buildContactSection(AppLocalizations l10n, bool isMobile) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -644,14 +694,14 @@ class PrivacyScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('📬 Contact',
-            style: TextStyle(fontWeight: FontWeight.w800,
-                fontSize: 18, color: AppColors.white)),
+        Text('📬 ${l10n.privacyContactTitle}',
+            style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppColors.white)),
         const SizedBox(height: 12),
-        const Text(
-          'Pour toute question relative à vos données personnelles :',
-          style: TextStyle(color: AppColors.gray, fontSize: 14),
-        ),
+        Text(l10n.privacyContactSubtitle,
+            style: const TextStyle(color: AppColors.gray, fontSize: 14)),
         const SizedBox(height: 16),
         _contactItem('📘', 'Page Facebook', 'VolleyPlan'),
         _contactItem('💬', 'WhatsApp', 'Via la page Facebook'),
@@ -667,8 +717,10 @@ class PrivacyScreen extends StatelessWidget {
         Text(icon, style: const TextStyle(fontSize: 18)),
         const SizedBox(width: 12),
         Text('$label : ',
-            style: const TextStyle(color: AppColors.gray,
-                fontSize: 13, fontWeight: FontWeight.w600)),
+            style: const TextStyle(
+                color: AppColors.gray,
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         Text(value,
             style: const TextStyle(color: AppColors.white, fontSize: 13)),
       ]),

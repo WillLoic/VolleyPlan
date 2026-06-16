@@ -11,6 +11,7 @@ import 'feedback_service.dart';
 import 'api_service.dart';
 import '../models/notification.dart';
 import 'analytics_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState extends ChangeNotifier {
   Coach? coach;
@@ -28,8 +29,32 @@ class AppState extends ChangeNotifier {
   List<dynamic> adminCoaches = [];
   List<dynamic> adminFeedbacks = [];
 
+  // Gestion de la langue
+  Locale _currentLocale = const Locale('fr'); // Locale par défaut
+
   bool get isLoggedIn => coach != null;
   String? get token => _token;
+  Locale get currentLocale => _currentLocale;
+
+  // Change la langue et la sauvegarde localement
+  Future<void> setLocale(Locale locale) async {
+    if (_currentLocale == locale) return;
+    _currentLocale = locale;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', locale.languageCode);
+  }
+
+  // Charge la langue sauvegardée au démarrage
+  Future<void> loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final code = prefs.getString('language_code');
+    if (code != null) {
+      _currentLocale = Locale(code);
+      notifyListeners();
+    }
+  }
 
   void _setLoading(bool v) {
     loading = v;
@@ -57,7 +82,10 @@ class AppState extends ChangeNotifier {
 
     try {
       _token = token;
-      coach = await AuthService.getMe();
+      // Charger la langue et le profil en parallèle
+      await Future.wait(
+          [loadSavedLocale(), AuthService.getMe().then((c) => coach = c)]);
+
       // On charge tout en parallèle
       await Future.wait([loadJoueurs(), loadPlannings(), loadNotifications()]);
       isInitialized = true;

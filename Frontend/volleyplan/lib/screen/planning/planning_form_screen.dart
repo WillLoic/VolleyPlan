@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/app_state.dart';
 //import '../../models/planning.dart';
 import '../../models/seance.dart';
@@ -95,14 +96,15 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
       };
 
       if (_isEdit) {
-        await context.read<AppState>().updatePlanning(widget.planningId!, data);//, token: widget.token);
+        await context.read<AppState>().updatePlanning(widget.planningId!, data,token: widget.token);//, token: widget.token);
       } else {
         await context.read<AppState>().createPlanning(data);
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Modification réussie !')),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.planningFormSuccess)),
         );
         if (_isOwner) {
           context.go('/home');
@@ -111,8 +113,9 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString()), backgroundColor: AppColors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+              backgroundColor: AppColors.red));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -128,8 +131,8 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
       if (i == index) continue;
       if (_seances[i].dateSeance == s.dateSeance &&
           _seances[i].heureDebut?.trim() == s.heureDebut?.trim()) {
-        msg =
-            "La séance ${i + 1} est déjà prévue au même moment dans ce planning.";
+        msg = AppLocalizations.of(context)!
+            .planningFormOverlapMessage(i + 1);
         break;
       }
     }
@@ -142,7 +145,8 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
         'planning_id': widget.planningId,
       });
       if (res['overlap'] == true) {
-        msg = res['message'];
+        msg = AppLocalizations.of(context)!.planningFormOverlapServerMessage(
+            res['overlap_title'], res['planning_title']);
       }
     }
 
@@ -168,27 +172,28 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
   }
 
   Future<bool> _showOverlapDialog(String msg) async {
+    final l10n = AppLocalizations.of(context)!;
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Row(children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange),
-              SizedBox(width: 10),
-              Text('Conflit détecté',
-                  style: TextStyle(fontWeight: FontWeight.w800)),
+            title: Row(children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              const SizedBox(width: 10),
+              Text(l10n.planningFormOverlapConflict,
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
             ]),
             content: Text(msg),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Annuler (Changer)',
-                    style: TextStyle(color: AppColors.gray)),
+                child: Text(l10n.planningFormOverlapCancel,
+                    style: const TextStyle(color: AppColors.gray)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('OK (Confirmer)',
-                    style: TextStyle(color: Colors.white)),
+                child: Text(l10n.planningFormOverlapConfirm,
+                    style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -197,14 +202,14 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
   }
 
   void _showAlert(String msg) {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(children: [
           const Icon(Icons.warning_amber_rounded, color: Colors.white),
           const SizedBox(width: 10),
-          Expanded(
-              child: Text(msg,
-                  style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(child: Text(l10n.errorPrefix(msg),
+              style: const TextStyle(fontWeight: FontWeight.w600))),
         ]),
         backgroundColor: Colors.orange.shade800,
         behavior: SnackBarBehavior.floating,
@@ -218,7 +223,7 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
       return const Scaffold(
           body: Center(child: CircularProgressIndicator(color: AppColors.red)));
     }
-
+    final l10n = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
 
     return Scaffold(
@@ -226,7 +231,8 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.charcoal,
         foregroundColor: Colors.white,
-        title: Text(_isEdit ? 'Modifier le planning' : 'Nouveau planning',
+        title: Text(
+            _isEdit ? l10n.planningFormEditTitle : l10n.planningFormNewTitle,
             style: const TextStyle(fontWeight: FontWeight.w800)),
         leading: IconButton(
             icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
@@ -234,12 +240,13 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
       body: Column(
         children: [
           // Stepper header
-          _StepHeader(current: _step),
+          _StepHeader(current: _step, l10n: l10n),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: [
                 _Step1(
+                  l10n: l10n,
                   titreCtrl: _titreCtrl,
                   mode: _mode,
                   duree: _duree,
@@ -262,6 +269,7 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
                   onDateFinChange: (v) => setState(() => _dateFin = v),
                 ),
                 _Step2(
+                  l10n: l10n,
                   selectedIds: _selectedJoueurIds,
                   onToggle: (id) => setState(() {
                     _selectedJoueurIds.contains(id)
@@ -278,6 +286,7 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
                   }),
                 ),
                 _Step3(
+                  l10n: l10n,
                   seances: _seances,
                   currentSeance: _currentSeance,
                   onSeanceChange: (i) => setState(() => _currentSeance = i),
@@ -291,6 +300,7 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
           ),
           // Navigation footer
           _NavFooter(
+            l10n: l10n,
             step: _step,
             loading: _loading,
             isEdit: _isEdit,
@@ -312,11 +322,12 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
 // ── Step Header ───────────────────────────────────────────────────
 class _StepHeader extends StatelessWidget {
   final int current;
-  const _StepHeader({required this.current});
+  final AppLocalizations l10n;
+  const _StepHeader({required this.current, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    final labels = ['Paramètres', 'Participants', 'Séances'];
+    final labels = [l10n.planningFormStepParams, l10n.planningFormStepParticipants, l10n.planningFormStepSessions];
     return Container(
       color: AppColors.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -380,6 +391,7 @@ class _NavFooter extends StatelessWidget {
   final int step;
   final bool loading, isEdit;
   final VoidCallback? onBack, onNext, onSave;
+  final AppLocalizations l10n;
 
   const _NavFooter(
       {required this.step,
@@ -387,7 +399,8 @@ class _NavFooter extends StatelessWidget {
       required this.isEdit,
       this.onBack,
       this.onNext,
-      this.onSave});
+      this.onSave,
+      required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -403,15 +416,15 @@ class _NavFooter extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           onBack != null
-              ? VpButton(
-                  label: '← Retour',
+              ? VpButton( // Removed const
+                  label: l10n.planningFormBack,
                   onPressed: onBack,
                   variant: VpButtonVariant.ghost)
               : const SizedBox(),
-          if (onNext != null) VpButton(label: 'Suivant →', onPressed: onNext),
+          if (onNext != null) VpButton(label: l10n.planningFormNext, onPressed: onNext),
           if (onSave != null)
             VpButton(
-              label: isEdit ? '💾 Modifier' : '💾 Enregistrer',
+              label: isEdit ? l10n.planningFormSaveEdit : l10n.planningFormSaveNew,
               onPressed: onSave,
               loading: loading,
             ),
@@ -433,6 +446,7 @@ class _Step1 extends StatelessWidget {
   final void Function(int) onNbChange;
   final void Function(String) onPosteToggle;
   final void Function(String?) onDateDebutChange, onDateFinChange;
+  final AppLocalizations l10n;
 
   const _Step1({
     required this.titreCtrl,
@@ -449,6 +463,7 @@ class _Step1 extends StatelessWidget {
     required this.onPosteToggle,
     required this.onDateDebutChange,
     required this.onDateFinChange,
+    required this.l10n,
   });
 
   @override
@@ -456,26 +471,26 @@ class _Step1 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('Paramètres généraux'),
+        _sectionTitle(l10n.planningFormGeneralParams, l10n),
         _card(Column(children: [
-          _field('Titre du planning', titreCtrl, 'Ex: Prépa championnat 2025',
+          _field(l10n.planningFormTitleLabel, titreCtrl, l10n.planningFormTitleHint, l10n,
               enabled: isOwner),
           const SizedBox(height: 16),
 
           // Mode
           const Align(
               alignment: Alignment.centerLeft,
-              child: Text('Mode',
+              child: Text('Mode', // This 'Mode' is hardcoded, should be l10n.planningFormModeLabel
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.charcoal))),
           const SizedBox(height: 8),
           Row(children: [
-            _modeBtn(
-                'groupe', '👥 Groupe', mode, isOwner ? onModeChange : (_) {}),
+            _modeBtn('groupe', l10n.planningFormModeGroup, mode,
+                isOwner ? onModeChange : (_) {}),
             const SizedBox(width: 12),
-            _modeBtn('individuel', '🎯 Spécifique', mode,
+            _modeBtn('individuel', l10n.planningFormModeSpecific, mode,
                 isOwner ? onModeChange : (_) {}),
           ]),
           const SizedBox(height: 16),
@@ -484,7 +499,7 @@ class _Step1 extends StatelessWidget {
           if (mode == 'individuel') ...[
             const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Postes concernés',
+                child: Text('Postes concernés', // This 'Postes concernés' is hardcoded, should be l10n.planningFormPostesLabel
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -496,7 +511,7 @@ class _Step1 extends StatelessWidget {
               children: AppConstants.postes.map((p) {
                 final isSelected = selectedPostes.contains(p);
                 return FilterChip(
-                  label: Text(p,
+                  label: Text(_getPosteLabel(l10n, p),
                       style: TextStyle(
                           fontSize: 12,
                           color:
@@ -526,7 +541,7 @@ class _Step1 extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  const Text('Durée',
+                  Text(l10n.planningFormDurationLabel,
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -535,16 +550,16 @@ class _Step1 extends StatelessWidget {
                   DropdownButtonFormField<String>(
                     value: duree,
                     decoration: _inputDeco(),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
-                          value: 'hebdomadaire', child: Text('Hebdomadaire')),
+                          value: 'hebdomadaire', child: Text(l10n.planningFormDurationWeekly)),
                       DropdownMenuItem(
-                          value: 'mensuel', child: Text('Mensuel')),
+                          value: 'mensuel', child: Text(l10n.planningFormDurationMonthly)),
                       DropdownMenuItem(
-                          value: 'trimestriel', child: Text('Trimestriel')),
+                          value: 'trimestriel', child: Text(l10n.planningFormDurationQuarterly)),
                       DropdownMenuItem(
-                          value: 'semestriel', child: Text('Semestriel')),
-                      DropdownMenuItem(value: 'annuel', child: Text('Annuel')),
+                          value: 'semestriel', child: Text(l10n.planningFormDurationHalfYearly)),
+                      DropdownMenuItem(value: 'annuel', child: Text(l10n.planningFormDurationYearly)),
                     ],
                     onChanged: isOwner ? (v) => onDureeChange(v!) : null,
                   ),
@@ -554,7 +569,7 @@ class _Step1 extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  const Text('Nombre de séances',
+                  Text(l10n.planningFormNbSessionsLabel,
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -573,12 +588,12 @@ class _Step1 extends StatelessWidget {
           ]),
           const SizedBox(height: 16),
           Row(children: [
-            Expanded(
-                child: _datePickerField(context, 'Date de début', dateDebut,
+            Expanded( // Removed const
+                child: _datePickerField(context, l10n.planningFormStartDateLabel, dateDebut, l10n,
                     isOwner ? (v) => onDateDebutChange(v) : null)),
             const SizedBox(width: 16),
-            Expanded(
-                child: _datePickerField(context, 'Date de fin', dateFin,
+            Expanded( // Removed const
+                child: _datePickerField(context, l10n.planningFormEndDateLabel, dateFin, l10n,
                     isOwner ? (v) => onDateFinChange(v) : null)),
           ]),
         ])),
@@ -586,8 +601,8 @@ class _Step1 extends StatelessWidget {
     );
   }
 
-  Widget _datePickerField(BuildContext context, String label, String? value,
-      void Function(String?)? onSelect) {
+  Widget _datePickerField(BuildContext context, String label, String? value, AppLocalizations l10n,
+      void Function(String?)? onSelect) { // Removed const
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label,
           style: const TextStyle(
@@ -614,7 +629,7 @@ class _Step1 extends StatelessWidget {
           child: Row(children: [
             const Icon(Icons.calendar_today, size: 16, color: AppColors.gray),
             const SizedBox(width: 8),
-            Text(value ?? 'Choisir...', style: const TextStyle(fontSize: 13)),
+            Text(value ?? l10n.planningFormChooseDate, style: const TextStyle(fontSize: 13)),
           ]),
         ),
       ),
@@ -644,18 +659,31 @@ class _Step1 extends StatelessWidget {
       ),
     ));
   }
+
+  String _getPosteLabel(AppLocalizations l10n, String posteId) {
+    switch (posteId) {
+      case 'Passeur': return l10n.postePasseur;
+      case 'Libéro': return l10n.posteLibero;
+      case 'Central': return l10n.posteCentral;
+      case 'Pointu': return l10n.postePointu;
+      case 'Réceptionneur-Attaquant': return l10n.posteReceptionneurAttaquant;
+      case 'Universal': return l10n.posteUniversal;
+      default: return posteId;
+    }
+  }
 }
+
 
 // ── Step 2 — Participants ─────────────────────────────────────────
 class _Step2 extends StatelessWidget {
   final List<int> selectedIds;
   final void Function(int) onToggle;
   final void Function(bool) onSelectAll;
+  final AppLocalizations l10n;
 
   const _Step2(
       {required this.selectedIds,
-      required this.onToggle,
-      required this.onSelectAll});
+      required this.onToggle, required this.onSelectAll, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -669,11 +697,11 @@ class _Step2 extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionTitle('Participants (${selectedIds.length})'),
+            _sectionTitle(l10n.planningFormParticipantsCount(selectedIds.length), l10n),
             if (joueurs.isNotEmpty)
               Row(
                 children: [
-                  const Text('Tout sélectionner',
+                  Text(l10n.planningFormSelectAll,
                       style: TextStyle(
                           fontSize: 12,
                           color: AppColors.gray,
@@ -689,12 +717,12 @@ class _Step2 extends StatelessWidget {
           ],
         ),
         if (joueurs.isEmpty)
-          _card(Column(children: [
-            const Text('Aucun joueur dans votre roster.',
-                style: TextStyle(color: AppColors.gray)),
+          _card(Column(children: [ // Removed const
+            Text(l10n.planningFormNoPlayers,
+                style: const TextStyle(color: AppColors.gray)),
             const SizedBox(height: 12),
-            const Text('Ajoutez des joueurs depuis l\'onglet Joueurs.',
-                style: TextStyle(color: AppColors.gray, fontSize: 12)),
+            Text(l10n.planningFormAddPlayersHint,
+                style: const TextStyle(color: AppColors.gray, fontSize: 12)),
           ]))
         else
           _card(Column(
@@ -733,6 +761,7 @@ class _Step3 extends StatelessWidget {
   final void Function(List<Seance>) onSeancesUpdate;
   final VoidCallback onScheduleChanged;
   final String? limitStart, limitEnd;
+  final AppLocalizations l10n;
 
   const _Step3({
     required this.seances,
@@ -742,12 +771,13 @@ class _Step3 extends StatelessWidget {
     required this.onScheduleChanged,
     this.limitStart,
     this.limitEnd,
+    required this.l10n,
   });
 
   @override
   Widget build(BuildContext context) {
     if (seances.isEmpty)
-      return const Center(child: Text('Aucune séance configurée.'));
+      return Center(child: Text(l10n.planningFormNoSessionsConfigured));
     final s = seances[currentSeance];
 
     return Column(
@@ -773,7 +803,7 @@ class _Step3 extends StatelessWidget {
                         width: 1.5),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text('S${i + 1}',
+                  child: Text('S${i + 1}', // This is a short label, maybe keep it as is or use a generic "Session X"
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: selected ? AppColors.red : AppColors.gray)),
@@ -785,7 +815,8 @@ class _Step3 extends StatelessWidget {
 
         _card(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Titre séance
-          _field('Titre', null, 'Séance ${currentSeance + 1}',
+          _field(l10n.planningFormSessionTitleLabel, null,
+              l10n.planningFormSessionTitleHint(currentSeance + 1), l10n,
               initialValue: s.titre,
               key: ValueKey('titre_$currentSeance'), onChanged: (v) {
             seances[currentSeance] = _copySeance(s, titre: v);
@@ -799,7 +830,7 @@ class _Step3 extends StatelessWidget {
                 child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Date (optionnel)',
+                Text(l10n.planningFormSessionDateOptional,
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -843,7 +874,7 @@ class _Step3 extends StatelessWidget {
                       const Icon(Icons.calendar_today,
                           size: 16, color: AppColors.gray),
                       const SizedBox(width: 8),
-                      Text(s.dateSeance ?? 'Choisir...',
+                      Text(s.dateSeance ?? l10n.planningFormChooseDate,
                           style: const TextStyle(fontSize: 13)),
                     ]),
                   ),
@@ -855,7 +886,7 @@ class _Step3 extends StatelessWidget {
                 child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Heure (optionnel)',
+                Text(l10n.planningFormSessionTimeOptional,
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -887,7 +918,7 @@ class _Step3 extends StatelessWidget {
                       const Icon(Icons.access_time,
                           size: 16, color: AppColors.gray),
                       const SizedBox(width: 8),
-                      Text(s.heureDebut ?? '00:00',
+                      Text(s.heureDebut ?? l10n.planningFormSessionChooseTime,
                           style: const TextStyle(fontSize: 13)),
                     ]),
                   ),
@@ -897,7 +928,8 @@ class _Step3 extends StatelessWidget {
           ]),
           const SizedBox(height: 14),
 
-          _field('Lieu (optionnel)', null, 'Gymnase, salle...',
+          _field(l10n.planningFormSessionLocationOptional, null,
+              l10n.planningFormSessionLocationHint, l10n,
               initialValue: s.lieu ?? '',
               key: ValueKey('lieu_$currentSeance'), onChanged: (v) {
             seances[currentSeance] = _copySeance(s, lieu: v);
@@ -906,7 +938,7 @@ class _Step3 extends StatelessWidget {
           const SizedBox(height: 14),
 
           // Domaines
-          const Text('Domaines travaillés',
+          Text(l10n.planningFormSessionDomains,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -920,6 +952,7 @@ class _Step3 extends StatelessWidget {
                 return DomaineChip(
                   domaineId: id,
                   selected: s.domaines.contains(id),
+                  l10n: l10n, // Pass l10n to DomaineChip
                   onTap: () {
                     final doms = List<String>.from(s.domaines);
                     doms.contains(id) ? doms.remove(id) : doms.add(id);
@@ -932,13 +965,14 @@ class _Step3 extends StatelessWidget {
 
           // Exercices
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('Exercices — ${AppConstants.fmtMinutes(s.dureeTotale)}',
+            Text(l10n.planningFormSessionExercises(
+                AppConstants.fmtMinutes(s.dureeTotale)),
                 style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.charcoal)),
             VpButton(
-                label: '+ Exercice',
+                label: l10n.planningFormAddExercise,
                 small: true,
                 onPressed: () {
                   final exs = List<Exercice>.from(s.exercices)
@@ -961,9 +995,9 @@ class _Step3 extends StatelessWidget {
               decoration: BoxDecoration(
                   color: AppColors.grayXLight,
                   borderRadius: BorderRadius.circular(10)),
-              child: const Center(
-                  child: Text('Ajoutez vos exercices ici',
-                      style: TextStyle(color: AppColors.gray))),
+              child: Center(
+                  child: Text(l10n.planningFormNoExercises,
+                      style: const TextStyle(color: AppColors.gray))),
             ),
 
           ...s.exercices.asMap().entries.map((e) {
@@ -980,8 +1014,8 @@ class _Step3 extends StatelessWidget {
                   Expanded(
                       child: TextFormField(
                     initialValue: ex.nom,
-                    decoration: const InputDecoration(
-                        hintText: 'Nom de l\'exercice',
+                    decoration: InputDecoration(
+                        hintText: l10n.planningFormExerciseNameHint,
                         border: InputBorder.none,
                         isDense: true),
                     style: const TextStyle(
@@ -996,8 +1030,8 @@ class _Step3 extends StatelessWidget {
                       child: TextFormField(
                         initialValue: '${ex.duree}',
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                            suffix: Text('min'),
+                        decoration: InputDecoration(
+                            suffix: Text(l10n.planningFormExerciseMinSuffix),
                             border: InputBorder.none,
                             isDense: true),
                         style: const TextStyle(fontSize: 13),
@@ -1047,7 +1081,7 @@ class _Step3 extends StatelessWidget {
                                   : AppColors.grayLight),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text('${d['icon']} ${d['label']}',
+                        child: Text('${d['icon']} ${getDomaineLabel(l10n, id)}',
                             style: TextStyle(
                                 fontSize: 10,
                                 color: selected
@@ -1064,6 +1098,20 @@ class _Step3 extends StatelessWidget {
         ])),
       ],
     );
+  }
+
+  String getDomaineLabel(AppLocalizations l10n, String id) {
+    switch (id.toLowerCase()) {
+      case 'service': return l10n.domaineService;
+      case 'reception': return l10n.domaineReception;
+      case 'passe': return l10n.domainePasse;
+      case 'attaque': return l10n.domaineAttaque;
+      case 'block': return l10n.domaineBlock;
+      case 'defense': return l10n.domaineDefense;
+      case 'physique': return l10n.domainePhysique;
+      case 'general': return l10n.domaineGeneral;
+      default: return id;
+    }
   }
 
   Seance _copySeance(Seance s,
@@ -1122,7 +1170,7 @@ class _Step3 extends StatelessWidget {
 }
 
 // ── Helpers partagés ──────────────────────────────────────────────
-Widget _sectionTitle(String t) => Padding(
+Widget _sectionTitle(String t, AppLocalizations l10n) => Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(t,
           style: const TextStyle(
@@ -1131,7 +1179,7 @@ Widget _sectionTitle(String t) => Padding(
               color: AppColors.charcoal)),
     );
 
-Widget _card(Widget child) => Container(
+Widget _card(Widget child) => Container( // Removed const
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1144,7 +1192,7 @@ Widget _card(Widget child) => Container(
       child: child,
     );
 
-Widget _field(String label, TextEditingController? ctrl, String hint,
+Widget _field(String label, TextEditingController? ctrl, String hint, AppLocalizations l10n,
     {void Function(String)? onChanged,
     String? initialValue,
     Key? key,
