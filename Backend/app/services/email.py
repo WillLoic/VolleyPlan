@@ -11,7 +11,7 @@ class EmailService:
     @staticmethod
     def send_invitation_email(email, token, planning_title, sender_name):
         # URL de ton frontend (ex: http://localhost:5000 sur le web-server)
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:60867").strip()
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:64426").strip()
         invite_link = f"{frontend_url}/#/invite/{token}"
         
         subject = f"Invitation VolleyPlan : Collaboration sur {planning_title}"
@@ -41,7 +41,7 @@ class EmailService:
     #methode avec brevo
     @staticmethod
     def send_invitation_email_brevo(email,token,planning_title, sender_name):
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:60867").strip()
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:64426").strip()
         invite_link = f"{frontend_url}/#/invite/{token}"
 
         #configuration brevo
