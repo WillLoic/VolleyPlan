@@ -39,6 +39,9 @@ dependencies:
   # Stockage local (token JWT)
   shared_preferences: ^2.2.2
 
+  #SEO
+  seo_renderer: ^0.6.0
+
   url_launcher: ^6.2.5 # Ajoutez cette ligne
 
   # Navigation

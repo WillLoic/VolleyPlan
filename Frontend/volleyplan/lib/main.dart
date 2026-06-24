@@ -14,9 +14,12 @@ import 'screen/landing_screen.dart';
 import 'services/analytics_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import pour les délégateurs standards
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import généré
+import 'package:seo_renderer/seo_renderer.dart'; // Import pour le SEO
 
 import 'screen/private_screen.dart'; // Importe ta page de confidentialité
 import 'screen/terms_screen.dart'; // Importe ta page de conditions
+import 'screen/blog_screen.dart';
+import 'screen/blog_detail_screen.dart';
 
 void main() {
   // On s'assure que les bindings Flutter sont prêts
@@ -60,34 +63,34 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
     // On watch AppState ici uniquement pour la locale (changement de langue)
     final appState = context.watch<AppState>();
 
-    return MaterialApp.router(
-      title: 'VolleyPlan Coach Edition',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.red,
-          primary: AppColors.red,
+    // On enveloppe l'application avec RobotDetector pour activer le SEO
+    return RobotDetector(
+      child: MaterialApp.router(
+        title: 'VolleyPlan Coach Edition',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.red,
+            primary: AppColors.red,
+          ),
+          scaffoldBackgroundColor: AppColors.offWhite,
         ),
-        scaffoldBackgroundColor: AppColors.offWhite,
+        // --- Configuration de la localisation ---
+        localizationsDelegates: const [
+          AppLocalizations.delegate, // Délégataire généré par l'outil
+          GlobalMaterialLocalizations
+              .delegate, // Localisation des widgets Material Design
+          GlobalWidgetsLocalizations
+              .delegate, // Localisation des widgets standards
+          GlobalCupertinoLocalizations
+              .delegate, // Localisation des widgets iOS-style
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: appState.currentLocale, // Utilise la locale de AppState
+        // --- Fin de la configuration de la localisation ---
+        routerConfig: _routerConfig,
       ),
-      // --- Configuration de la localisation ---
-      localizationsDelegates: const [
-        AppLocalizations.delegate, // Délégataire généré par l'outil
-        GlobalMaterialLocalizations
-            .delegate, // Localisation des widgets Material Design
-        GlobalWidgetsLocalizations
-            .delegate, // Localisation des widgets standards
-        GlobalCupertinoLocalizations
-            .delegate, // Localisation des widgets iOS-style
-      ],
-      supportedLocales: const [
-        Locale('en'), // Anglais
-        Locale('fr'), // Français
-      ],
-      locale: appState.currentLocale, // Utilise la locale de AppState
-      // --- Fin de la configuration de la localisation ---
-      routerConfig: _routerConfig,
     );
   }
 
@@ -112,7 +115,8 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
             !loc.startsWith('/reset-password') &&
             !loc.startsWith('/planning') &&
             loc != '/privacy' &&
-            loc != '/terms') {
+            loc != '/terms' &&
+            !loc.startsWith('/blog')) {
           return '/login';
         }
 
@@ -136,6 +140,17 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
             GoRoute(
               path: '/terms',
               builder: (context, state) => const TermsScreen(),
+            ),
+            GoRoute(
+              path: '/blog',
+              builder: (context, state) => const BlogScreen(),
+            ),
+            GoRoute(
+              path: '/blog/:slug',
+              builder: (context, state) {
+                final slug = state.pathParameters['slug'] ?? '';
+                return BlogDetailScreen(slug: slug);
+              },
             ),
             GoRoute(
               path: '/login',

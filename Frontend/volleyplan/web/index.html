@@ -1,38 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+  <meta name="google-site-verification" content="zo5VNpz_hCEV54_3APgct17_UfJXYGqu1aHSukOkL6k" />
+  <meta name="msvalidate.01" content="7E4F72970C56CAB79ECB656F1EC91773" />
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- iOS meta tags & icons -->
+  <!-- ═══════════════════════════════════════════════
+       SEO BASIQUE
+  ═══════════════════════════════════════════════ -->
+  <title>VolleyPlan — Outil de planification d'entraînement de volleyball</title>
+  <meta name="description" content="VolleyPlan est l'outil gratuit des coachs de volleyball. Créez vos plannings d'entraînement en 5 minutes, analysez votre préparation par domaine de jeu, collaborez avec les membres de votre staff et partagez vos plannings d'entrainement en PDF sur WhatsApp.">
+  <meta name="keywords" content="volleyball training plan, planification entrainement volleyball, coaching volleyball, logiciel coach volleyball, volleyball practice planner, VolleyPlan, coaching app volleyball, entrainement volley, volleyball Cameroun, Africa volleyball coach">
+  <meta name="author" content="VolleyPlan">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#D72638">
+  <link rel="canonical" href="https://volleyplan.app/">
+  <!-- Alternance de langues (SEO) -->
+  <link rel="alternate" hreflang="x-default" href="https://volleyplan.app/" />
+  <link rel="alternate" hreflang="fr" href="https://volleyplan.app/" />
+  <link rel="alternate" hreflang="en" href="https://volleyplan.app/" />
+
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH (Facebook, LinkedIn, WhatsApp)
+  ═══════════════════════════════════════════════ -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://volleyplan.app/">
+  <meta property="og:title" content="VolleyPlan — Outil de planification d'entraînement de volleyball">
+  <meta property="og:description" content="Créez vos plannings d'entraînement en 5 minutes, analysez votre préparation par domaine de jeu, collaborez avec les membres de votre staff et partagez vos plannings d'entrainement en PDF sur WhatsApp. Gratuit pour les coachs et joueurs de volleyball.">
+  <meta property="og:image" content="https://volleyplan.app/icons/image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="VolleyPlan — Outil de planification de saison ou competition de volleyball">
+  <meta property="og:site_name" content="VolleyPlan">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER CARDS (X)
+  ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://volleyplan.app/">
+  <meta name="twitter:title" content="VolleyPlan — Outil de planification d'entrainement de volleyball">
+  <meta name="twitter:description" content="Créez vos plannings d'entraînement en 5 minutes, analysez votre préparation et partagez en PDF sur WhatsApp. Gratuit.">
+  <meta name="twitter:image" content="https://volleyplan.app/icons/image.jpg">
+
+  <!-- ═══════════════════════════════════════════════
+       SCHEMA.ORG (Google Rich Results + GEO)
+  ═══════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "VolleyPlan",
+    "url": "https://volleyplan.app",
+    "description": "VolleyPlan is a free volleyball training planning tool for coaches and players. Create structured training plans, analyze workload by game domain (serving, attack, defense, blocking, reception, physical) and share PDF schedules directly on WhatsApp.",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "Web, iOS, Android",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "XAF",
+      "availability": "https://schema.org/InStock"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "TAGNE KEMEGNE Loïc Wilfried",
+      "url": "https://github.com/WillLoic"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "VolleyPlan",
+      "url": "https://volleyplan.app",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://volleyplan.app/favicon.png"
+      }
+    },
+    "screenshot": "https://volleyplan.app/favicon.png",
+    "featureList": [
+      "Volleyball training plan creation",
+      "Training workload analysis by game domain",
+      "PDF export and WhatsApp sharing",
+      "Staff collaboration",
+      "Player roster management",
+      "Individual and group training modes"
+    ],
+    "applicationSubCategory": "Sports Training & Coaching",
+    "genre": "Volleyball",
+    "sameAs": [
+      "https://fr.wikipedia.org/wiki/Volley-ball",
+      "https://en.wikipedia.org/wiki/Volleyball"
+    ],
+
+    "inLanguage": ["fr", "en"],
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Volleyball coaches and players"
+    }
+  }
+  </script>
+
+    <!-- Schema FAQ (GEO & Google Rich Results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "L'application VolleyPlan est-elle gratuite ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oui, et sans aucun frais cachés. La version actuelle vous permet de configurer intégralement votre effectif, de concevoir vos cycles d'entraînement techniques et physiques, d'analyser vos bilans de performance et d'exporter vos plannings en PDF — le tout gratuitement, sans limite de séances."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Mes joueurs doivent-ils créer un compte ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Non, absolument pas. C'est l'une des forces majeures de VolleyPlan. Seul le coach utilise la plateforme. Vos joueurs reçoivent simplement un PDF clair et professionnel par WhatsApp ou email — sans créer de compte, sans télécharger d'application."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Comment VolleyPlan aide-t-il à suivre la progression sur une saison ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "VolleyPlan génère des bilans automatiques et cumulés sur l'ensemble de vos plannings. En un coup d'œil, vous visualisez la répartition de votre volume d'entraînement par domaine (service, réception, attaque, défense, physique) et identifiez les déséquilibres à corriger. Un vrai tableau de bord de saison."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Est-il possible de collaborer avec les membres de mon staff sur un planning ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oui ! VolleyPlan propose un module de collaboration qui vous permet d'inviter vos assistants coachs ou préparateurs physiques sur un planning précis. Ils accèdent depuis leur propre téléphone, consultent et modifient les séances en temps réel."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Peut-on exporter les plannings en format PDF ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolument. En un seul clic, VolleyPlan génère un PDF professionnel et lisible de votre planning complet — séances, exercices, domaines et horaires. Ce document est instantanément partageable via WhatsApp, email ou tout autre canal."
+        }
+      }
+    ]
+  }
+  </script>
+
+
+
+  <!-- ═══════════════════════════════════════════════
+       PWA & MOBILE
+  ═══════════════════════════════════════════════ -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="volleyplan">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VolleyPlan">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="favicon.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.png">
 
-  <title>volleyplan</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+
+    <noscript>
+    <div style="padding: 20px; font-family: sans-serif; max-width: 800px; margin: 0 auto;">
+      <h1>VolleyPlan — Logiciel de planification d'entraînement de volleyball</h1>
+      <p>L'assistant tactique des coachs de volleyball modernes. Créez vos plannings d'entraînement en 5 minutes, analysez votre préparation par domaine de jeu, collaborez avec votre staff et partagez vos plannings en PDF sur WhatsApp.</p>
+      
+      <h2>Pourquoi utiliser VolleyPlan ?</h2>
+      <ul>
+        <li><strong>Gain de temps massif :</strong> Économisez jusqu'à 5h par semaine sur la création et la mise à jour de vos plannings.</li>
+        <li><strong>Précision Tactique :</strong> Suivez la répartition du volume d'entraînement par domaine de jeu (service, attaque, réception, défense, physique).</li>
+        <li><strong>Partage WhatsApp simplifié :</strong> Vos joueurs reçoivent leur programme directement en PDF sans devoir installer d'application.</li>
+        <li><strong>Collaboration en direct :</strong> Invitez vos assistants et préparateurs physiques à co-éditer vos séances.</li>
+      </ul>
+
+      <h2>Questions fréquentes (FAQ)</h2>
+      <h3>L'application est-elle gratuite ?</h3>
+      <p>Oui, l'application est entièrement gratuite pour les entraîneurs et les joueurs de volleyball.</p>
+      
+      <h3>Faut-il installer une application ?</h3>
+      <p>Non pas encore, VolleyPlan fonctionne directement dans votre navigateur web, et s'installe comme une Progressive Web App (PWA) sur votre mobile.</p>
+    </div>
+  </noscript>
+
+
+
 </body>
 </html>
