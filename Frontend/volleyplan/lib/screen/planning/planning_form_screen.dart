@@ -15,8 +15,9 @@ import '../../services/planning_service.dart';
 class PlanningFormScreen extends StatefulWidget {
   final int? planningId; // null = création, non-null = modification
   final String? token;
+  final Map<String, dynamic>? aiData; // Données pré-remplies depuis l'IA
 
-  const PlanningFormScreen({super.key, this.planningId, this.token});
+  const PlanningFormScreen({super.key, this.planningId, this.token, this.aiData});
 
   @override
   State<PlanningFormScreen> createState() => _PlanningFormScreenState();
@@ -48,7 +49,47 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
   void initState() {
     super.initState();
     _isEdit = widget.planningId != null;
-    if (_isEdit) _loadExisting();
+    if (_isEdit) {
+      _loadExisting();
+    } else if (widget.aiData != null) {
+      _prefillFromAi(widget.aiData!);
+    }
+  }
+
+  /// Pré-remplit le formulaire depuis le JSON généré par l'IA et saute à l'étape des séances.
+  void _prefillFromAi(Map<String, dynamic> data) {
+    final rawSeances = data['seances'] as List<dynamic>? ?? [];
+    final seances = rawSeances.asMap().entries.map((entry) {
+      final i = entry.key;
+      final s = entry.value as Map<String, dynamic>;
+      final rawExos = s['exercices'] as List<dynamic>? ?? [];
+      final exercices = rawExos.asMap().entries.map((eEntry) {
+        final j = eEntry.key;
+        final e = eEntry.value as Map<String, dynamic>;
+        return Exercice(
+          nom: e['nom'] ?? 'Exercice ${j + 1}',
+          duree: (e['duree'] as num?)?.toInt() ?? 15,
+          domaines: List<String>.from(e['domaines'] ?? []),
+          description: e['description'],
+          ordre: j,
+        );
+      }).toList();
+
+      return Seance(
+        titre: s['titre'] ?? 'Séance ${i + 1}',
+        ordre: i,
+        domaines: List<String>.from(s['domaines'] ?? []),
+        exercices: exercices,
+      );
+    }).toList();
+
+    setState(() {
+      _titreCtrl.text = data['titre'] ?? '';
+      _mode = data['mode'] ?? 'groupe';
+      _nbSeances = (data['nb_seances'] as num?)?.toInt() ?? seances.length;
+      _seances = seances;
+      _step = 2; // Sauter directement à l'étape des séances
+    });
   }
 
   Future<void> _loadExisting() async {
@@ -74,9 +115,14 @@ class _PlanningFormScreenState extends State<PlanningFormScreen> {
   }
 
   void _initSeances() {
-    if (_seances.isEmpty) {
-      _seances = List.generate(
-          _nbSeances, (i) => Seance(titre: 'Séance ${i + 1}', ordre: i));
+    if (_seances.length < _nbSeances) {
+      // Add missing seances
+      for (int i = _seances.length; i < _nbSeances; i++) {
+        _seances.add(Seance(titre: 'Séance ${i + 1}', ordre: i));
+      }
+    } else if (_seances.length > _nbSeances) {
+      // Remove excess seances
+      _seances = _seances.sublist(0, _nbSeances);
     }
   }
 
@@ -979,9 +1025,9 @@ class _Step3 extends StatelessWidget {
                     ..add(Exercice(
                         nom: '',
                         duree: 15,
-                        domaine: s.domaines.isNotEmpty
-                            ? s.domaines.first
-                            : 'general',
+                        domaines: s.domaines.isNotEmpty
+                            ? [s.domaines.first]
+                            : [],
                         ordre: s.exercices.length));
                   seances[currentSeance] = _copySeance(s, exercices: exs);
                   onSeancesUpdate(List.from(seances));
@@ -1062,11 +1108,14 @@ class _Step3 extends StatelessWidget {
                   child: Row(
                       children: AppConstants.domaines.map((d) {
                     final id = d['id'] as String;
-                    final selected = ex.domaine == id;
+                    final selected = ex.domaines.contains(id);
                     return GestureDetector(
-                      onTap: () => _updateEx(
-                          seances, currentSeance, ei, onSeancesUpdate,
-                          domaine: id),
+                      onTap: () {
+                        final newDomaines = List<String>.from(ex.domaines);
+                        selected ? newDomaines.remove(id) : newDomaines.add(id);
+                        _updateEx(seances, currentSeance, ei, onSeancesUpdate,
+                            domaines: newDomaines);
+                      },
                       child: Container(
                         margin: const EdgeInsets.only(right: 6),
                         padding: const EdgeInsets.symmetric(
@@ -1138,7 +1187,7 @@ class _Step3 extends StatelessWidget {
 
   void _updateEx(
       List<Seance> seances, int si, int ei, void Function(List<Seance>) update,
-      {String? nom, int? duree, String? domaine}) {
+      {String? nom, int? duree, List<String>? domaines}) {
     final s = seances[si];
     final exs = List<Exercice>.from(s.exercices);
     final ex = exs[ei];
@@ -1147,7 +1196,7 @@ class _Step3 extends StatelessWidget {
       seanceId: ex.seanceId,
       nom: nom ?? ex.nom,
       duree: duree ?? ex.duree,
-      domaine: domaine ?? ex.domaine,
+      domaines: domaines ?? ex.domaines,
       description: ex.description,
       ordre: ex.ordre,
     );

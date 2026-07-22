@@ -14,7 +14,7 @@ class Planning(db.Model):
     mode       = db.Column(db.String(20), nullable=False)   # groupe | individuel
     duree      = db.Column(db.String(20), nullable=False)   # hebdomadaire | mensuel
     nb_seances = db.Column(db.Integer, nullable=False)
-    poste      = db.Column(db.String(100), nullable=True)    # si mode individuel
+    poste      = db.Column(db.String(100), nullable=True, default="Tout")    # si mode individuel
     date_debut = db.Column(db.Date, nullable=True)
     date_fin   = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

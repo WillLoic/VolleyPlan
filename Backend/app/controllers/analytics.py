@@ -50,7 +50,7 @@ def track_event():
     db.session.add(new_event)
     db.session.commit()
 
-    return jsonify({"message": "Événement enregistré"}), 201
+    return jsonify({"message": "Événement enregistré"}), 200
 
 @analytics_bp.route('/stats/summary', methods=['GET'])
 @admin_required

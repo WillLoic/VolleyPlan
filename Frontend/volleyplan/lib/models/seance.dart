@@ -38,16 +38,20 @@ class Seance {
             .toList(),
       );
 
-  Map<String, dynamic> toJson() => {
-        'titre': titre,
-        'ordre': ordre,
-        'domaines': domaines,
-        'date_seance': dateSeance,
-        'heure_debut': heureDebut,
-        'lieu': lieu,
-        'notes': notes,
-        'exercices': exercices.map((e) => e.toJson()).toList(),
-      };
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{
+      'titre': titre,
+      'ordre': ordre,
+      'domaines': domaines,
+      'date_seance': dateSeance,
+      'heure_debut': heureDebut,
+      'lieu': lieu,
+      'notes': notes,
+      'exercices': exercices.map((e) => e.toJson()).toList(),
+    };
+    if (id != null) data['id'] = id;
+    return data;
+  }
 
   int get dureeTotale => exercices.fold(0, (s, e) => s + e.duree);
 }

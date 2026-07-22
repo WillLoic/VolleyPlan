@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, current_app, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -17,7 +17,7 @@ jwt     = JWTManager()
 mail    = Mail()
 
 def create_app():
-    from .models import coach,exercices,joueurs,planning,seances,invitation,planning_collaborator,notification,feedbacks
+    from .models import coach,exercices,joueurs,planning,seances,invitation,planning_collaborator,notification,feedbacks,cinetpay,presences, partage_planning, rapport_mensuel, action_jeu ,action_jeu_json
     app = Flask(__name__)
     env = os.getenv("FLASK_ENV", "development")
     app.config.from_object(config[env])
@@ -47,20 +47,35 @@ def create_app():
     planning_collaborator.app_context(app)
     notification.app_context(app)
     feedbacks.app_context(app)
+    cinetpay.app_context(app)
+    presences.app_context(app)
+    partage_planning.app_context(app)
+    rapport_mensuel.app_context(app)
+    action_jeu.app_context(app)
+    action_jeu_json.app_context(app)
+
+
 
 
     # Enregistrement des blueprints
-    from .controllers.auth       import auth_bp
-    from .controllers.joueurs     import joueur_bp
-    from .controllers.planning   import planning_bp
-    from .controllers.seances    import seance_bp
-    from .controllers.bilan      import bilan_bp
-    from .controllers.pdf        import pdf_bp
-    from .controllers.invitation        import invitation_bp
-    from .controllers.notifications        import notification_bp
-    from .controllers.feedbacks        import feedbacks_bp
-    from .controllers.coach            import coach_bp
-    from .controllers.analytics        import analytics_bp
+    from .controllers.auth import auth_bp
+    from .controllers.joueurs import joueur_bp
+    from .controllers.planning import planning_bp
+    from .controllers.seances import seance_bp
+    from .controllers.bilan import bilan_bp
+    from .controllers.pdf import pdf_bp
+    from .controllers.invitation import invitation_bp
+    from .controllers.notifications import notification_bp
+    from .controllers.feedbacks import feedbacks_bp
+    from .controllers.coach import coach_bp
+    from .controllers.analytics import analytics_bp
+    from .controllers.cinetpay import cinetpay_bp
+    from .controllers.stats_joueurs import stats_bp
+    from .controllers.partage_planning import public_bp
+    from .controllers.rapport_mensuel import rapport_bp
+    from .controllers.action_jeu import action_jeu_bp
+    from .controllers.ai import ai_bp
+
 
     app.register_blueprint(auth_bp,     url_prefix="/api/auth")
     app.register_blueprint(joueur_bp,   url_prefix="/api/joueurs")
@@ -73,9 +88,18 @@ def create_app():
     app.register_blueprint(feedbacks_bp,      url_prefix="/api/feedbacks")
     app.register_blueprint(coach_bp,          url_prefix="/api/coach")
     app.register_blueprint(analytics_bp,      url_prefix="/api/admin")
+    app.register_blueprint(cinetpay_bp,      url_prefix="/api/cinetpay")
+    app.register_blueprint(stats_bp,         url_prefix="/api/stats")
+    app.register_blueprint(public_bp, url_prefix="/api/public")
+    app.register_blueprint(rapport_bp, url_prefix="/api/plannings")
+    app.register_blueprint(action_jeu_bp, url_prefix="/api/actions")
+    app.register_blueprint(ai_bp,          url_prefix="/api/ai")
 
     @app.route("/api/health")
     def health():
         return {"status": "ok", "app": "VolleyPlan API"}
-
+        
+    from .scheduler import init_scheduler
+    init_scheduler(app)
+    
     return app

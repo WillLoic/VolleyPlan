@@ -20,6 +20,11 @@ import 'screen/private_screen.dart'; // Importe ta page de confidentialité
 import 'screen/terms_screen.dart'; // Importe ta page de conditions
 import 'screen/blog_screen.dart';
 import 'screen/blog_detail_screen.dart';
+import 'screen/joueur_detail_screen.dart';
+import 'screen/presence_screen.dart';
+import 'screen/tarif_screen.dart';
+import 'screen/planning/public_planning_screen.dart';
+import 'screen/executer_seance_screen.dart';
 
 void main() {
   // On s'assure que les bindings Flutter sont prêts
@@ -113,7 +118,9 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
             !loc.startsWith('/invite') &&
             !loc.startsWith('/collaborations') &&
             !loc.startsWith('/reset-password') &&
+            !loc.startsWith('/tarifs') &&
             !loc.startsWith('/planning') &&
+            !loc.startsWith('/public') &&
             loc != '/privacy' &&
             loc != '/terms' &&
             !loc.startsWith('/blog')) {
@@ -172,8 +179,15 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
               builder: (context, state) => const HomeScreen(),
             ),
             GoRoute(
+              path: '/tarifs',
+              builder: (context, state) => const TarifScreen(),
+            ),
+            GoRoute(
               path: '/planning/create',
-              builder: (context, state) => const PlanningFormScreen(),
+              builder: (context, state) {
+                final aiData = state.extra as Map<String, dynamic>?;
+                return PlanningFormScreen(aiData: aiData);
+              },
             ),
             GoRoute(
               path: '/invite/:token',
@@ -193,6 +207,35 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
                 return PlanningFormScreen(planningId: id, token: token);
               },
             ),
+            GoRoute(
+              path: '/joueur/:id',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                return JoueurDetailScreen(joueurId: id);
+              },
+            ),
+            GoRoute(
+              path: '/presence/:seanceId',
+              builder: (context, state) {
+                final seanceId =
+                    int.tryParse(state.pathParameters['seanceId'] ?? '') ?? 0;
+                return PresenceScreen(seanceId: seanceId);
+              },
+            ),
+            GoRoute(
+              path: '/public/planning/:token',
+              builder: (context, state) => PublicPlanningScreen(
+                token: state.pathParameters['token']!,
+              ),
+            ),
+            /*GoRoute(
+              path: '/executer-seance/:seanceId',
+              builder: (context, state) {
+                final seanceId =
+                    int.tryParse(state.pathParameters['seanceId'] ?? '') ?? 0;
+                return ExecuterSeanceScreen(planningId: planningId, seanceId: seanceId);
+              },
+            ),*/
           ],
         ),
       ],

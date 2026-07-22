@@ -219,10 +219,24 @@ class _LandingScreenState extends State<LandingScreen>
                   l10n.landingMenuFaq, Icons.help_outline_rounded, _faqKey),
               const Divider(color: AppColors.grayLight, height: 1),
               ListTile(
-                leading: const Icon(Icons.article_rounded, color: AppColors.red),
+                leading: const Icon(Icons.workspace_premium_rounded,
+                    color: AppColors.red),
+                title: const Text('Tarifs',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.charcoal)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/tarifs');
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.article_rounded, color: AppColors.red),
                 title: const Text('Blog',
                     style: TextStyle(
-                        fontWeight: FontWeight.w700, color: AppColors.charcoal)),
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.charcoal)),
                 onTap: () {
                   Navigator.pop(context);
                   context.go('/blog');
@@ -1275,21 +1289,27 @@ class _LandingScreenState extends State<LandingScreen>
           children: [
             TextButton(
               onPressed: () => context.go('/blog'),
-              child: const Text('Blog', style: TextStyle(color: AppColors.gray, fontSize: 13, fontWeight: FontWeight.bold)),
+              child: const Text('Blog',
+                  style: TextStyle(
+                      color: AppColors.gray,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 12),
             const Text('•', style: TextStyle(color: Colors.white24)),
             const SizedBox(width: 12),
             TextButton(
               onPressed: () => context.go('/privacy'),
-              child: const Text('Confidentialité', style: TextStyle(color: AppColors.gray, fontSize: 13)),
+              child: const Text('Confidentialité',
+                  style: TextStyle(color: AppColors.gray, fontSize: 13)),
             ),
             const SizedBox(width: 12),
             const Text('•', style: TextStyle(color: Colors.white24)),
             const SizedBox(width: 12),
             TextButton(
               onPressed: () => context.go('/terms'),
-              child: const Text('CGU', style: TextStyle(color: AppColors.gray, fontSize: 13)),
+              child: const Text('CGU',
+                  style: TextStyle(color: AppColors.gray, fontSize: 13)),
             ),
           ],
         ),
@@ -1790,11 +1810,15 @@ class _TestimonialsSection extends StatelessWidget {
                     _testimonialCard(l10n.landingTestimonial2Quote,
                         l10n.landingTestimonial2Author, AppColors.yellow),
                     const SizedBox(height: 20),
-                    _testimonialCard(l10n.landingTestimonial3Quote,
-                        l10n.landingTestimonial3Author, const Color(0xFF3A86FF)),
+                    _testimonialCard(
+                        l10n.landingTestimonial3Quote,
+                        l10n.landingTestimonial3Author,
+                        const Color(0xFF3A86FF)),
                     const SizedBox(height: 20),
-                    _testimonialCard(l10n.landingTestimonial4Quote,
-                        l10n.landingTestimonial4Author, const Color(0xFF06D6A0)),
+                    _testimonialCard(
+                        l10n.landingTestimonial4Quote,
+                        l10n.landingTestimonial4Author,
+                        const Color(0xFF06D6A0)),
                   ],
                 )
               : Column(
@@ -1802,29 +1826,36 @@ class _TestimonialsSection extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                            child: _testimonialCard(l10n.landingTestimonial1Quote,
-                                l10n.landingTestimonial1Author, AppColors.red)),
+                            child: _testimonialCard(
+                                l10n.landingTestimonial1Quote,
+                                l10n.landingTestimonial1Author,
+                                AppColors.red)),
                         const SizedBox(width: 24),
                         Expanded(
-                            child: _testimonialCard(l10n.landingTestimonial2Quote,
-                                l10n.landingTestimonial2Author, AppColors.yellow)),
+                            child: _testimonialCard(
+                                l10n.landingTestimonial2Quote,
+                                l10n.landingTestimonial2Author,
+                                AppColors.yellow)),
                       ],
                     ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         Expanded(
-                            child: _testimonialCard(l10n.landingTestimonial3Quote,
-                                l10n.landingTestimonial3Author, const Color(0xFF3A86FF))),
+                            child: _testimonialCard(
+                                l10n.landingTestimonial3Quote,
+                                l10n.landingTestimonial3Author,
+                                const Color(0xFF3A86FF))),
                         const SizedBox(width: 24),
                         Expanded(
-                            child: _testimonialCard(l10n.landingTestimonial4Quote,
-                                l10n.landingTestimonial4Author, const Color(0xFF06D6A0))),
+                            child: _testimonialCard(
+                                l10n.landingTestimonial4Quote,
+                                l10n.landingTestimonial4Author,
+                                const Color(0xFF06D6A0))),
                       ],
                     ),
                   ],
                 ),
-
         ],
       ),
     );

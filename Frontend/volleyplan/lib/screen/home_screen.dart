@@ -1,5 +1,3 @@
-//-----------
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -8,8 +6,11 @@ import '../services/app_state.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 import '../widgets/planning_detail_dialog.dart';
+import '../widgets/ai_generator_dialog.dart';
+import '../screen/planning/planning_form_screen.dart';
 import '../models/planning.dart';
 import '../models/coach.dart';
+//import '../models/notification.dart';
 //import 'dart:convert';
 //import 'package:http/http.dart' as http;
 
@@ -778,31 +779,76 @@ class _DashboardTab extends StatelessWidget {
 
           // Notifications Feed
           if (state.notifications.isNotEmpty) ...[
-            ...state.notifications.map((n) => Container(
+            ...state.notifications.map((n) {
+              // Détermine si c'est une notif de présence cliquable
+              final isPresence = n.isPresenceRappel && n.seanceId != null;
+
+              return GestureDetector(
+                onTap: isPresence
+                    ? () {
+                        state.dismissNotification(n.id);
+                        context.push('/presence/${n.seanceId}');
+                      }
+                    : null,
+                child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.yellow.withOpacity(0.1),
+                    color: isPresence
+                        ? AppColors.red.withOpacity(0.08)
+                        : AppColors.yellow.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: AppColors.yellow.withOpacity(0.3)),
+                    border: Border.all(
+                      color: isPresence
+                          ? AppColors.red.withOpacity(0.3)
+                          : AppColors.yellow.withOpacity(0.3),
+                    ),
                   ),
                   child: Row(children: [
-                    const Icon(Icons.info_outline,
-                        color: AppColors.yellowDark, size: 20),
+                    Icon(
+                      isPresence
+                          ? Icons.how_to_reg_rounded
+                          : Icons.info_outline,
+                      color: isPresence ? AppColors.red : AppColors.yellowDark,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                        child: Text(n.message,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            n.message,
                             style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w600))),
+                                fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                          if (isPresence) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.tapToMarkAttendance,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.red.withOpacity(0.8),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (isPresence)
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: AppColors.red),
                     IconButton(
                       icon: const Icon(Icons.close,
                           size: 18, color: AppColors.gray),
                       onPressed: () => state.dismissNotification(n.id),
                     ),
                   ]),
-                )),
+                ),
+              );
+            }),
             const SizedBox(height: 16),
           ],
 
@@ -810,12 +856,12 @@ class _DashboardTab extends StatelessWidget {
           Wrap(spacing: 16, runSpacing: 16, children: [
             _kpi(l10n.navPlannings, '${myPlannings.length}', AppColors.red,
                 Icons.calendar_month_rounded),
-            _kpi(l10n.dashboardKpiSessions, '$totalSeances', const Color(0xFF3A86FF),
-                Icons.event_note_rounded),
-            _kpi(l10n.dashboardKpiVolume, AppConstants.fmtMinutes(totalVol), AppColors.yellow,
-                Icons.timer_rounded),
-            _kpi(l10n.navPlayers, '${state.joueurs.length}', const Color(0xFF06D6A0),
-                Icons.people_rounded),
+            _kpi(l10n.dashboardKpiSessions, '$totalSeances',
+                const Color(0xFF3A86FF), Icons.event_note_rounded),
+            _kpi(l10n.dashboardKpiVolume, AppConstants.fmtMinutes(totalVol),
+                AppColors.yellow, Icons.timer_rounded),
+            _kpi(l10n.navPlayers, '${state.joueurs.length}',
+                const Color(0xFF06D6A0), Icons.people_rounded),
           ]),
           const SizedBox(height: 32),
 
@@ -858,8 +904,8 @@ class _DashboardTab extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w800)),
                       Text(l10n.dashboardCreatePlanningSubtitle,
-                          style:
-                              const TextStyle(color: AppColors.gray, fontSize: 13)),
+                          style: const TextStyle(
+                              color: AppColors.gray, fontSize: 13)),
                     ])),
                 VpButton(
                     label: l10n.dashboardStartAction,
@@ -910,13 +956,42 @@ class _PlanningsTab extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/planning/create'),
-        backgroundColor: AppColors.red,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.btnNew,
-            style: const TextStyle(fontWeight: FontWeight.w700)),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Bouton IA ✨
+          FloatingActionButton.extended(
+            heroTag: 'fab_ai',
+            onPressed: () async {
+              final result = await showAiGeneratorDialog(context);
+              if (result != null && context.mounted) {
+                await context.push('/planning/create', extra: result);
+                // Rafraîchir la liste des plannings après retour
+                if (context.mounted) {
+                  context.read<AppState>().loadPlannings();
+                }
+              }
+            },
+            backgroundColor: const Color(0xFF6C47FF),
+            foregroundColor: Colors.white,
+            icon: const Text('✨', style: TextStyle(fontSize: 18)),
+            label: Text(l10n.homeFabAiLabel,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(height: 12),
+          // Bouton classique
+          FloatingActionButton.extended(
+            heroTag: 'fab_new',
+            onPressed: () => context.push('/planning/create'),
+            backgroundColor: AppColors.red,
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.add),
+            label: Text(l10n.btnNew,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
       body: state.loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.red))
@@ -1074,7 +1149,6 @@ class _JoueursTabState extends State<_JoueursTab> {
 
   @override
   Widget build(BuildContext context) {
-    
     final l10n = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     // Détection de la largeur de la fenêtre pour éviter l'overflow horizontal sur mobile
@@ -1082,15 +1156,24 @@ class _JoueursTabState extends State<_JoueursTab> {
 
     String getPosteLabel(String p) {
       switch (p) {
-        case 'Passeur': return l10n.postePasseur;
-        case 'Libéro': return l10n.posteLibero;
-        case 'Central': return l10n.posteCentral;
-        case 'Pointu': return l10n.postePointu;
-        case 'Réceptionneur-Attaquant': return l10n.posteReceptionneurAttaquant;
-        case 'Universal': return l10n.posteUniversal;
-        default: return p;
+        case 'Passeur':
+          return l10n.postePasseur;
+        case 'Libéro':
+          return l10n.posteLibero;
+        case 'Central':
+          return l10n.posteCentral;
+        case 'Pointu':
+          return l10n.postePointu;
+        case 'Réceptionneur-Attaquant':
+          return l10n.posteReceptionneurAttaquant;
+        case 'Universal':
+          return l10n.posteUniversal;
+        default:
+          return p;
       }
     }
+
+    final isPremiumCoach = state.coach?.isPremium ?? false;
 
     return Scaffold(
       backgroundColor: AppColors.offWhite,
@@ -1105,6 +1188,42 @@ class _JoueursTabState extends State<_JoueursTab> {
                     fontWeight: FontWeight.w900,
                     color: AppColors.charcoal)),
             const SizedBox(height: 20),
+            if (!isPremiumCoach)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.yellowLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.yellow.withOpacity(0.3)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.lock_outline,
+                        color: AppColors.yellowDark, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text( l10n.passerAuPremium,
+                        style: const TextStyle(
+                            color: AppColors.charcoal,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push('/tarifs'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.red,
+                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      child: Text(l10n.voirTarifs),//'Voir tarifs'),
+                    ),
+                  ],
+                ),
+              ),
 
             // Ajout joueur
             Container(
@@ -1132,7 +1251,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                       children: [
                         TextField(
                           controller: _nomCtrl,
-                          decoration: InputDecoration( // Removed const
+                          decoration: InputDecoration(
+                            // Removed const
                             hintText: l10n.playerNameHint,
                             filled: true,
                             fillColor: AppColors.grayXLight,
@@ -1182,7 +1302,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                       Expanded(
                           child: TextField(
                         controller: _nomCtrl, // Removed const
-                        decoration: InputDecoration( // Removed const
+                        decoration: InputDecoration(
+                          // Removed const
                           hintText: l10n.playerNameHint,
                           filled: true,
                           fillColor: AppColors.grayXLight,
@@ -1222,7 +1343,9 @@ class _JoueursTabState extends State<_JoueursTab> {
             ),
             if (state.joueurs.isEmpty)
               Center(
-                  child: Text(l10n.noPlayersMessage, style: const TextStyle(color: AppColors.gray, fontStyle: FontStyle.italic))),
+                  child: Text(l10n.noPlayersMessage,
+                      style: const TextStyle(
+                          color: AppColors.gray, fontStyle: FontStyle.italic))),
             const SizedBox(height: 20),
 
             // Liste joueurs
@@ -1246,25 +1369,132 @@ class _JoueursTabState extends State<_JoueursTab> {
                             style: const TextStyle(
                                 color: AppColors.gray, fontSize: 12))
                         : null,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: AppColors.gray, size: 20),
-                            onPressed: () => _showEditDialog(context, j)),
-                        IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                color: AppColors.red, size: 20),
-                            onPressed: () =>
-                                _confirmDelete(context, j.id, j.nom, l10n)),
-                      ],
-                    ),
+                    trailing: const Icon(Icons.more_vert,
+                        color: AppColors.gray, size: 20),
+                    onTap: () => _showPlayerOptions(context, j),
                   ),
                 )),
           ],
         ),
       ),
+    );
+  }
+
+  void _showPlayerOptions(BuildContext context, j) {
+    final l10n = AppLocalizations.of(context)!;
+    final isPremiumCoach = context.read<AppState>().coach?.isPremium ?? false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  j.nom,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: AppColors.charcoal),
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.grayLight),
+              ListTile(
+                leading: const Icon(Icons.person_pin_outlined,
+                    color: AppColors.red, size: 24),
+                title: Row(
+                  children: [
+                    Text(l10n.playerProfile,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.charcoal)),
+                    if (!isPremiumCoach) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withOpacity(0.4),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.star_rounded,
+                                size: 10, color: Colors.white),
+                            SizedBox(width: 3),
+                            Text('PREMIUM',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                subtitle: !isPremiumCoach
+                    ?  Text(
+                      l10n.accerderProfil,
+                        //'Passez au forfait Premium pour accéder au profil',
+                        style: TextStyle(color: AppColors.gray, fontSize: 12),
+                      )
+                    : null,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  if (!isPremiumCoach) {
+                    context.push('/tarifs');
+                  } else {
+                    context.push('/joueur/${j.id}');
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_outlined,
+                    color: AppColors.charcoal, size: 24),
+                title: Text(l10n.editPlayerTitle,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.charcoal)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showEditDialog(context, j);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline,
+                    color: AppColors.red, size: 24),
+                title: Text(l10n.deletePlayerTitle,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, color: AppColors.red)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmDelete(context, j.id, j.nom, l10n);
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1274,15 +1504,23 @@ class _JoueursTabState extends State<_JoueursTab> {
     final l10n = AppLocalizations.of(context)!;
     String getPosteLabel(String p) {
       switch (p) {
-        case 'Passeur': return l10n.postePasseur;
-        case 'Libéro': return l10n.posteLibero;
-        case 'Central': return l10n.posteCentral;
-        case 'Pointu': return l10n.postePointu;
-        case 'Réceptionneur-Attaquant': return l10n.posteReceptionneurAttaquant;
-        case 'Universal': return l10n.posteUniversal;
-        default: return p;
+        case 'Passeur':
+          return l10n.postePasseur;
+        case 'Libéro':
+          return l10n.posteLibero;
+        case 'Central':
+          return l10n.posteCentral;
+        case 'Pointu':
+          return l10n.postePointu;
+        case 'Réceptionneur-Attaquant':
+          return l10n.posteReceptionneurAttaquant;
+        case 'Universal':
+          return l10n.posteUniversal;
+        default:
+          return p;
       }
     }
+
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1297,7 +1535,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                   isExpanded: true,
                   hint: Text(l10n.positionHint),
                   items: AppConstants.postes
-                      .map((p) => DropdownMenuItem(value: p, child: Text(getPosteLabel(p))))
+                      .map((p) => DropdownMenuItem(
+                          value: p, child: Text(getPosteLabel(p))))
                       .toList(),
                   onChanged: (v) {
                     poste = v;
@@ -1324,7 +1563,8 @@ class _JoueursTabState extends State<_JoueursTab> {
             ));
   }
 
-  void _confirmDelete(BuildContext context, int id, String nom, AppLocalizations l10n) {
+  void _confirmDelete(
+      BuildContext context, int id, String nom, AppLocalizations l10n) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1360,15 +1600,24 @@ class _PlanningCard extends StatelessWidget {
 
     String getDomaineLabel(String id) {
       switch (id.toLowerCase()) {
-        case 'service': return l10n.domaineService;
-        case 'reception': return l10n.domaineReception;
-        case 'passe': return l10n.domainePasse;
-        case 'attaque': return l10n.domaineAttaque;
-        case 'block': return l10n.domaineBlock;
-        case 'defense': return l10n.domaineDefense;
-        case 'physique': return l10n.domainePhysique;
-        case 'general': return l10n.domaineGeneral;
-        default: return id;
+        case 'service':
+          return l10n.domaineService;
+        case 'reception':
+          return l10n.domaineReception;
+        case 'passe':
+          return l10n.domainePasse;
+        case 'attaque':
+          return l10n.domaineAttaque;
+        case 'block':
+          return l10n.domaineBlock;
+        case 'defense':
+          return l10n.domaineDefense;
+        case 'physique':
+          return l10n.domainePhysique;
+        case 'general':
+          return l10n.domaineGeneral;
+        default:
+          return id;
       }
     }
 
@@ -1431,13 +1680,14 @@ class _PlanningCard extends StatelessWidget {
                     color: AppColors.charcoal)),
             const SizedBox(height: 10),
             Row(children: [
-              _stat('${planning.seances.length}', l10n.labelSessionsSmall, AppColors.red),
+              _stat('${planning.seances.length}', l10n.labelSessionsSmall,
+                  AppColors.red),
               const SizedBox(width: 20),
-              _stat(AppConstants.fmtMinutes(planning.volumeTotal), l10n.labelVolumeSmall,
+              _stat(AppConstants.fmtMinutes(planning.volumeTotal),
+                  l10n.labelVolumeSmall, AppColors.charcoal),
+              const SizedBox(width: 20),
+              _stat('${planning.joueurs.length}', l10n.labelPlayersSmall,
                   AppColors.charcoal),
-              const SizedBox(width: 20),
-              _stat(
-                  '${planning.joueurs.length}', l10n.labelPlayersSmall, AppColors.charcoal),
             ]),
             if (domaines.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -1503,15 +1753,24 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
 
     String getDomaineLabel(String id) {
       switch (id.toLowerCase()) {
-        case 'service': return l10n.domaineService;
-        case 'reception': return l10n.domaineReception;
-        case 'passe': return l10n.domainePasse;
-        case 'attaque': return l10n.domaineAttaque;
-        case 'block': return l10n.domaineBlock;
-        case 'defense': return l10n.domaineDefense;
-        case 'physique': return l10n.domainePhysique;
-        case 'general': return l10n.domaineGeneral;
-        default: return id;
+        case 'service':
+          return l10n.domaineService;
+        case 'reception':
+          return l10n.domaineReception;
+        case 'passe':
+          return l10n.domainePasse;
+        case 'attaque':
+          return l10n.domaineAttaque;
+        case 'block':
+          return l10n.domaineBlock;
+        case 'defense':
+          return l10n.domaineDefense;
+        case 'physique':
+          return l10n.domainePhysique;
+        case 'general':
+          return l10n.domaineGeneral;
+        default:
+          return id;
       }
     }
 
@@ -1556,7 +1815,8 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
 
               // Répartition
               Text(l10n.globalDistributionTitle,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -1602,7 +1862,8 @@ class _GlobalBilanTabState extends State<_GlobalBilanTab> {
 
               // Recommandations
               Text(l10n.analysisAndAdviceTitle,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               ...(bilan['recommandations'] as List).map((rec) => Container(
                     margin: const EdgeInsets.only(bottom: 8),

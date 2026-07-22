@@ -8,9 +8,8 @@ class Exercice(db.Model):
     seance_id  = db.Column(db.Integer, db.ForeignKey("seances.id"), nullable=False)
     nom        = db.Column(db.String(200), nullable=False)
     duree      = db.Column(db.Integer, nullable=False)   # en minutes
-    domaine    = db.Column(db.String(30), nullable=False) # service | reception | passe |
-                                                           # attaque | block | defense |
-                                                           # physique | general
+    domaine    = db.Column(db.String(50), nullable=True)  # CONSERVÉ pour rollback — ne plus utiliser
+    domaines   = db.Column(db.JSON, default=list)         # ["service", "reception", ...] — source de vérité
     description = db.Column(db.Text, nullable=True)
     ordre       = db.Column(db.Integer, default=0)
 
@@ -20,7 +19,7 @@ class Exercice(db.Model):
             "seance_id":   self.seance_id,
             "nom":         self.nom,
             "duree":       self.duree,
-            "domaine":     self.domaine,
+            "domaines":    self.domaines or [],
             "description": self.description,
             "ordre":       self.ordre,
         }

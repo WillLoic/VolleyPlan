@@ -33,8 +33,9 @@ class BilanService:
         # Volume par domaine
         by_domain = {d["id"]: 0 for d in DOMAINES}
         for e in all_ex:
-            if e.domaine in by_domain:
-                by_domain[e.domaine] += e.duree
+            for dom in (e.domaines or []):
+                if dom in by_domain:
+                    by_domain[dom] += e.duree  # durée complète comptée sur CHAQUE domaine
 
         domain_stats = []
         for d in DOMAINES:
@@ -107,8 +108,9 @@ class BilanService:
         # Volume par domaine
         by_domain = {d["id"]: 0 for d in DOMAINES}
         for e in all_ex:
-            if e.domaine in by_domain:
-                by_domain[e.domaine] += e.duree
+            for dom in (e.domaines or []):
+                if dom in by_domain:
+                    by_domain[dom] += e.duree  # durée complète comptée sur CHAQUE domaine
 
         domain_stats = []
         for d in DOMAINES:

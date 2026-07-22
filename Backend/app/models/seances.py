@@ -14,6 +14,8 @@ class Seance(db.Model):
     heure_debut = db.Column(db.String(5), nullable=True)  # "09:00"
     lieu        = db.Column(db.String(100), nullable=True)
     notes       = db.Column(db.Text, nullable=True)
+    presences_prises = db.Column(db.Boolean, default=False)
+    presences_auto   = db.Column(db.Boolean, default=False)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
@@ -36,6 +38,8 @@ class Seance(db.Model):
             "heure_debut":  self.heure_debut,
             "lieu":         self.lieu,
             "notes":        self.notes,
+            "presences_prises": self.presences_prises,
+            "presences_auto":   self.presences_auto,
             "duree_totale": self.duree_totale(),
             "created_at":   self.created_at.isoformat(),
         }

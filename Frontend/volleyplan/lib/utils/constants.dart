@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const red       = Color(0xFFD72638);
+  static const green     = Color.fromARGB(255, 29, 206, 88);
   static const redLight  = Color(0xFFF5E6E8);
   static const redDark   = Color(0xFFB01E2C);
   static const yellow    = Color(0xFFF2B705);
@@ -19,8 +20,8 @@ class AppConstants {
   // Remplace par ton URL Render en production
   static const String baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: "https://volleyplan-proxy.willloic36.workers.dev/api",//"https://volleyplan.onrender.com/api",
-    //'http://localhost:5000/api'
+    defaultValue: //"https://volleyplan-proxy.willloic36.workers.dev/api",//"https://volleyplan.onrender.com/api",
+    'http://localhost:5000/api'
   );
 
   static const List<Map<String, dynamic>> domaines = [

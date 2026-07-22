@@ -161,7 +161,7 @@ def generate_planning_pdf(planning, bilan: dict) -> bytes:
                 ex_data.append([
                     str(j+1),
                     ex.nom,
-                    DOMAIN_LABELS.get(ex.domaine, ex.domaine),
+                    "  ·  ".join(DOMAIN_LABELS.get(d, d) for d in (ex.domaines or [])) or "—",
                     f"{ex.duree}min",
                 ])
             ex_table = Table(ex_data, colWidths=[0.8*cm, 9*cm, 3.5*cm, 2.2*cm])
@@ -198,6 +198,109 @@ def generate_planning_pdf(planning, bilan: dict) -> bytes:
     story.append(Paragraph(
         "Document généré par VolleyPlan Coach Edition",
         ParagraphStyle("footer", fontSize=8, textColor=GRAY, alignment=TA_CENTER, spaceBefore=4)
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.read()
+
+
+def generer_pdf_rapport_mensuel(rapport: dict, planning) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=1.5*cm, bottomMargin=1.5*cm,
+        leftMargin=1.8*cm, rightMargin=1.8*cm,
+    )
+
+    styles = getSampleStyleSheet()
+    story  = []
+
+    title_style = ParagraphStyle("rtitle", fontSize=20, fontName="Helvetica-Bold",
+                                 textColor=RED, spaceAfter=4, alignment=TA_CENTER)
+    sub_style   = ParagraphStyle("rsub", fontSize=11, fontName="Helvetica",
+                                 textColor=GRAY, spaceAfter=2, alignment=TA_CENTER)
+
+    story.append(Paragraph("🏐 VolleyPlan — Rapport mensuel", title_style))
+    story.append(Paragraph(planning.titre, ParagraphStyle("rptitle", fontSize=14,
+        fontName="Helvetica-Bold", textColor=DARK, alignment=TA_CENTER, spaceAfter=4)))
+
+    debut = datetime.fromisoformat(rapport["periode"]["debut"]).strftime("%d/%m/%Y")
+    fin   = datetime.fromisoformat(rapport["periode"]["fin"]).strftime("%d/%m/%Y")
+    story.append(Paragraph(f"Période du {debut} au {fin}", sub_style))
+    story.append(HRFlowable(width="100%", thickness=2, color=RED, spaceAfter=12))
+
+    section_style = ParagraphStyle("rsection", fontSize=13, fontName="Helvetica-Bold",
+                                   textColor=DARK, spaceBefore=10, spaceAfter=6)
+
+    # ── Résumé ────────────────────────────────────────────────────
+    story.append(Paragraph("Résumé", section_style))
+    resume = rapport["resume"]
+    resume_data = [
+        ["Séances prévues",   str(resume["nb_seances_prevues"])],
+        ["Séances effectuées", str(resume["nb_seances_effectuees"])],
+        ["Taux de réalisation", f"{resume['taux_realisation']}%"],
+        ["Taux de présence moyen", f"{rapport['taux_presence_moyen_equipe']}%"],
+    ]
+    rt = Table(resume_data, colWidths=[8*cm, 9*cm])
+    rt.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (0,-1), LIGHT),
+        ("FONTNAME",   (0,0), (0,-1), "Helvetica-Bold"),
+        ("FONTSIZE",   (0,0), (-1,-1), 10),
+        ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, LIGHT]),
+        ("BOX",        (0,0), (-1,-1), 0.5, GRAY),
+        ("INNERGRID",  (0,0), (-1,-1), 0.3, GRAY),
+        ("TOPPADDING", (0,0), (-1,-1), 6),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ("LEFTPADDING",   (0,0), (-1,-1), 8),
+    ]))
+    story.append(rt)
+    story.append(Spacer(1, 0.4*cm))
+
+    # ── Volume par domaine ────────────────────────────────────────
+    story.append(Paragraph("Volume prévu vs réel par domaine", section_style))
+    dom_header = [["Domaine", "Prévu", "Réel"]]
+    dom_rows = []
+    for dom_id, vals in rapport["volume_par_domaine"].items():
+        if vals["prevu"] > 0 or vals["reel"] > 0:
+            dom_rows.append([
+                DOMAIN_LABELS.get(dom_id, dom_id),
+                fmt_min(vals["prevu"]),
+                fmt_min(vals["reel"]),
+            ])
+    if dom_rows:
+        dt = Table(dom_header + dom_rows, colWidths=[6*cm, 5.5*cm, 5.5*cm])
+        dt.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,0), DARK),
+            ("TEXTCOLOR",     (0,0), (-1,0), WHITE),
+            ("FONTNAME",      (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE",      (0,0), (-1,-1), 9),
+            ("ROWBACKGROUNDS",(0,1), (-1,-1), [WHITE, LIGHT]),
+            ("BOX",           (0,0), (-1,-1), 0.5, GRAY),
+            ("INNERGRID",     (0,0), (-1,-1), 0.3, GRAY),
+            ("TOPPADDING",    (0,0), (-1,-1), 5),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 5),
+            ("ALIGN",         (1,0), (-1,-1), "CENTER"),
+        ]))
+        story.append(dt)
+    story.append(Spacer(1, 0.4*cm))
+
+    # ── Séances manquantes ────────────────────────────────────────
+    if rapport["seances_manquantes"]:
+        story.append(Paragraph("Séances non réalisées", section_style))
+        for s in rapport["seances_manquantes"]:
+            d = datetime.fromisoformat(s["date"]).strftime("%d/%m/%Y")
+            story.append(Paragraph(f"• {s['titre']} — {d}", ParagraphStyle(
+                "miss", fontSize=9, fontName="Helvetica", textColor=RED, leftIndent=10, spaceAfter=3)))
+    else:
+        story.append(Paragraph("Aucune séance manquante ce mois-ci — bravo !",
+            ParagraphStyle("nomiss", fontSize=10, fontName="Helvetica-Bold", textColor=colors.HexColor("#059669"))))
+
+    story.append(Spacer(1, 0.5*cm))
+    story.append(HRFlowable(width="100%", thickness=1, color=LIGHT))
+    story.append(Paragraph(
+        "Rapport généré automatiquement par VolleyPlan Coach Edition",
+        ParagraphStyle("rfooter", fontSize=8, textColor=GRAY, alignment=TA_CENTER, spaceBefore=4)
     ))
 
     doc.build(story)

@@ -14,10 +14,17 @@ class Coach(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role          = db.Column(db.String(20), default="user", nullable=False)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+    #paiement
+    forfait = db.Column(db.String(20), default = "FREE") # PREMIUM, PROFESSIONNAL
+    expire_forfait = db.Column(db.DateTime, default=None)
+
 
     # Relations
-    joueurs   = db.relationship("Joueur",   backref="coach", lazy=True, cascade="all, delete-orphan")
-    plannings = db.relationship("Planning", backref="coach", lazy=True, cascade="all, delete-orphan")
+    joueurs     = db.relationship("Joueur",       backref="coach", lazy=True, cascade="all, delete-orphan")
+    plannings   = db.relationship("Planning",     backref="coach", lazy=True, cascade="all, delete-orphan")
+    abonnements = db.relationship("Subscription", backref="coach", lazy=True, cascade="all, delete-orphan")
+    paiements   = db.relationship("Payments",     backref="coach", lazy=True, cascade="all, delete-orphan")
+
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -27,13 +34,15 @@ class Coach(db.Model):
 
     def to_dict(self):
         return {
-            "id":         self.id,
-            "nom":        self.nom,
-            "telephone":  self.telephone,
-            "nom_equipe": self.nom_equipe,
-            "email":      self.email,
-            "role":       self.role,
-            "created_at": self.created_at.isoformat(),
+            "id":             self.id,
+            "nom":            self.nom,
+            "telephone":      self.telephone,
+            "nom_equipe":     self.nom_equipe,
+            "email":          self.email,
+            "role":           self.role,
+            "created_at":     self.created_at.isoformat(),
+            "forfait":        self.forfait or "FREE",
+            "expire_forfait": self.expire_forfait.isoformat() if self.expire_forfait else None,
         }
     
 def app_context(app):

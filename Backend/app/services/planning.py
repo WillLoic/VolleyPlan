@@ -91,11 +91,13 @@ class PlanningService:
             db.session.flush()
 
             for j, e_data in enumerate(s_data.get("exercices", [])):
+                # Rétrocompatibilité : accepte "domaines" (liste) ou "domaine" (string legacy)
+                domaines_val = e_data.get("domaines") or ([e_data["domaine"]] if e_data.get("domaine") else [])
                 exercice = Exercice(
                     seance_id   = seance.id,
                     nom         = e_data["nom"].strip(),
                     duree       = int(e_data["duree"]),
-                    domaine     = e_data["domaine"],
+                    domaines    = domaines_val,
                     description = e_data.get("description"),
                     ordre       = j,
                 )
@@ -158,34 +160,76 @@ class PlanningService:
                 )
                 db.session.add(notif)
                 db.session.flush()
-            # Supprimer les anciennes séances et recréer
-            for s in planning.seances:
-                db.session.delete(s)
-            db.session.flush()
+            # Upsert des séances
+            existing_seances = {s.id: s for s in planning.seances}
+            received_seance_ids = []
 
             for i, s_data in enumerate(data["seances"]):
-                seance = Seance(
-                    planning_id = planning.id,
-                    titre       = s_data.get("titre", f"Séance {i+1}"),
-                    ordre       = i,
-                    domaines    = s_data.get("domaines", []),
-                    date_seance = s_data.get("date_seance"),
-                    heure_debut = s_data.get("heure_debut"),
-                    lieu        = s_data.get("lieu"),
-                )
-                db.session.add(seance)
-                db.session.flush()
+                s_id = s_data.get("id")
+                if s_id and s_id in existing_seances:
+                    # Update existing Seance
+                    seance = existing_seances[s_id]
+                    seance.titre = s_data.get("titre", f"Séance {i+1}")
+                    seance.ordre = i
+                    seance.domaines = s_data.get("domaines", [])
+                    seance.date_seance = s_data.get("date_seance")
+                    seance.heure_debut = s_data.get("heure_debut")
+                    seance.lieu = s_data.get("lieu")
+                    received_seance_ids.append(seance.id)
+                else:
+                    # Create new Seance
+                    seance = Seance(
+                        planning_id = planning.id,
+                        titre       = s_data.get("titre", f"Séance {i+1}"),
+                        ordre       = i,
+                        domaines    = s_data.get("domaines", []),
+                        date_seance = s_data.get("date_seance"),
+                        heure_debut = s_data.get("heure_debut"),
+                        lieu        = s_data.get("lieu"),
+                    )
+                    db.session.add(seance)
+                    db.session.flush() # flush to get seance.id
+                    received_seance_ids.append(seance.id)
+
+                # Upsert Exercices
+                existing_exercices = {e.id: e for e in seance.exercices}
+                received_exercice_ids = []
 
                 for j, e_data in enumerate(s_data.get("exercices", [])):
-                    exercice = Exercice(
-                        seance_id   = seance.id,
-                        nom         = e_data["nom"].strip(),
-                        duree       = int(e_data["duree"]),
-                        domaine     = e_data["domaine"],
-                        description = e_data.get("description"),
-                        ordre       = j,
-                    )
-                    db.session.add(exercice)
+                    domaines_val = e_data.get("domaines") or ([e_data["domaine"]] if e_data.get("domaine") else [])
+                    e_id = e_data.get("id")
+                    if e_id and e_id in existing_exercices:
+                        # Update existing Exercice
+                        exercice = existing_exercices[e_id]
+                        exercice.nom = e_data["nom"].strip()
+                        exercice.duree = int(e_data["duree"])
+                        exercice.domaines = domaines_val
+                        exercice.description = e_data.get("description")
+                        exercice.ordre = j
+                        received_exercice_ids.append(exercice.id)
+                    else:
+                        # Create new Exercice
+                        exercice = Exercice(
+                            seance_id   = seance.id,
+                            nom         = e_data["nom"].strip(),
+                            duree       = int(e_data["duree"]),
+                            domaines    = domaines_val,
+                            description = e_data.get("description"),
+                            ordre       = j,
+                        )
+                        db.session.add(exercice)
+                        db.session.flush()
+                        received_exercice_ids.append(exercice.id)
+                
+                # Delete removed Exercices
+                for e_id, e in existing_exercices.items():
+                    if e_id not in received_exercice_ids:
+                        db.session.delete(e)
+
+            # Delete removed Seances
+            for s_id, s in existing_seances.items():
+                if s_id not in received_seance_ids:
+                    db.session.delete(s)
 
         db.session.commit()
         return planning, None

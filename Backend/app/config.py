@@ -15,10 +15,17 @@ class Config:
         "pool_size": 5,
         "max_overflow": 2,
     }
+    #paiement via cinetpay
+    CINETPAY_API_KEY = os.getenv("CINETPAY_API_KEY")
+    CINETPAY_ACCOUNT_PASSWORD = os.getenv("CINETPAY_ACCOUNT_PASSWORD")
+    CINETPAY_WEBHOOK_URL = os.getenv("CINETPAY_WEBHOOK_URL")
+    CINETPAY_SUCCES_URL  = os.getenv("CINETPAY_SUCCES_URL")
+    CINETPAY_FAILED_URL  = os.getenv("CINETPAY_FAILED_URL")
+    CINETPAY_SECRET_KEY  = os.getenv("CINETPAY_SECRET_KEY")
 
     # JWT
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 7  # 7 jours
+    JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 30 # 30 jours
 
     # CORS
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
