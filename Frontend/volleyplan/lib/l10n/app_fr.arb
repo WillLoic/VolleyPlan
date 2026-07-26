@@ -228,6 +228,7 @@
   "profileEmailReadonly": "Email (non modifiable)",
   "profileSaveAction": "Sauvegarder les modifications",
   "profileUpdateSuccess": "Profil mis à jour !",
+  "profileManageSubscription": "Gérer mon abonnement",
   "dashboardRecentPlannings": "Plannings récents",
   "dashboardSeeAll": "Voir tous",
   "dashboardCreatePlanningTitle": "Créer un planning",

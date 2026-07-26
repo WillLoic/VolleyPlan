@@ -161,6 +161,7 @@
   "profileEmailReadonly": "Email (read-only)",
   "profileSaveAction": "Save Changes",
   "profileUpdateSuccess": "Profile updated!",
+  "profileManageSubscription": "Manage my subscription",
   "dashboardRecentPlannings": "Recent Schedules",
   "dashboardSeeAll": "See all",
   "dashboardCreatePlanningTitle": "Create a schedule",

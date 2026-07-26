@@ -6,8 +6,8 @@ from app.services.stats_joueurs import StatsJoueursService
 stats_bp = Blueprint("stats", __name__)
 
 @stats_bp.route("/joueur/<int:joueur_id>/radar", methods=["GET"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_required
 def get_radar(joueur_id):
     coach_id = int(get_jwt_identity())
     resultat = StatsJoueursService.get_radar_joueur(joueur_id, coach_id)
@@ -16,8 +16,8 @@ def get_radar(joueur_id):
     return jsonify(resultat), 200
 
 @stats_bp.route("/joueur/<int:joueur_id>", methods=["GET"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_required
 def get_individual_stats(joueur_id):
     coach_id = int(get_jwt_identity())
     resultat = StatsJoueursService.get_stats_joueur(joueur_id, coach_id)
@@ -26,8 +26,8 @@ def get_individual_stats(joueur_id):
     return jsonify(resultat), 200
 
 @stats_bp.route("/equipe/comparaison", methods=["GET"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_required
 def get_team_comparison():
     coach_id = int(get_jwt_identity())
     resultat = StatsJoueursService.get_comparaison_equipe(coach_id)

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
+import '../services/app_state.dart';
 
 class TarifScreen extends StatefulWidget {
   const TarifScreen({super.key});
@@ -78,66 +80,88 @@ class _TarifScreenState extends State<TarifScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 900;
 
-    return Scaffold(
-      backgroundColor: AppColors.offWhite,
-      appBar: AppBar(
-        title: Text(l10n.tarifPageTitle),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.charcoal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+    // If the user just registered, we want to let them visit this page
+    // then automatically go to /home when they leave the tarifs flow.
+    final appState = context.read<AppState>();
+
+    return WillPopScope(
+      onWillPop: () async {
+        // If the user just registered, clear the flag and redirect to /home.
+        if (appState.justRegistered) {
+          appState.clearJustRegistered();
+          context.go('/home');
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.offWhite,
+        appBar: AppBar(
+          title: Text(l10n.tarifPageTitle),
+          backgroundColor: AppColors.white,
+          foregroundColor: AppColors.charcoal,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () {
+              if (appState.justRegistered) {
+                appState.clearJustRegistered();
+                context.go('/home');
+                return;
+              }
+              context.pop();
+            },
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(isMobile ? 20 : 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.tarifHeadline,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.charcoal,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.tarifSubheadline,
-                style: const TextStyle(
-                    fontSize: 15, color: AppColors.gray, height: 1.5),
-              ),
-              const SizedBox(height: 28),
-
-              // ── Grille de forfaits ──────────────────────────────
-              isMobile
-                  ? Column(children: _buildCartes(l10n, isMobile))
-                  : _buildGrilleDesktop(l10n),
-
-              if (_feedbackMessage != null) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.redLight,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.redLight),
-                  ),
-                  child: Text(
-                    _feedbackMessage!,
-                    style: const TextStyle(
-                        color: AppColors.red, fontWeight: FontWeight.w600),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(isMobile ? 20 : 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.tarifHeadline,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.charcoal,
+                    letterSpacing: -0.5,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.tarifSubheadline,
+                  style: const TextStyle(
+                      fontSize: 15, color: AppColors.gray, height: 1.5),
+                ),
+                const SizedBox(height: 28),
+
+                // ── Grille de forfaits ──────────────────────────────
+                isMobile
+                    ? Column(children: _buildCartes(l10n, isMobile))
+                    : _buildGrilleDesktop(l10n),
+
+                if (_feedbackMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.redLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.redLight),
+                    ),
+                    child: Text(
+                      _feedbackMessage!,
+                      style: const TextStyle(
+                          color: AppColors.red, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+                _buildNoteBasCarte(l10n),
               ],
-
-              const SizedBox(height: 24),
-              _buildNoteBasCarte(l10n),
-            ],
+            ),
           ),
         ),
       ),
@@ -261,9 +285,8 @@ class _TarifScreenState extends State<TarifScreen> {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: estPayant
-              ? accentColor.withOpacity(0.35)
-              : AppColors.grayLight,
+          color:
+              estPayant ? accentColor.withOpacity(0.35) : AppColors.grayLight,
           width: badge != null ? 2 : 1,
         ),
         boxShadow: [
@@ -302,8 +325,8 @@ class _TarifScreenState extends State<TarifScreen> {
               const Spacer(),
               if (badge != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: accentColor,
                     borderRadius: BorderRadius.circular(999),
@@ -370,8 +393,7 @@ class _TarifScreenState extends State<TarifScreen> {
           if (heriteDe != null) ...[
             Row(
               children: [
-                Icon(Icons.arrow_upward_rounded,
-                    size: 14, color: accentColor),
+                Icon(Icons.arrow_upward_rounded, size: 14, color: accentColor),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -421,8 +443,7 @@ class _TarifScreenState extends State<TarifScreen> {
                             forfaitKey, _montantPourForfait(forfaitKey)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accentColor,
-                      disabledBackgroundColor:
-                          accentColor.withOpacity(0.4),
+                      disabledBackgroundColor: accentColor.withOpacity(0.4),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -430,7 +451,8 @@ class _TarifScreenState extends State<TarifScreen> {
                     ),
                     child: enCoursDePaiement
                         ? const SizedBox(
-                            width: 18, height: 18,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white),
                           )
@@ -491,3 +513,6 @@ class _TarifScreenState extends State<TarifScreen> {
     );
   }
 }
+
+
+//--------------------------------------------

@@ -20,6 +20,11 @@ class AppState extends ChangeNotifier {
   List<VpNotification> notifications = [];
   String? _token;
   bool loading = false;
+
+  /// Set to true just after a successful registration to allow a special
+  /// redirect flow (register -> /tarifs -> /home) without being auto-redirected
+  /// immediately to `/home` by the router.
+  bool justRegistered = false;
   Map<String, dynamic>? globalBilan;
   bool isInitialized = false; // Pour savoir si le démarrage est terminé
   String? error;
@@ -155,6 +160,9 @@ class AppState extends ChangeNotifier {
         AnalyticsService.trackEvent('register', token: _token);
         await loadJoueurs();
         await loadPlannings();
+        // Mark that the user has just registered so the router can allow
+        // showing the tarifs page before redirecting to home.
+        justRegistered = true;
       } else {
         throw Exception(
             "Erreur lors de la création du compte : données manquantes");
@@ -165,6 +173,13 @@ class AppState extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Clear the just-registered flag.
+  void clearJustRegistered() {
+    if (!justRegistered) return;
+    justRegistered = false;
+    notifyListeners();
   }
 
   Future<void> logout() async {
@@ -460,3 +475,5 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
   }
 }
+
+//-----------------------------------

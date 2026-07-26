@@ -127,9 +127,12 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
           return '/login';
         }
 
-        if (loggedIn && (isAuthPage || loc == '/') && loc != '/tarifs') 
+        // If the user just registered, let them visit the tarifs page first.
+        if (appState.justRegistered) return null;
+
+        if (loggedIn && (isAuthPage || loc == '/') && loc != '/tarifs')
           return '/home';
-        
+
         return null;
       },
       routes: [
@@ -305,3 +308,6 @@ class _GlobalLanguageWrapperState extends State<_GlobalLanguageWrapper> {
     );
   }
 }
+
+
+//---------------------------

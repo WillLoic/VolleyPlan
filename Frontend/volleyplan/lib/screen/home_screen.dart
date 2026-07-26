@@ -725,6 +725,15 @@ class _ProfileTabState extends State<_ProfileTab> {
                     }
                   },
                 ),
+                const SizedBox(height: 16),
+                VpButton(
+                  label: l10n.profileManageSubscription,
+                  variant: VpButtonVariant.secondary,
+                  icon: Icons.card_membership,
+                  onPressed: () {
+                    context.push('/tarifs');
+                  },
+                ),
                 const SizedBox(height: 24),
                 const Divider(color: AppColors.grayLight),
                 const SizedBox(height: 24),
@@ -1206,7 +1215,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                         color: AppColors.yellowDark, size: 22),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text( l10n.passerAuPremium,
+                      child: Text(
+                        l10n.passerAuPremium,
                         style: const TextStyle(
                             color: AppColors.charcoal,
                             fontWeight: FontWeight.w600,
@@ -1219,7 +1229,7 @@ class _JoueursTabState extends State<_JoueursTab> {
                         foregroundColor: AppColors.red,
                         textStyle: const TextStyle(fontWeight: FontWeight.w700),
                       ),
-                      child: Text(l10n.voirTarifs),//'Voir tarifs'),
+                      child: Text(l10n.voirTarifs), //'Voir tarifs'),
                     ),
                   ],
                 ),
@@ -1452,8 +1462,8 @@ class _JoueursTabState extends State<_JoueursTab> {
                   ],
                 ),
                 subtitle: !isPremiumCoach
-                    ?  Text(
-                      l10n.accerderProfil,
+                    ? Text(
+                        l10n.accerderProfil,
                         //'Passez au forfait Premium pour accéder au profil',
                         style: TextStyle(color: AppColors.gray, fontSize: 12),
                       )

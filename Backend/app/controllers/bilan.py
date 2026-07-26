@@ -16,8 +16,8 @@ def get_bilan(planning_id):
     return jsonify(bilan), 200
 
 @bilan_bp.route("/global", methods=["GET"])
-#@jwt_required()
-@basic_required
+@jwt_required()
+#@basic_required
 def get_global_bilan():
     coach_id = int(get_jwt_identity())
     bilan, error = BilanService.compute_global(coach_id)

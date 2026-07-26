@@ -13,8 +13,8 @@ rapport_bp = Blueprint("rapports", __name__)
 
 
 @rapport_bp.route("/<int:planning_id>/rapports", methods=["GET"])
-@premium_required
-#@jwt_required()
+#@premium_required
+@jwt_required()
 def list_rapports(planning_id):
     coach_id = int(get_jwt_identity())
     planning = Planning.query.filter_by(id=planning_id, coach_id=coach_id).first()
@@ -30,8 +30,8 @@ def list_rapports(planning_id):
 
 
 @rapport_bp.route("/<int:planning_id>/rapports/<int:rapport_id>", methods=["GET"])
-@premium_required
-#@jwt_required()
+#@premium_required
+@jwt_required()
 def get_rapport(planning_id, rapport_id):
     coach_id = int(get_jwt_identity())
     planning = Planning.query.filter_by(id=planning_id, coach_id=coach_id).first()
@@ -46,8 +46,8 @@ def get_rapport(planning_id, rapport_id):
 
 
 @rapport_bp.route("/<int:planning_id>/rapports/generer", methods=["POST"])
-@premium_required
-#@jwt_required()
+#@premium_required
+@jwt_required()
 def generer_rapport(planning_id):
     coach_id = int(get_jwt_identity())
     data = request.get_json() or {}

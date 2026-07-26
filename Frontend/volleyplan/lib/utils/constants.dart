@@ -20,8 +20,8 @@ class AppConstants {
   // Remplace par ton URL Render en production
   static const String baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: //"https://volleyplan-proxy.willloic36.workers.dev/api",//"https://volleyplan.onrender.com/api",
-    'http://localhost:5000/api'
+    defaultValue: "https://volleyplan-proxy.willloic36.workers.dev/api",//"https://volleyplan.onrender.com/api",
+    //'http://localhost:5000/api'
   );
 
   static const List<Map<String, dynamic>> domaines = [
