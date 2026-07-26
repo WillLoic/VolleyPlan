@@ -583,10 +583,59 @@
   "aiDialogStatsSubtitle": "L'IA analysera les domaines sous-entraînés",
   "aiDialogGenerateBtn": "Générer le planning",
   "aiDialogCancelBtn": "Annuler",
-  "aiDialogPremiumError": "🔒 Cette fonctionnalité est réservée aux coachs Premium.",
+  "aiDialogPremiumError": "🔒 Cette fonctionnalité est réservée aux coachs Premium Plus.",
   "aiDialogLoading1": "🤔 Analyser votre demande…",
   "aiDialogLoading2": "📊 Traitement des données…",
   "aiDialogLoading3": "🏐 Génération des exercices…",
   "aiDialogLoading4": "✨ Finalisation du planning…",
-  "homeFabAiLabel": "Générer avec Chadeu AI"
+  "homeFabAiLabel": "Générer avec l' IA",
+
+  
+  "tarifPageTitle": "Nos forfaits",
+  "tarifHeadline": "Choisissez votre forfait",
+  "tarifSubheadline": "Démarrez gratuitement et évoluez selon vos besoins. Tous les forfaits sont cumulatifs.",
+  "tarifPaymentUrlMissing": "URL de paiement introuvable.",
+  "tarifPaymentOpenFailed": "Impossible d'ouvrir la page de paiement.",
+  "tarifRedirecting": "Redirection vers le paiement en cours…",
+  "tarifPaymentFailed": "Le paiement a échoué. Veuillez réessayer.",
+  "tarifDecouverteTitle": "Découverte",
+  "tarifDecouverteSubtitle": "Pour commencer sans engagement.",
+  "tarifBasicTitle": "Basic",
+  "tarifBasicSubtitle": "Pour les clubs qui grandissent.",
+  "tarifPremiumTitle": "Premium",
+  "tarifPremiumSubtitle": "Pour les équipes qui veulent plus de contrôle.",
+  "tarifPremiumPlusTitle": "Premium+",
+  "tarifPremiumPlusSubtitle": "La puissance de l'IA pour les staffs exigeants.",
+  "tarifBadgePopulaire": "Populaire",
+  "tarifBadgeComplet": "Complet",
+  "tarifParMois": "/ an",
+  "tarifGratuitPourToujours": "gratuit pour toujours",
+  "tarifToutDePlus": "Tout {planName}, plus :",
+  "@tarifToutDePlus": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tarifChoisirCeForfait": "Choisir {planName}",
+  "@tarifChoisirCeForfait": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tarifCommencerGratuitement": "Commencer gratuitement",
+  "tarifNoteCumulative": "Chaque forfait inclut toutes les fonctionnalités des niveaux inférieurs. Vous ne perdez rien en montant.",
+
+  "featCreerModifierSupprimerPlanning": "Créer, modifier et supprimer des plannings",
+  "featGererJoueurs": "Gérer vos joueurs",
+  "featUnCollaborateur": "1 collaborateur",
+  "featBilanParPlanning": "Bilan par planning",
+  "featExportPdf": "Export PDF",
+  "featBilanGlobal": "Bilan global",
+  "featCollaborateursIllimites": "Collaborateurs illimités",
+  "featExportExcel": "Export Excel",
+  "featPartagePublic": "Partage public du planning",
+  "featNoterPresences": "Notation des présences",
+  "featGenerationIA": "Génération de séances par IA",
+  "featExecuterSeance": "Exécuter une séance en temps réel",
+  "featAnalyseAvancee": "Analyse avancée des performances"
 }

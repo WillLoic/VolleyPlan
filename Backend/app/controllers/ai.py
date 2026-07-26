@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify
-from app.utils.decorators import premium_required
-from flask_jwt_extended import get_jwt_identity
+from app.utils.decorators import premium_required, premium_plus_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from app.services.AI import Chadeu_AI
 
 ai_bp = Blueprint("ai", __name__)
 
 
 @ai_bp.route("/planning/generate", methods=["POST"])
-@premium_required
+#@jwt_required()
+@premium_plus_required
 def generate_planning():
     """
     Génère un planning d'entraînement via Gemini IA.
@@ -84,3 +85,14 @@ def generate_planning():
             "message": "Une erreur inattendue s'est produite. Veuillez réessayer.",
             "details": str(e)
         }), 500
+
+
+"""
+salut mon reuf voici mon decorateur [decorators.py](file;file:///c%3A/Users/Will%20Loic/Desktop/willLoic/Backend/app/utils/decorators.py)  pour les autorisations en fonction des tarifs et abonnement et voici la page des tarifs [tarif_screen.dart](file;file:///c%3A/Users/Will%20Loic/Desktop/willLoic/Frontend/volleyplan/lib/screen/tarif_screen.dart) je veux que tu ajuste cette page voici les type d'abonnement:
+-decouverte : c'est gratuit 
+-basic: ca coute 20000 francs par an
+-premium: 50000 frans par an
+-premium plus: 125000 francs par ans 
+et je voudrais que les prix s'affiche sur cette page en dollars et si c'est simple et possible  fonctions de la monnaie qu'utilise le pays on peux savoir le pays de l'utilisateur via l'identifiant du pays qu'il ya sur le numero de telephone 
+- verifie aussi mes decorateurs parce que j'ai des mauvais comportement quand je suis sur un abonnement premium ou premium plus et que j'utilise la fonctinnalite destine aux premium on me demande de passer au forfait premium
+"""

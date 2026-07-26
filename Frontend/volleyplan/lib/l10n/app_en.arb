@@ -516,10 +516,60 @@
   "aiDialogStatsSubtitle": "AI will analyze under-trained domains",
   "aiDialogGenerateBtn": "Generate planning",
   "aiDialogCancelBtn": "Cancel",
-  "aiDialogPremiumError": "🔒 This feature is for Premium coaches only.",
+  "aiDialogPremiumError": "🔒 This feature is for Premium Plus coaches only.",
   "aiDialogLoading1": "🤔 Analyzing your request…",
   "aiDialogLoading2": "📊 Processing data…",
   "aiDialogLoading3": "🏐 Generating exercises…",
   "aiDialogLoading4": "✨ Finalizing planning…",
-  "homeFabAiLabel": "Generate with AI"
+  "homeFabAiLabel": "Generate with AI",
+
+  
+  "tarifPageTitle": "Our plans",
+  "tarifHeadline": "Choose your plan",
+  "tarifSubheadline": "Start for free and scale as you grow. All plans are cumulative.",
+  "tarifPaymentUrlMissing": "Payment URL not found.",
+  "tarifPaymentOpenFailed": "Could not open the payment page.",
+  "tarifRedirecting": "Redirecting to payment…",
+  "tarifPaymentFailed": "Payment failed. Please try again.",
+  "tarifDecouverteTitle": "Discovery",
+  "tarifDecouverteSubtitle": "Get started with no commitment.",
+  "tarifBasicTitle": "Basic",
+  "tarifBasicSubtitle": "For growing clubs.",
+  "tarifPremiumTitle": "Premium",
+  "tarifPremiumSubtitle": "For teams that want more control.",
+  "tarifPremiumPlusTitle": "Premium+",
+  "tarifPremiumPlusSubtitle": "AI-powered tools for demanding coaching staff.",
+  "tarifBadgePopulaire": "Popular",
+  "tarifBadgeComplet": "Full",
+  "tarifParMois": "/ year",
+  "tarifGratuitPourToujours": "free forever",
+  "tarifToutDePlus": "Everything in {planName}, plus:",
+  "@tarifToutDePlus": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tarifChoisirCeForfait": "Choose {planName}",
+  "@tarifChoisirCeForfait": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tarifCommencerGratuitement": "Get started for free",
+  "tarifNoteCumulative": "Each plan includes all the features from lower tiers. You never lose anything by upgrading.",
+
+  "featCreerModifierSupprimerPlanning": "Create, edit and delete schedules",
+  "featGererJoueurs": "Manage your players",
+  "featUnCollaborateur": "1 collaborator",
+  "featBilanParPlanning": "Per-schedule summary",
+  "featExportPdf": "PDF export",
+  "featBilanGlobal": "Global summary",
+  "featCollaborateursIllimites": "Unlimited collaborators",
+  "featExportExcel": "Excel export",
+  "featPartagePublic": "Public schedule sharing",
+  "featNoterPresences": "Attendance tracking",
+  "featGenerationIA": "AI-powered session generation",
+  "featExecuterSeance": "Run a session in real time",
+  "featAnalyseAvancee": "Advanced performance analytics"
+
 }

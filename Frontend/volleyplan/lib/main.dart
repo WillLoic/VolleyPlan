@@ -24,7 +24,7 @@ import 'screen/joueur_detail_screen.dart';
 import 'screen/presence_screen.dart';
 import 'screen/tarif_screen.dart';
 import 'screen/planning/public_planning_screen.dart';
-import 'screen/executer_seance_screen.dart';
+//import 'screen/executer_seance_screen.dart';
 
 void main() {
   // On s'assure que les bindings Flutter sont prêts
@@ -127,7 +127,9 @@ class _VolleyPlanAppState extends State<VolleyPlanApp> {
           return '/login';
         }
 
-        if (loggedIn && (isAuthPage || loc == '/')) return '/home';
+        if (loggedIn && (isAuthPage || loc == '/') && loc != '/tarifs') 
+          return '/home';
+        
         return null;
       },
       routes: [

@@ -125,7 +125,7 @@ RÈGLES IMPORTANTES :
 2. La durée de chaque exercice doit être réaliste (entre 10 et 45 minutes).
 3. Le champ "mode" doit être "groupe" si l'entraînement concerne toute l'équipe, "individuel" sinon.
 4. Les domaines disponibles sont UNIQUEMENT : service, reception, passe, attaque, block, defense, physique, general.
-5. Chaque séance doit avoir entre 3 et 8 exercices.
+5. Chaque séance doit avoir entre 3 et 15 exercices.
 6. Le titre du planning doit être concis et professionnel.
 7. Réponds UNIQUEMENT en JSON valide, sans texte supplémentaire.
 

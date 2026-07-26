@@ -133,13 +133,13 @@ def init_scheduler(app):
             trigger='interval',
             minutes=30
         )
-        scheduler.add_job(
+        """scheduler.add_job(
             id='rapports_mensuels_job',
             func=check_rapports_mensuels,
             args=[app],
             trigger='interval',
             hours=6
-        )
+        )"""
         logger.info("Scheduler APScheduler initialisé avec succès.")
     except ImportError:
         logger.warning("Le package 'flask-apscheduler' n'est pas installé. Les tâches de présence en arrière-plan ne tourneront pas.")

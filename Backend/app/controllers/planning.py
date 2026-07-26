@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.planning import PlanningService
 from app.services.excel_export import generer_excel_planning
-from app.utils.decorators import premium_required
+from app.utils.decorators import premium_plus_required, premium_required
 from app.services.partage_planning import PartagePublicService
 
 planning_bp = Blueprint("plannings", __name__)
@@ -107,8 +107,8 @@ def check_overlap():
 
 
 @planning_bp.route("/<int:planning_id>/export/excel", methods=["GET"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_required
 def export_excel(planning_id):
     coach_id = int(get_jwt_identity())
     buffer, error = generer_excel_planning(planning_id, coach_id)
@@ -125,8 +125,8 @@ def export_excel(planning_id):
 
 
 @planning_bp.route("/<int:planning_id>/partage", methods=["POST"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_required
 def generer_partage(planning_id):
     coach_id = int(get_jwt_identity())
     partage, error = PartagePublicService.generer_ou_regenerer_lien(coach_id, planning_id)
@@ -143,8 +143,8 @@ def generer_partage(planning_id):
 
 
 @planning_bp.route("/<int:planning_id>/partage", methods=["GET"])
-#@jwt_required()
-@premium_required
+@jwt_required()
+#@premium_plus_required
 def get_partage_actuel(planning_id):
     coach_id = int(get_jwt_identity())
     partage, error = PartagePublicService.get_lien_actuel(coach_id, planning_id)

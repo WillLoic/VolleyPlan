@@ -4,12 +4,14 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.pdf import generate_planning_pdf
 from app.services.planning import PlanningService
 from app.services.bilan import BilanService
+from app.utils.decorators import basic_required
 
 pdf_bp = Blueprint("pdf", __name__)
 
 
 @pdf_bp.route("/planning/<int:planning_id>", methods=["GET"])
 @jwt_required()
+#@basic_required()
 def export_pdf(planning_id):
     coach_id = int(get_jwt_identity())
 

@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from app.utils.decorators import premium_required
 from app.services.stats_joueurs import StatsJoueursService
 
 stats_bp = Blueprint("stats", __name__)
 
 @stats_bp.route("/joueur/<int:joueur_id>/radar", methods=["GET"])
+#@jwt_required()
 @premium_required
 def get_radar(joueur_id):
     coach_id = int(get_jwt_identity())
@@ -15,6 +16,7 @@ def get_radar(joueur_id):
     return jsonify(resultat), 200
 
 @stats_bp.route("/joueur/<int:joueur_id>", methods=["GET"])
+#@jwt_required()
 @premium_required
 def get_individual_stats(joueur_id):
     coach_id = int(get_jwt_identity())
@@ -24,6 +26,7 @@ def get_individual_stats(joueur_id):
     return jsonify(resultat), 200
 
 @stats_bp.route("/equipe/comparaison", methods=["GET"])
+#@jwt_required()
 @premium_required
 def get_team_comparison():
     coach_id = int(get_jwt_identity())

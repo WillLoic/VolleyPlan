@@ -48,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _emailCtrl.text.trim(),
           _equipeCtrl.text.trim(),
           _pwdCtrl.text.trim());
-      if (mounted) context.go('/home');
+      if (mounted) context.go('/tarifs');
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.bilan import BilanService
+from app.utils.decorators import basic_required
 
 bilan_bp = Blueprint("bilan", __name__)
 
@@ -15,7 +16,8 @@ def get_bilan(planning_id):
     return jsonify(bilan), 200
 
 @bilan_bp.route("/global", methods=["GET"])
-@jwt_required()
+#@jwt_required()
+@basic_required
 def get_global_bilan():
     coach_id = int(get_jwt_identity())
     bilan, error = BilanService.compute_global(coach_id)

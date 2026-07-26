@@ -61,7 +61,8 @@ def hard_delete(joueur_id):
 
 
 @joueur_bp.route("/seance/<int:seance_id>/presences", methods=["GET"])
-@premium_required
+@jwt_required()
+#@premium_required
 def get_seance_presences(seance_id):
     coach_id = int(get_jwt_identity())
     resultat = PresenceService.get_presences_seance(coach_id, seance_id)
@@ -71,7 +72,8 @@ def get_seance_presences(seance_id):
 
 
 @joueur_bp.route("/seance/<int:seance_id>/absences", methods=["POST"])
-@premium_required
+@jwt_required()
+#@premium_required
 def post_seance_absences(seance_id):
     coach_id = int(get_jwt_identity())
     data = request.get_json() or {}

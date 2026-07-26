@@ -15,7 +15,7 @@ class Coach(db.Model):
     role          = db.Column(db.String(20), default="user", nullable=False)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     #paiement
-    forfait = db.Column(db.String(20), default = "FREE") # PREMIUM, PROFESSIONNAL
+    forfait = db.Column(db.String(20), default = "DECOUVERTE") # PREMIUM, PROFESSIONNAL
     expire_forfait = db.Column(db.DateTime, default=None)
 
 
@@ -41,7 +41,7 @@ class Coach(db.Model):
             "email":          self.email,
             "role":           self.role,
             "created_at":     self.created_at.isoformat(),
-            "forfait":        self.forfait or "FREE",
+            "forfait":        self.forfait or "DECOUVERTE",
             "expire_forfait": self.expire_forfait.isoformat() if self.expire_forfait else None,
         }
     

@@ -14,9 +14,9 @@ def premium_required(fn):
             return jsonify({"error": "Coach introuvable"}), 404
         
         # Check if user has PREMIUM subscription and if it's not expired
-        if coach.forfait != "PREMIUM":
+        if coach.forfait not in ("PREMIUM", "PREMIUM_PLUS"):
             return jsonify({
-                "error": "Fonctionnalité réservée au forfait Premium",
+                "error": "Fonctionnalité réservée au forfait Premium et Premium Plus",
                 "upgrade": True
             }), 403
             
@@ -40,9 +40,9 @@ def basic_required(fn):
             return jsonify({"error": "Coach introuvable"}), 404
         
         # Check if user has PREMIUM subscription and if it's not expired
-        if coach.forfait != "BASIC":
+        if coach.forfait not in ("BASIC", "PREMIUM", "PREMIUM_PLUS"):
             return jsonify({
-                "error": "Fonctionnalité réservée au forfait Basic",
+                "error": "Fonctionnalité réservée au forfait Basic, Premium et Premium Plus",
                 "upgrade": True
             }), 403
             

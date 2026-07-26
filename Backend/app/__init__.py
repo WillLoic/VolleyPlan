@@ -75,6 +75,8 @@ def create_app():
     from .controllers.rapport_mensuel import rapport_bp
     from .controllers.action_jeu import action_jeu_bp
     from .controllers.ai import ai_bp
+    from .controllers.kpay import kpay_bp
+    
 
 
     app.register_blueprint(auth_bp,     url_prefix="/api/auth")
@@ -94,6 +96,7 @@ def create_app():
     app.register_blueprint(rapport_bp, url_prefix="/api/plannings")
     app.register_blueprint(action_jeu_bp, url_prefix="/api/actions")
     app.register_blueprint(ai_bp,          url_prefix="/api/ai")
+    app.register_blueprint(kpay_bp, url_prefix="/api/kpay")
 
     @app.route("/api/health")
     def health():
