@@ -6,6 +6,7 @@ class Coach {
   final String email;
   final String role;
   final String forfait;
+  final DateTime? expireForfait;
 
   Coach({
     required this.id,
@@ -15,6 +16,7 @@ class Coach {
     required this.email,
     required this.role,
     required this.forfait,
+    required this.expireForfait,
   });
 
   bool get isPremium => forfait.toUpperCase() == 'PREMIUM';
@@ -27,5 +29,8 @@ class Coach {
         email: j['email'] ?? '',
         role: j['role'] ?? 'user',
         forfait: (j['forfait'] ?? 'FREE').toString(),
+        expireForfait: j['expire_forfait'] != null
+            ? DateTime.tryParse(j['expire_forfait'].toString())
+            : null,
       );
 }

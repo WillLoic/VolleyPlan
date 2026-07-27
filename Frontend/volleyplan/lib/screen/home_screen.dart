@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/app_state.dart';
@@ -634,10 +635,90 @@ class _ProfileTabState extends State<_ProfileTab> {
     super.dispose();
   }
 
+  String _formatForfait(String? forfait, AppLocalizations l10n) {
+    final normalized = (forfait ?? 'FREE').toUpperCase();
+    switch (normalized) {
+      case 'FREE':
+      case 'DECOUVERTE':
+        return l10n.profileSubscriptionFree;
+      case 'BASIC':
+        return 'Basic';
+      case 'PREMIUM':
+        return 'Premium';
+      case 'PREMIUM_PLUS':
+        return 'Premium+';
+      default:
+        return forfait ?? l10n.profileSubscriptionFree;
+    }
+  }
+
+  String _formatExpiry(DateTime? expiry, AppLocalizations l10n) {
+    if (expiry == null) return l10n.profileSubscriptionNoExpiry;
+    return DateFormat('dd/MM/yyyy').format(expiry);
+  }
+
+  Widget _buildSubscriptionTile({
+    required IconData icon,
+    required String title,
+    required String value,
+    required bool isCompact,
+  }) {
+    return Container(
+      width: isCompact ? double.infinity : 240,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.grayXLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grayLight.withOpacity(0.5)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.red.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.red, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.charcoal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final l10n = AppLocalizations.of(context)!;
+    final coach = state.coach;
+    final isCompact = MediaQuery.of(context).size.width < 650;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
       child: Column(
@@ -704,7 +785,49 @@ class _ProfileTabState extends State<_ProfileTab> {
                         borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.offWhite,
+                    borderRadius: BorderRadius.circular(14),
+                    border:
+                        Border.all(color: AppColors.grayLight.withOpacity(0.6)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.profileSubscriptionSectionTitle,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.charcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          _buildSubscriptionTile(
+                            icon: Icons.workspace_premium_rounded,
+                            title: l10n.profileSubscriptionPlanLabel,
+                            value: _formatForfait(coach?.forfait, l10n),
+                            isCompact: isCompact,
+                          ),
+                          _buildSubscriptionTile(
+                            icon: Icons.event_available_rounded,
+                            title: l10n.profileSubscriptionExpiryLabel,
+                            value: _formatExpiry(coach?.expireForfait, l10n),
+                            isCompact: isCompact,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 VpButton(
                   label: l10n.profileSaveAction,
                   loading: state.loading,

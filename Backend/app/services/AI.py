@@ -143,6 +143,7 @@ DEMANDE DU COACH :
                     response_mime_type="application/json",
                     response_schema=_PLANNING_JSON_SCHEMA,
                 )
+                #http_options=types.HttpOptions(timeout=250000),  # en millisecondes  
             )
         except Exception as api_error:
             error_str = str(api_error).lower()

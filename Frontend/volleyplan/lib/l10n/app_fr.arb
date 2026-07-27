@@ -229,6 +229,11 @@
   "profileSaveAction": "Sauvegarder les modifications",
   "profileUpdateSuccess": "Profil mis à jour !",
   "profileManageSubscription": "Gérer mon abonnement",
+  "profileSubscriptionSectionTitle": "Informations d'abonnement",
+  "profileSubscriptionPlanLabel": "Forfait actif",
+  "profileSubscriptionExpiryLabel": "Date d'expiration",
+  "profileSubscriptionFree": "Gratuit",
+  "profileSubscriptionNoExpiry": "Aucune date d'expiration",
   "dashboardRecentPlannings": "Plannings récents",
   "dashboardSeeAll": "Voir tous",
   "dashboardCreatePlanningTitle": "Créer un planning",
@@ -589,7 +594,7 @@
   "aiDialogLoading2": "📊 Traitement des données…",
   "aiDialogLoading3": "🏐 Génération des exercices…",
   "aiDialogLoading4": "✨ Finalisation du planning…",
-  "homeFabAiLabel": "Générer avec l' IA",
+  "homeFabAiLabel": "Générer avec l'IA",
 
   
   "tarifPageTitle": "Nos forfaits",
