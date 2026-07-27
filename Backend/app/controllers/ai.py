@@ -63,7 +63,7 @@ def generate_planning():
                 "error": "ERREUR_SERVICE_IA",
                 "message": "Erreur temporaire du service IA. Veuillez réessayer.",
                 "details": error_code
-            }), 502
+            }), 501
 
         elif "REPONSE_IA_INVALIDE" in error_code:
             return jsonify({
