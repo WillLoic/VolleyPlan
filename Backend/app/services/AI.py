@@ -147,6 +147,7 @@ DEMANDE DU COACH :
             )
         except Exception as api_error:
             error_str = str(api_error).lower()
+            print(f"[AI] Erreur Gemini complète: {repr(api_error)}")  # ← ajoute ça
             if "503" in error_str or "unavailable" in error_str or "high demand" in error_str:
                 raise RuntimeError("SERVICE_TEMPORAIREMENT_INDISPONIBLE")
             else:
@@ -168,5 +169,8 @@ DEMANDE DU COACH :
         for key in required_keys:
             if key not in planning_data:
                 raise RuntimeError(f"REPONSE_IA_INVALIDE: champ manquant '{key}'")
+            
+
+        
 
         return planning_data

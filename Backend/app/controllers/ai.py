@@ -86,5 +86,7 @@ def generate_planning():
             "message": "Une erreur inattendue s'est produite. Veuillez réessayer.",
             "details": str(e)
         }), 500
+    
+    
 
 
