@@ -37,6 +37,8 @@ class Config:
     KPAY_WEBHOOK_SECRET = os.getenv("KPAY_WEBHOOK_SECRET")
     KPAY_WEBHOOK_URL    = os.getenv("KPAY_WEBHOOK_URL")
 
+    FRONTEND_URL        = os.getenv("FRONTEND_URL", "http://localhost:50736/#")
+
     # JWT
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 30 # 30 jours
