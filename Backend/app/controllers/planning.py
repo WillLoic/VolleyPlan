@@ -158,5 +158,5 @@ def get_partage_actuel(planning_id):
 
     return jsonify({
         **partage.to_dict(),
-        "url": f"{frontend_url}/public/planning/{partage.token}",
+        "url": f"{frontend_url}/#/public/planning/{partage.token}",
     }), 200
