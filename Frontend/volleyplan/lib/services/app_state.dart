@@ -236,10 +236,11 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> updateProfile(String nom, String tel, String equipe) async {
+  Future<void> updateProfile(String email, String nom, String tel, String equipe) async {
     _setLoading(true);
     try {
       final res = await ApiService.put('/coach/me', {
+        'email' : email,
         'nom': nom,
         'telephone': tel,
         'nom_equipe': equipe,

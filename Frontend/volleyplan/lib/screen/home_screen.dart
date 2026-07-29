@@ -8,7 +8,7 @@ import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 import '../widgets/planning_detail_dialog.dart';
 import '../widgets/ai_generator_dialog.dart';
-import '../screen/planning/planning_form_screen.dart';
+//import '../screen/planning/planning_form_screen.dart';
 import '../models/planning.dart';
 import '../models/coach.dart';
 //import '../models/notification.dart';
@@ -743,15 +743,15 @@ class _ProfileTabState extends State<_ProfileTab> {
               children: [
                 TextField(
                   controller: _emailCtrl,
-                  readOnly: true,
+                  //readOnly: true,
                   decoration: InputDecoration(
                     labelText: l10n.profileEmailReadonly,
                     prefixIcon: const Icon(Icons.email_outlined),
-                    filled: true,
-                    fillColor: AppColors.grayXLight,
+                    //filled: true,
+                    //fillColor: AppColors.grayXLight,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                      //borderSide: BorderSide.none,
                     ),
                   ),
                 ),
@@ -834,7 +834,7 @@ class _ProfileTabState extends State<_ProfileTab> {
                   onPressed: () async {
                     try {
                       await state.updateProfile(
-                          _nomCtrl.text, _telCtrl.text, _equipeCtrl.text);
+                          _emailCtrl.text,_nomCtrl.text, _telCtrl.text, _equipeCtrl.text);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(l10n.profileUpdateSuccess)));

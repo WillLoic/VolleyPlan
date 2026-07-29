@@ -12,5 +12,7 @@ class CoachService:
         coach.nom = data.get("nom", "").strip()
         coach.telephone = data.get("telephone", "").strip()
         coach.nom_equipe = data.get("nom_equipe", "").strip()
+        coach.email = data.get("email", "").strip()
+        print(coach.email,coach.nom)
         db.session.commit()
         return coach, None
