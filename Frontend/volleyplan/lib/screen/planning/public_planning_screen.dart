@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../services/analytics_service.dart';
 import '../../services/partage_service.dart';
 import '../../utils/constants.dart';
 import '../../widgets/domaine_chip.dart';
@@ -32,11 +33,29 @@ class _PublicPlanningScreenState extends State<PublicPlanningScreen> {
     try {
       final res = await PartageService.getPlanningPublic(widget.token);
       if (res['success'] == true) {
+        AnalyticsService.trackEvent(
+          'public_planning_viewed',
+          data: {
+            'planning_id': res['planning']?['id'],
+            'token_prefix': widget.token.length > 8
+                ? widget.token.substring(0, 8)
+                : widget.token,
+          },
+        );
         setState(() {
           _planning = res['planning'];
           _loading = false;
         });
       } else {
+        AnalyticsService.trackEvent(
+          'public_planning_expired_viewed',
+          data: {
+            'token_prefix': widget.token.length > 8
+                ? widget.token.substring(0, 8)
+                : widget.token,
+            'reason': res['message'] ?? 'expired',
+          },
+        );
         setState(() {
           _error = res['message'] ?? 'Lien invalide';
           _expired = true;
@@ -44,6 +63,15 @@ class _PublicPlanningScreenState extends State<PublicPlanningScreen> {
         });
       }
     } catch (e) {
+      AnalyticsService.trackEvent(
+        'public_planning_expired_viewed',
+        data: {
+          'token_prefix': widget.token.length > 8
+              ? widget.token.substring(0, 8)
+              : widget.token,
+          'reason': 'error',
+        },
+      );
       setState(() {
         _error = 'Ce lien a expiré ou est invalide';
         _expired = true;
@@ -105,7 +133,13 @@ class _PublicPlanningScreenState extends State<PublicPlanningScreen> {
             const SizedBox(height: 24),
             VpButton(
               label: l10n.publicDiscoverButton,
-              onPressed: () => context.go('/register'),
+              onPressed: () {
+                AnalyticsService.trackEvent(
+                  'public_discover_cta_clicked',
+                  data: {'source': 'expired_view'},
+                );
+                context.go('/register');
+              },
             ),
           ],
         ),
@@ -151,7 +185,16 @@ class _PublicPlanningScreenState extends State<PublicPlanningScreen> {
                 VpButton(
                   label: l10n.publicDiscoverButton,
                   small: true,
-                  onPressed: () => context.go('/'),
+                  onPressed: () {
+                    AnalyticsService.trackEvent(
+                      'public_discover_cta_clicked',
+                      data: {
+                        'source': 'planning_view',
+                        'planning_id': _planning?['id'],
+                      },
+                    );
+                    context.go('/');
+                  },
                 ),
               ],
             ),

@@ -19,7 +19,7 @@ class Coach {
     required this.expireForfait,
   });
 
-  bool get isPremium => forfait.toUpperCase() == 'PREMIUM';
+  bool get isPremium => forfait.toUpperCase() == 'PREMIUM' || forfait.toUpperCase() == 'PREMIUM_PLUS';
 
   factory Coach.fromJson(Map<String, dynamic> j) => Coach(
         id: j['id'],

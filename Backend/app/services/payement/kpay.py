@@ -7,6 +7,7 @@ from flask import current_app
 from app import db
 from app.models.coach import Coach
 from app.models.cinetpay import Payments, Subscription
+from app.models.analytics_event import AnalyticsEvent
 
 
 KPAY_BASE_URL = "https://admin.kpay.site/api/v1"
@@ -17,8 +18,8 @@ class KPayService:
     def _headers(self):
         """Headers d'authentification KPay — simple, pas de token à générer."""
         return {
-            "X-API-Key":    current_app.config["KPAY_API_KEY"],
-            "X-Secret-Key": current_app.config["KPAY_SECRET_KEY"],
+            "X-API-Key":    current_app.config["KPAY_API_KEY_LIVE"],
+            "X-Secret-Key": current_app.config["KPAY_SECRET_KEY_LIVE"],
         }
 
     # ─────────────────────────────────────────────
@@ -52,9 +53,10 @@ class KPayService:
             payload = {
                 "amount":      montant,
                 "externalId":  external_id,
-                "description": "Abonnement VolleyPlan Premium - 1 an",
+                "description": "Abonnement VolleyPlan de 1 an",
                 #"customerName":  coach.nom,
                 "customerEmail": coach.email,
+                #"isTest": False,
                 "returnUrl":   current_app.config["KPAY_RETURN_URL"],
                 "cancelUrl":   current_app.config["KPAY_CANCEL_URL"],
             }
@@ -72,6 +74,31 @@ class KPayService:
                 # Stocker le kpay_id pour retrouver la transaction dans le webhook
                 paiement.meta_data = {"kpay_id": data["id"], "reference": data["reference"]}
                 db.session.commit()
+
+                # --- Analytics : initiation de paiement ---
+                try:
+                    plan = next(
+                        (p for m, p in [(25000, "BASIC"), (50000, "PREMIUM"), (125000, "PREMIUM_PLUS")]
+                         if m == montant),
+                        "UNKNOWN"
+                    )
+                    event = AnalyticsEvent(
+                        user_id=coach_id,
+                        event_name="payment_initiated",
+                        event_data={
+                            "amount": montant,
+                            "currency": "XAF",
+                            "plan": plan,
+                            "external_id": external_id,
+                            "provider": "KPAY",
+                        },
+                        session_id=None,
+                    )
+                    db.session.add(event)
+                    db.session.commit()
+                except Exception:
+                    pass  # analytics non-bloquant
+                # ------------------------------------------
 
                 return {
                     "success":     True,
@@ -233,11 +260,35 @@ class KPayService:
                 coach.expire_forfait = abonnement.end_date
 
                 db.session.commit()
+
+            # --- Analytics : paiement réellement complété ---
+            try:
+                plan_map = {25000: "BASIC", 50000: "PREMIUM", 125000: "PREMIUM_PLUS"}
+                event = AnalyticsEvent(
+                    user_id=paiement.coach_id,
+                    event_name="payment_completed",
+                    event_data={
+                        "amount": montant,
+                        "currency": "XAF",
+                        "plan": plan_map.get(montant, "UNKNOWN"),
+                        "external_id": external_id,
+                        "provider": "KPAY",
+                        "reference": kpay_data.get("reference"),
+                    },
+                    session_id=None,
+                )
+                db.session.add(event)
+                db.session.commit()
+            except Exception:
+                pass  # analytics non-bloquant
+            # ------------------------------------------------
+
             return {"success": True, "message": "Abonnement activé"}
 
         except Exception as e:
             db.session.rollback()
             return {"success": False, "message": str(e)}
+
 
 
     # ─────────────────────────────────────────────

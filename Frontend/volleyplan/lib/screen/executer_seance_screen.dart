@@ -12,6 +12,7 @@ import '../models/planning.dart';
 import '../models/seance.dart';
 import '../services/app_state.dart';
 import '../services/action_jeu_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/constants.dart';
 import '../utils/action_jeu_label.dart';
 import '../widgets/action_saisie_form.dart';
@@ -90,6 +91,16 @@ class _ExecuterSeanceScreenState extends State<ExecuterSeanceScreen> {
         _seance = seance;
         _loading = false;
       });
+
+      AnalyticsService.trackEvent(
+        'seance_execution_opened',
+        data: {
+          'planning_id': widget.planningId,
+          'seance_id': widget.seanceId,
+          'exercices_count': seance.exercices.length,
+        },
+        token: appState.token,
+      );
     } catch (e) {
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');

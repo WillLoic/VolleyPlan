@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import '../services/ai_service.dart';
+import '../services/analytics_service.dart';
+import '../services/app_state.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
 
@@ -102,6 +105,15 @@ class _AiGeneratorSheetState extends State<_AiGeneratorSheet>
         prompt: prompt,
         useStats: _useStats,
         language: localeCode,
+      );
+      AnalyticsService.trackEvent(
+        'ai_planning_generated',
+        data: {
+          'use_stats': _useStats,
+          'prompt_length': prompt.length,
+          'nb_seances': (result['seances'] as List?)?.length ?? 0,
+        },
+        token: context.read<AppState>().token,
       );
       if (mounted) Navigator.pop(context, result);
     } on ForbiddenException {

@@ -8,6 +8,7 @@ from app.models.seances import Seance
 from app.models.exercices import Exercice
 from app.models.invitation import Invitation
 from app.models.planning_collaborator import PlanningCollaborator
+from app.models.cinetpay import Payments
 from app import db
 import jwt
 from flask import current_app
@@ -95,7 +96,24 @@ def get_admin_summary(current_admin):
     pdf_exports = AnalyticsEvent.query.filter_by(event_name='pdf_exported').count()
     mode_counts = db.session.query(Planning.mode, func.count(Planning.id))\
         .group_by(Planning.mode).all()
-    
+
+    # 7. Nouvelles fonctionnalités
+    excel_exports = AnalyticsEvent.query.filter_by(event_name='excel_exported').count()
+    share_links_generated = AnalyticsEvent.query.filter_by(event_name='planning_share_generated').count()
+    public_views = AnalyticsEvent.query.filter_by(event_name='public_planning_viewed').count()
+    ai_plannings_generated = AnalyticsEvent.query.filter_by(event_name='ai_planning_generated').count()
+
+    # 8. Paiements
+    payment_initiated_count = AnalyticsEvent.query.filter_by(event_name='payment_initiated').count()
+    payment_completed_count = AnalyticsEvent.query.filter_by(event_name='payment_completed').count()
+    # Revenu réel : somme des paiements SUCCESS en base
+    revenue_total_xaf = db.session.query(func.sum(Payments.amount))\
+        .filter(Payments.status == 'SUCCESS').scalar() or 0
+    # Coachs ayant un forfait actif (source de vérité)
+    coaches_basic = Coach.query.filter_by(forfait='BASIC').count()
+    coaches_premium = Coach.query.filter_by(forfait='PREMIUM').count()
+    coaches_premium_plus = Coach.query.filter_by(forfait='PREMIUM_PLUS').count()
+
     return jsonify({
         "kpis": {
             "total_coaches": total_coaches,
@@ -105,6 +123,7 @@ def get_admin_summary(current_admin):
             "dau": dau,
             "mau": mau,
             "pdf_exports": pdf_exports,
+            "excel_exports": excel_exports,
             "avg_seances": round(float(avg_seances), 1),
             "avg_exercises": round(float(avg_exercises), 1),
             "avg_players_per_coach": round(float(avg_players_per_coach), 1),
@@ -112,7 +131,18 @@ def get_admin_summary(current_admin):
             "invites_sent": invites_sent,
             "acceptance_rate": round(float(acceptance_rate), 1),
             "avg_collaborators": round(float(avg_collabs), 1),
-            "password_resets": password_resets
+            "password_resets": password_resets,
+            # Nouvelles features
+            "share_links_generated": share_links_generated,
+            "public_views": public_views,
+            "ai_plannings_generated": ai_plannings_generated,
+            # Paiements
+            "payment_initiated_count": payment_initiated_count,
+            "payment_completed_count": payment_completed_count,
+            "revenue_total_xaf": int(revenue_total_xaf),
+            "coaches_basic": coaches_basic,
+            "coaches_premium": coaches_premium,
+            "coaches_premium_plus": coaches_premium_plus,
         },
         "plannings_by_mode": dict(mode_counts)
     }), 200

@@ -13,9 +13,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import '../models/joueur.dart';
 import '../models/exercice.dart';
 import '../services/action_jeu_service.dart';
+import '../services/analytics_service.dart';
+import '../services/app_state.dart';
 import '../utils/constants.dart';
 import '../utils/domaines_action_config.dart';
 //import '../utils/domaines_action_config.dart';
@@ -162,6 +165,16 @@ class _ActionSaisieFormState extends State<ActionSaisieForm> {
       );
 
       if (res['success'] == true) {
+        AnalyticsService.trackEvent(
+          'actions_batch_submitted',
+          data: {
+            'seance_id': widget.seanceId,
+            'exercice_id': widget.exercice.id,
+            'actions_count': _actionsEnAttente.length,
+            'domaines': _domaines,
+          },
+          token: context.read<AppState>().token,
+        );
         widget.onTermine();
         if (mounted) Navigator.pop(context, true);
       } else {

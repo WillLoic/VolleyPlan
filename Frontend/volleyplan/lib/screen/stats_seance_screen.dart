@@ -11,6 +11,7 @@ import '../models/joueur.dart';
 import '../models/planning.dart';
 import '../services/app_state.dart';
 import '../services/action_jeu_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/constants.dart';
 import '../utils/action_jeu_label.dart';
 
@@ -56,6 +57,16 @@ class _StatsSeanceScreenState extends State<StatsSeanceScreen> {
         _statsSeance = stats;
         _loading = false;
       });
+
+      AnalyticsService.trackEvent(
+        'stats_seance_viewed',
+        data: {
+          'planning_id': widget.planningId,
+          'seance_id': widget.seanceId,
+          'exercices_with_stats': stats.length,
+        },
+        token: appState.token,
+      );
     } catch (e) {
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');

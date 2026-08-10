@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../services/analytics_service.dart';
 import '../services/api_service.dart';
+import '../services/app_state.dart';
 import '../utils/constants.dart';
 import '../widgets/vp_button.dart';
 
@@ -86,6 +89,15 @@ class _PresenceScreenState extends State<PresenceScreen> {
       });
 
       if (res['success'] == true) {
+        AnalyticsService.trackEvent(
+          'presence_saved',
+          data: {
+            'seance_id': widget.seanceId,
+            'absences_count': absences.length,
+            'players_count': _playersState.length,
+          },
+          token: context.read<AppState>().token,
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

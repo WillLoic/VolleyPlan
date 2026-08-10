@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/constants.dart';
 import '../services/app_state.dart';
 
@@ -439,8 +440,8 @@ class _TarifScreenState extends State<TarifScreen> {
                 ? ElevatedButton(
                     onPressed: (enCoursDePaiement || unAutrePaiementEnCours)
                         ? null
-                        : () => _startPayment(
-                            forfaitKey, _montantPourForfait(forfaitKey)),
+                        : () => _showPaymentMethodSelector(
+                            context, forfaitKey, title, _montantPourForfait(forfaitKey)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accentColor,
                       disabledBackgroundColor: accentColor.withOpacity(0.4),
@@ -509,6 +510,253 @@ class _TarifScreenState extends State<TarifScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showPaymentMethodSelector(
+      BuildContext context, String forfaitKey, String planTitle, int montant) {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          constraints: const BoxConstraints(maxWidth: 550),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Indicateur de glissement
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grayLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // En-tête
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.payment_rounded,
+                        color: AppColors.red, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.selectPaymentMethodTitle,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.charcoal,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.selectPaymentMethodSubtitle(planTitle),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.gray,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Option 1: Mobile Money & Paiements Locaux (Afrique) - ACTIF
+              _buildPaymentOptionTile(
+                icon: Icons.phone_android_rounded,
+                iconColor: const Color(0xFF06D6A0),
+                title: l10n.paymentMethodLocalTitle,
+                subtitle: l10n.paymentMethodLocalDesc,
+                badgeText: l10n.paymentMethodLocalBadge,
+                badgeColor: const Color(0xFF06D6A0),
+                isAvailable: true,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _startPayment(forfaitKey, montant);
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Option 2: Carte Bancaire (Stripe) - BIENTÔT
+              _buildPaymentOptionTile(
+                icon: Icons.credit_card_rounded,
+                iconColor: const Color(0xFF6772E5),
+                title: l10n.paymentMethodStripeTitle,
+                subtitle: l10n.paymentMethodStripeDesc,
+                badgeText: l10n.paymentMethodComingSoon,
+                badgeColor: AppColors.yellow,
+                isAvailable: false,
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.paymentMethodComingSoonMessage),
+                      backgroundColor: AppColors.charcoal,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Option 3: PayPal - BIENTÔT
+              _buildPaymentOptionTile(
+                icon: Icons.account_balance_wallet_rounded,
+                iconColor: const Color(0xFF003087),
+                title: l10n.paymentMethodPaypalTitle,
+                subtitle: l10n.paymentMethodPaypalDesc,
+                badgeText: l10n.paymentMethodComingSoon,
+                badgeColor: AppColors.yellow,
+                isAvailable: false,
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.paymentMethodComingSoonMessage),
+                      backgroundColor: AppColors.charcoal,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaymentOptionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String badgeText,
+    required Color badgeColor,
+    required bool isAvailable,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isAvailable ? AppColors.white : AppColors.offWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isAvailable
+                ? AppColors.grayLight
+                : AppColors.grayLight.withOpacity(0.6),
+            width: isAvailable ? 1.5 : 1,
+          ),
+          boxShadow: isAvailable
+              ? [
+                  BoxShadow(
+                    color: AppColors.charcoal.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: isAvailable
+                                ? AppColors.charcoal
+                                : AppColors.charcoal.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: badgeColor == AppColors.yellow
+                                ? const Color(0xFFB78103)
+                                : badgeColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isAvailable
+                          ? AppColors.gray
+                          : AppColors.gray.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: isAvailable ? AppColors.charcoal : AppColors.gray,
+            ),
+          ],
+        ),
       ),
     );
   }

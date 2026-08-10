@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../services/analytics_service.dart';
+import '../services/app_state.dart';
 import '../services/partage_service.dart';
 import '../utils/constants.dart';
 import 'vp_button.dart';
@@ -49,13 +52,22 @@ class _SharePlanningDialogState extends State<SharePlanningDialog> {
     }
   }
 
-  Future<void> _genererLien() async {
+  Future<void> _genererLien({bool regenerated = false}) async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
       final res = await PartageService.genererLien(widget.planningId);
+      final token = context.read<AppState>().token;
+      AnalyticsService.trackEvent(
+        'planning_share_generated',
+        data: {
+          'planning_id': widget.planningId,
+          'regenerated': regenerated,
+        },
+        token: token,
+      );
       setState(() {
         _url = res['url'];
         _expiresAt = DateTime.parse(res['expires_at']);
@@ -72,6 +84,11 @@ class _SharePlanningDialogState extends State<SharePlanningDialog> {
   void _copyLink() {
     if (_url == null) return;
     Clipboard.setData(ClipboardData(text: _url!));
+    AnalyticsService.trackEvent(
+      'planning_share_copied',
+      data: {'planning_id': widget.planningId},
+      token: context.read<AppState>().token,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AppLocalizations.of(context)!.linkCopied)),
     );
@@ -152,7 +169,7 @@ class _SharePlanningDialogState extends State<SharePlanningDialog> {
                 child: VpButton(
                   label: l10n.regenerateLinkButton,
                   variant: VpButtonVariant.ghost,
-                  onPressed: _genererLien,
+                  onPressed: () => _genererLien(regenerated: true),
                 ),
               ),
             ],

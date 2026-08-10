@@ -764,8 +764,14 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
               }
             }
           },*/
-          onPressed: () =>
-              _showExportBottomSheet(context, l10n, appState, isOwner),
+          onPressed: () {
+            AnalyticsService.trackEvent(
+              'export_dialog_opened',
+              data: {'planning_id': widget.planningId},
+              token: appState.token,
+            );
+            _showExportBottomSheet(context, l10n, appState, isOwner);
+          },
         ),
         VpButton(
           label: l10n.editAction,
@@ -791,6 +797,11 @@ class _PlanningDetailDialogState extends State<PlanningDetailDialog> {
             icon: Icons.share_rounded,
             variant: VpButtonVariant.ghost,
             onPressed: () {
+              AnalyticsService.trackEvent(
+                'share_dialog_opened',
+                data: {'planning_id': widget.planningId},
+                token: appState.token,
+              );
               showDialog(
                 context: context,
                 builder: (_) =>
@@ -893,6 +904,11 @@ class _ExportBottomSheetState extends State<_ExportBottomSheet>
     setState(() => _loadingExcel = true);
     try {
       await ExcelService.downloadPlanningExcel(widget.planningId);
+      AnalyticsService.trackEvent(
+        'excel_exported',
+        data: {'planning_id': widget.planningId, 'is_owner': widget.isOwner},
+        token: widget.appState.token,
+      );
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(

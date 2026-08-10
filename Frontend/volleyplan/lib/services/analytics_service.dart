@@ -34,7 +34,7 @@ class AnalyticsService {
         }),
       )
           .then((response) {
-        if (response.statusCode != 201) {
+        if (response.statusCode != 200) {
           debugPrint('Analytics Error: ${response.statusCode}');
         }
       });

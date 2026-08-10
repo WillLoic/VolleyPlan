@@ -54,6 +54,7 @@ class _LandingScreenState extends State<LandingScreen>
   final GlobalKey _heroKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _howItWorksKey = GlobalKey();
+  final GlobalKey _immersionKey = GlobalKey();
   final GlobalKey _whyKey = GlobalKey();
   final GlobalKey _guideKey = GlobalKey();
   final GlobalKey _testimonialsKey = GlobalKey();
@@ -287,6 +288,7 @@ class _LandingScreenState extends State<LandingScreen>
                 _buildStats(context), //[cite: 1]
                 _AboutSection(key: _aboutKey),
                 _HowItWorksSection(key: _howItWorksKey),
+                Container(key: _immersionKey, child: const _InteractiveImmersionSection()),
                 _WhyVolleyPlanSection(key: _whyKey),
                 _buildFeatures(context, l10n), //[cite: 1]
                 _GuideSection(key: _guideKey),
@@ -605,19 +607,15 @@ class _LandingScreenState extends State<LandingScreen>
                     onPressed: () => context.push('/register'),
                   ),
                 ),
-                LinkRenderer(
-                  text: l10n.loginAction, // Le texte du lien
-                  href: '/login', // L'URL de destination
-                  child: TextButton.icon(
-                    onPressed: () => context.push('/login'),
-                    icon: const Icon(Icons.login_rounded,
-                        size: 16, color: AppColors.charcoal),
-                    label: Text(
-                      l10n.loginAction,
-                      style: const TextStyle(
-                          color: AppColors.charcoal,
-                          fontWeight: FontWeight.w600),
-                    ),
+                TextButton.icon(
+                  onPressed: () => _scrollToSection(_immersionKey),
+                  icon: const Icon(Icons.play_circle_filled_rounded,
+                      size: 20, color: AppColors.charcoal),
+                  label: Text(
+                    l10n.immersionSectionTitle,
+                    style: const TextStyle(
+                        color: AppColors.charcoal,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -1019,11 +1017,53 @@ class _LandingScreenState extends State<LandingScreen>
         'tag': l10n.landingFeatureTagTeam, //[cite: 1]
       },
       {
-        'icon': Icons.fitness_center_rounded, //[cite: 1]
-        'color': const Color(0xFFEF476F), //[cite: 1]
-        'title': l10n.featurePhysiqueTitle, //[cite: 1]
-        'desc': l10n.featurePhysiqueDesc, //[cite: 1]
-        'tag': l10n.landingFeatureTagPhysique, //[cite: 1]
+        'icon': Icons.fitness_center_rounded,
+        'color': const Color(0xFFEF476F),
+        'title': l10n.featurePhysiqueTitle,
+        'desc': l10n.featurePhysiqueDesc,
+        'tag': l10n.landingFeatureTagPhysique,
+      },
+      {
+        'icon': Icons.person_search_rounded,
+        'color': const Color(0xFF118AB2),
+        'title': l10n.featurePlayerProfileTitle,
+        'desc': l10n.featurePlayerProfileDesc,
+        'tag': l10n.landingFeatureTagProfile,
+      },
+      {
+        'icon': Icons.checklist_rtl_rounded,
+        'color': const Color(0xFF073B4C),
+        'title': l10n.featurePresenceTitle,
+        'desc': l10n.featurePresenceDesc,
+        'tag': l10n.landingFeatureTagPresence,
+      },
+      {
+        'icon': Icons.table_view_rounded,
+        'color': const Color(0xFF06D6A0),
+        'title': l10n.featureExcelExportTitle,
+        'desc': l10n.featureExcelExportDesc,
+        'tag': l10n.landingFeatureTagExcel,
+      },
+      {
+        'icon': Icons.sports_volleyball_rounded,
+        'color': AppColors.red,
+        'title': l10n.featureSessionExecutionTitle,
+        'desc': l10n.featureSessionExecutionDesc,
+        'tag': l10n.landingFeatureTagExecution,
+      },
+      {
+        'icon': Icons.auto_awesome_rounded,
+        'color': AppColors.yellow,
+        'title': l10n.featureAutoGenerationTitle,
+        'desc': l10n.featureAutoGenerationDesc,
+        'tag': l10n.landingFeatureTagAuto,
+      },
+      {
+        'icon': Icons.handshake_rounded,
+        'color': const Color(0xFF8338EC),
+        'title': l10n.featureCollaborationTitle,
+        'desc': l10n.featureCollaborationDesc,
+        'tag': l10n.landingFeatureTagCollab,
       },
     ];
 
@@ -1089,23 +1129,24 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   Widget _buildFeaturesGrid(List<Map<String, dynamic>> features) {
-    return Column(children: [
-      Row(children: [
-        Expanded(child: _buildFeatureCard(features[0])), //[cite: 1]
-        const SizedBox(width: 20), //[cite: 1]
-        Expanded(child: _buildFeatureCard(features[1])), //[cite: 1]
-        const SizedBox(width: 20), //[cite: 1]
-        Expanded(child: _buildFeatureCard(features[2])), //[cite: 1]
-      ]),
-      const SizedBox(height: 20), //[cite: 1]
-      Row(children: [
-        Expanded(child: _buildFeatureCard(features[3])), //[cite: 1]
-        const SizedBox(width: 20), //[cite: 1]
-        Expanded(child: _buildFeatureCard(features[4])), //[cite: 1]
-        const SizedBox(width: 20), //[cite: 1]
-        Expanded(child: _buildFeatureCard(features[5])), //[cite: 1]
-      ]),
-    ]);
+    List<Widget> rows = [];
+    for (int i = 0; i < features.length; i += 3) {
+      rows.add(
+        Row(
+          children: [
+            Expanded(child: _buildFeatureCard(features[i])),
+            const SizedBox(width: 20),
+            Expanded(child: i + 1 < features.length ? _buildFeatureCard(features[i + 1]) : const SizedBox()),
+            const SizedBox(width: 20),
+            Expanded(child: i + 2 < features.length ? _buildFeatureCard(features[i + 2]) : const SizedBox()),
+          ],
+        ),
+      );
+      if (i + 3 < features.length) {
+        rows.add(const SizedBox(height: 20));
+      }
+    }
+    return Column(children: rows);
   }
 
   Widget _buildFeatureCard(Map<String, dynamic> f) {
@@ -2061,4 +2102,359 @@ class _GridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false; //[cite: 1]
+}
+
+class _InteractiveImmersionSection extends StatefulWidget {
+  const _InteractiveImmersionSection({super.key});
+
+  @override
+  State<_InteractiveImmersionSection> createState() => _InteractiveImmersionSectionState();
+}
+
+class _InteractiveImmersionSectionState extends State<_InteractiveImmersionSection> {
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    final tabs = [
+      l10n.immersionTabAutoGen,
+      l10n.immersionTabRoster,
+      l10n.immersionTabPresence,
+      l10n.immersionTabExecution,
+      l10n.immersionTabCollaboration,
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 80, horizontal: isMobile ? 24 : 40),
+      color: AppColors.white,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text(l10n.immersionSectionTitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: isMobile ? 26 : 36,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.charcoal)),
+          const SizedBox(height: 12),
+          Text(l10n.immersionSectionSubtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.gray, fontSize: 16)),
+          const SizedBox(height: 48),
+          
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(tabs.length, (index) {
+                final isSelected = _selectedIndex == index;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedIndex = index),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.red : AppColors.offWhite,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: isSelected ? AppColors.red : AppColors.grayLight),
+                    ),
+                    child: Text(tabs[index],
+                        style: TextStyle(
+                            color: isSelected ? AppColors.white : AppColors.gray,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14)),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 40),
+          
+          Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 900),
+            padding: EdgeInsets.all(isMobile ? 16 : 32),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.grayLight),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.charcoal.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ]
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _buildMockupContent(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMockupContent(BuildContext context) {
+    switch (_selectedIndex) {
+      case 0: return _AutoGenMockup(key: const ValueKey('autoGen'));
+      case 1: return _RosterMockup(key: const ValueKey('roster'));
+      case 2: return _PresenceMockup(key: const ValueKey('presence'));
+      case 3: return _ExecutionMockup(key: const ValueKey('execution'));
+      case 4: return _CollaborationMockup(key: const ValueKey('collab'));
+      default: return const SizedBox();
+    }
+  }
+}
+
+class _AutoGenMockup extends StatefulWidget {
+  const _AutoGenMockup({super.key});
+  @override
+  State<_AutoGenMockup> createState() => _AutoGenMockupState();
+}
+
+class _AutoGenMockupState extends State<_AutoGenMockup> {
+  bool _isLoading = false;
+  bool _isDone = false;
+
+  void _generate() {
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() { _isLoading = false; _isDone = true; });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (_isDone) {
+      return Column(
+        key: const ValueKey('done'),
+        children: [
+          const Icon(Icons.check_circle_rounded, color: AppColors.red, size: 48),
+          const SizedBox(height: 16),
+          const Text("Planning généré avec succès !", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.charcoal)),
+          const SizedBox(height: 8),
+          const Text("Inscrivez-vous pour consulter le détail de la séance et l'exporter en Excel.", textAlign: TextAlign.center, style: TextStyle(color: AppColors.gray)),
+          const SizedBox(height: 24),
+          VpButton(label: "Créer un compte", onPressed: () => context.push('/register')),
+        ],
+      );
+    }
+    return Column(
+      key: const ValueKey('input'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: AppColors.yellow),
+            const SizedBox(width: 8),
+            Text(l10n.immersionMockupTitle, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.offWhite,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.grayLight),
+          ),
+          child: TextField(
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: l10n.immersionAutoPromptPlaceholder,
+              hintStyle: const TextStyle(color: AppColors.gray),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: _isLoading 
+            ? const CircularProgressIndicator(color: AppColors.red)
+            : VpButton(label: l10n.immersionGenerateBtn, icon: Icons.bolt_rounded, onPressed: _generate),
+        ),
+      ],
+    );
+  }
+}
+
+class _RosterMockup extends StatelessWidget {
+  const _RosterMockup({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Effectif (3/12)", style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+            TextButton.icon(
+              onPressed: () => context.push('/register'),
+              icon: const Icon(Icons.add_rounded, color: AppColors.red),
+              label: const Text("Ajouter", style: TextStyle(color: AppColors.red, fontWeight: FontWeight.bold)),
+            )
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildPlayerMock("Thomas D.", "Réceptionneur-Attaquant"),
+        _buildPlayerMock("Léo M.", "Passeur"),
+        _buildPlayerMock("Maxime R.", "Central"),
+      ],
+    );
+  }
+
+  Widget _buildPlayerMock(String name, String position) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.offWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grayLight),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(backgroundColor: AppColors.yellow.withOpacity(0.2), child: const Icon(Icons.person, color: AppColors.yellow)),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.charcoal)),
+              Text(position, style: const TextStyle(fontSize: 12, color: AppColors.gray)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PresenceMockup extends StatefulWidget {
+  const _PresenceMockup({super.key});
+  @override
+  State<_PresenceMockup> createState() => _PresenceMockupState();
+}
+
+class _PresenceMockupState extends State<_PresenceMockup> {
+  final Map<String, bool> _presence = {"Thomas D.": true, "Léo M.": true, "Maxime R.": false};
+
+  @override
+  Widget build(BuildContext context) {
+    int present = _presence.values.where((p) => p).length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Séance du 12 Sept. 2026", style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: AppColors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+              child: Text("Présents: $present/3", style: const TextStyle(color: AppColors.red, fontWeight: FontWeight.bold, fontSize: 12)),
+            )
+          ],
+        ),
+        const SizedBox(height: 16),
+        ..._presence.keys.map((name) => CheckboxListTile(
+          value: _presence[name],
+          onChanged: (val) => setState(() => _presence[name] = val!),
+          title: Text(name, style: TextStyle(decoration: _presence[name]! ? TextDecoration.none : TextDecoration.lineThrough)),
+          activeColor: AppColors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        )),
+        const SizedBox(height: 16),
+        const Center(child: Text("La charge de travail sera ajustée automatiquement.", style: TextStyle(fontSize: 12, color: AppColors.gray, fontStyle: FontStyle.italic))),
+      ],
+    );
+  }
+}
+
+class _ExecutionMockup extends StatefulWidget {
+  const _ExecutionMockup({super.key});
+  @override
+  State<_ExecutionMockup> createState() => _ExecutionMockupState();
+}
+
+class _ExecutionMockupState extends State<_ExecutionMockup> {
+  int _score = 0;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text("Exercice : Service Flottant", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppColors.charcoal)),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              color: AppColors.gray,
+              iconSize: 40,
+              onPressed: () => setState(() { if (_score > 0) _score--; }),
+            ),
+            const SizedBox(width: 24),
+            Container(
+              width: 80,
+              height: 80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.yellow.withOpacity(0.2)),
+              child: Text("$_score", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.charcoal)),
+            ),
+            const SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              color: AppColors.red,
+              iconSize: 40,
+              onPressed: () => setState(() => _score++),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        const Text("Statistique enregistrée en direct", style: TextStyle(color: AppColors.gray, fontSize: 12)),
+        const SizedBox(height: 16),
+        VpButton(label: "Fin de l'exercice", onPressed: () => context.push('/register'), small: true),
+      ],
+    );
+  }
+}
+
+class _CollaborationMockup extends StatelessWidget {
+  const _CollaborationMockup({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Icon(Icons.handshake_rounded, size: 48, color: Color(0xFF8338EC)),
+        const SizedBox(height: 16),
+        const Text("Partagez avec votre staff", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: AppColors.charcoal)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.offWhite,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.grayLight),
+          ),
+          child: Row(
+            children: [
+              const Expanded(child: Text("https://volleyplan.com/invite/xy8A2", style: TextStyle(color: AppColors.gray, fontFamily: 'monospace'))),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(color: AppColors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.copy_rounded, color: AppColors.red, size: 18),
+              )
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        VpButton(label: "Inviter un collaborateur", onPressed: () => context.push('/register')),
+      ],
+    );
+  }
 }

@@ -268,7 +268,7 @@ class _Sidebar extends StatelessWidget {
   }
 }
 
-// ── Admin Tab ─────────────────────────────────────────────────────
+// ── Admin Tab ─────────────────────────────────────────────────────--------------------
 class _AdminTab extends StatefulWidget {
   @override
   State<_AdminTab> createState() => _AdminTabState();
@@ -334,63 +334,131 @@ class _AdminTabState extends State<_AdminTab> {
 
   Widget _buildStatsView(AppState state) {
     final kpis = state.adminSummary?['kpis'];
+    final byMode = (state.adminSummary?['plannings_by_mode'] as Map<String, dynamic>?) ?? {};
+
+    if (kpis == null) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.red));
+    }
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
+          // ── Revenu — carte hero ──────────────────────────────────
+          _adminRevenueHero(kpis),
+          const SizedBox(height: 24),
+
+          // ── Forfaits actifs ──────────────────────────────────────
+          _adminSection(
+            title: '🏆 Forfaits actifs',
+            color: const Color(0xFFFFB703),
             children: [
-              _adminKpi(
-                  'Coachs inscrits', '${kpis?['total_coaches']}', Colors.blue),
-              _adminKpi(
-                  'utilisateurs actifs quotidien/utilisateurs actifs mensuel',
-                  '${kpis?['dau']} / ${kpis?['mau']}',
-                  Colors.blueAccent),
-              _adminKpi('Plannings total', '${kpis?['total_plannings']}',
-                  AppColors.red),
-              _adminKpi('Nombre de seance moyen par planning',
-                  '${kpis?['avg_seances']}', AppColors.red),
-              _adminKpi('Nombre d\'exercice moyen par planning',
-                  '${kpis?['avg_exercises']}', AppColors.red),
-              _adminKpi('nombre de PDF Exporter', '${kpis?['pdf_exports']}',
-                  Colors.green),
-              _adminKpi('Nombre total de Joueurs', '${kpis?['total_joueurs']}',
-                  const Color(0xFF06D6A0)),
-              _adminKpi('Nombre de joueurs moyen par coach',
-                  '${kpis?['avg_players_per_coach']}', const Color(0xFF06D6A0)),
-              _adminKpi('Nombre de manipulation sur les joueurs',
-                  '${kpis?['player_activity']}', const Color(0xFF06D6A0)),
-              _adminKpi('Nombre total d\'invitations envoyes',
-                  '${kpis?['invites_sent']}', const Color(0xFF8338EC)),
-              _adminKpi('Pourcentage d\'invitation acceptees',
-                  '${kpis?['acceptance_rate']}%', const Color(0xFF8338EC)),
-              _adminKpi('Nombre de collaboration moyen par planning',
-                  '${kpis?['avg_collaborators']}', const Color(0xFF8338EC)),
-              _adminKpi('Nombre de requette de Mots de passe oublies',
-                  '${kpis?['password_resets']}', Colors.orange),
-              _adminKpi('Nombre total de Feedbacks',
-                  '${kpis?['total_feedbacks']}', AppColors.yellow),
+              _adminKpi('Free', '${(kpis['total_coaches'] ?? 0) - (kpis['coaches_basic'] ?? 0) - (kpis['coaches_premium'] ?? 0) - (kpis['coaches_premium_plus'] ?? 0)}', AppColors.gray),
+              _adminKpi('Basic', '${kpis['coaches_basic'] ?? 0}', const Color(0xFF3A86FF)),
+              _adminKpi('Premium', '${kpis['coaches_premium'] ?? 0}', const Color(0xFF8338EC)),
+              _adminKpi('Premium+', '${kpis['coaches_premium_plus'] ?? 0}', AppColors.red),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
+
+          // ── Activité & Utilisateurs ──────────────────────────────
+          _adminSection(
+            title: '👥 Activité & Utilisateurs',
+            color: const Color(0xFF3A86FF),
+            children: [
+              _adminKpi('Coachs inscrits', '${kpis['total_coaches'] ?? 0}', const Color(0xFF3A86FF)),
+              _adminKpi('Utilisateurs actifs quotidien', '${kpis['dau'] ?? 0}', const Color(0xFF3A86FF)),
+              _adminKpi('Utilisateurs actifs mensuel', '${kpis['mau'] ?? 0}', const Color(0xFF3A86FF)),
+              _adminKpi('Feedbacks', '${kpis['total_feedbacks'] ?? 0}', const Color(0xFFFFB703)),
+              _adminKpi('Réinitialisations MDP', '${kpis['password_resets'] ?? 0}', Colors.orange),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Contenu ──────────────────────────────────────────────
+          _adminSection(
+            title: '📋 Contenu',
+            color: AppColors.red,
+            children: [
+              _adminKpi('Plannings', '${kpis['total_plannings'] ?? 0}', AppColors.red),
+              _adminKpi('Joueurs', '${kpis['total_joueurs'] ?? 0}', const Color(0xFF06D6A0)),
+              _adminKpi('Séances moy./planning', '${kpis['avg_seances'] ?? 0}', AppColors.red),
+              _adminKpi('Exercices moy./planning', '${kpis['avg_exercises'] ?? 0}', AppColors.red),
+              _adminKpi('Joueurs moy./coach', '${kpis['avg_players_per_coach'] ?? 0}', const Color(0xFF06D6A0)),
+              _adminKpi('Actions joueurs', '${kpis['player_activity'] ?? 0}', const Color(0xFF06D6A0)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Exports & Partage ────────────────────────────────────
+          _adminSection(
+            title: '📤 Exports & Partage',
+            color: const Color(0xFF06D6A0),
+            children: [
+              _adminKpi('Exports PDF', '${kpis['pdf_exports'] ?? 0}', Colors.red.shade700),
+              _adminKpi('Exports Excel', '${kpis['excel_exports'] ?? 0}', const Color(0xFF1D6F42)),
+              _adminKpi('Liens partagés', '${kpis['share_links_generated'] ?? 0}', const Color(0xFF06D6A0)),
+              _adminKpi('Vues publiques', '${kpis['public_views'] ?? 0}', const Color(0xFF06D6A0)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── IA ───────────────────────────────────────────────────
+          _adminSection(
+            title: '✨ Intelligence Artificielle',
+            color: const Color(0xFF6C47FF),
+            children: [
+              _adminKpi('Plannings IA générés', '${kpis['ai_plannings_generated'] ?? 0}', const Color(0xFF6C47FF)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Invitations & Collaboration ──────────────────────────
+          _adminSection(
+            title: '🤝 Collaboration',
+            color: const Color(0xFF8338EC),
+            children: [
+              _adminKpi('Invitations envoyées', '${kpis['invites_sent'] ?? 0}', const Color(0xFF8338EC)),
+              _adminKpi('Taux acceptation', '${kpis['acceptance_rate'] ?? 0}%', const Color(0xFF8338EC)),
+              _adminKpi('Collabs moy./planning', '${kpis['avg_collaborators'] ?? 0}', const Color(0xFF8338EC)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Paiements ────────────────────────────────────────────
+          _adminSection(
+            title: '💳 Paiements',
+            color: const Color(0xFFFFB703),
+            children: [
+              _adminKpi('Initiés', '${kpis['payment_initiated_count'] ?? 0}', Colors.orange),
+              _adminKpi('Complétés', '${kpis['payment_completed_count'] ?? 0}', Colors.green),
+              _adminKpi(
+                'Taux conversion',
+                () {
+                  final initiated = (kpis['payment_initiated_count'] ?? 0) as int;
+                  final completed = (kpis['payment_completed_count'] ?? 0) as int;
+                  if (initiated == 0) return '—';
+                  return '${(completed / initiated * 100).toStringAsFixed(0)}%';
+                }(),
+                const Color(0xFFFFB703),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // ── Répartition par mode ──────────────────────────────────
           const Text('Répartition par mode',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
                 color: Colors.white, borderRadius: BorderRadius.circular(16)),
             child: Column(
-              children: (state.adminSummary?['plannings_by_mode']
-                      as Map<String, dynamic>)
-                  .entries
-                  .map((e) {
+              children: byMode.entries.map((e) {
                 return ListTile(
-                  title:
-                      Text(e.key == 'groupe' ? '👥 Groupe' : '🎯 Spécifique'),
+                  title: Text(e.key == 'groupe' ? '👥 Groupe' : '🎯 Spécifique'),
                   trailing: Text('${e.value}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
@@ -398,27 +466,119 @@ class _AdminTabState extends State<_AdminTab> {
               }).toList(),
             ),
           ),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  Widget _adminKpi(String label, String value, Color color) {
+  /// Carte hero pour le revenu total — plus grande et plus visible
+  Widget _adminRevenueHero(Map<String, dynamic> kpis) {
+    final revenue = kpis['revenue_total_xaf'] ?? 0;
+    final initiated = kpis['payment_initiated_count'] ?? 0;
+    final completed = kpis['payment_completed_count'] ?? 0;
+
     return Container(
-      width: 150,
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border(left: BorderSide(color: color, width: 4)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1D6F42), Color(0xFF2ECC71)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1D6F42).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(children: [
+            Icon(Icons.account_balance_wallet_rounded, color: Colors.white70, size: 18),
+            SizedBox(width: 8),
+            Text('Revenu total', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+          ]),
+          const SizedBox(height: 8),
+          Text(
+            '${_formatRevenue(revenue)} XAF',
+            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 16),
+          Row(children: [
+            _revenuePill('💰 $initiated initiés', Colors.white.withOpacity(0.2)),
+            const SizedBox(width: 8),
+            _revenuePill('✅ $completed complétés', Colors.white.withOpacity(0.2)),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _revenuePill(String label, Color bg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+    );
+  }
+
+  String _formatRevenue(dynamic value) {
+    final n = (value is int) ? value : int.tryParse(value.toString()) ?? 0;
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}k';
+    return '$n';
+  }
+
+  /// Groupe de KPIs avec titre de section
+  Widget _adminSection({
+    required String title,
+    required Color color,
+    required List<Widget> children,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Container(width: 3, height: 16, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.charcoal)),
+        ]),
+        const SizedBox(height: 12),
+        Wrap(spacing: 12, runSpacing: 12, children: children),
+      ],
+    );
+  }
+
+  Widget _adminKpi(String label, String value, Color color) {
+    return Container(
+      width: 148,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(left: BorderSide(color: color, width: 3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(value,
-              style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.w900, color: color)),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
+          const SizedBox(height: 4),
           Text(label,
-              style: const TextStyle(fontSize: 12, color: AppColors.gray)),
+              style: const TextStyle(fontSize: 11, color: AppColors.gray, height: 1.3)),
         ],
       ),
     );
